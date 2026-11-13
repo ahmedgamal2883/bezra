@@ -1,12 +1,14 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Diagnose.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Diagnose.logic.js (verbatim from the design).
 import { Fragment, useEffect, useState } from 'react';
 import { useApi, API } from '@/lib/api';
-import { FIELD_NAMES, UserName, UserInitials, EngineerTab, EngName } from '@/lib/field';
+import { FIELD_NAMES, UserName, UserInitials, EngineerTab, EngName, useDemo } from '@/lib/field';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Diagnose.logic';
@@ -21,6 +23,7 @@ const GENERAL = [
 
 export default function DiagnoseScreen() {
   const { fp, id } = useField();
+  const demo = useDemo();
   const __v = useDC(Logic);
   // The farmer's own case (?case=ID from "Take a photo"); without it the design's example stays (step 6).
   const [cid, setCid] = useState<string | null>(null);
@@ -70,6 +73,7 @@ export default function DiagnoseScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -400,23 +404,20 @@ export default function DiagnoseScreen() {
                       {C ? (C.follow_up.change != null ? (C.follow_up.change >= 0 ? "Greener by " : "Less green by ") + Math.round(Math.abs(C.follow_up.change) * 100) + " points" : "After " + due) : "Greener by 6 points"}
                     </b>
                   </div>
-                  <div className="inset" style={{"background":"var(--sun-tint)"} as any}>
+                  {demo ? (<><div className="inset" style={{"background":"var(--sun-tint)"} as any}>
                     <span style={{"color":"#8A4E06"} as any}>
                       {"Neighbours within 2 km get a scouting alert"}
                     </span>
                     <span className="pill pv-demo">
                       {"Demo"}
                     </span>
-                  </div>
+                  </div></>) : null}
                 </section>
               </div>
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {C ? "Your photos stay with Bezra and your engineer. Follow-up greenness from the satellite." : "All numbers on this screen are demo data."}

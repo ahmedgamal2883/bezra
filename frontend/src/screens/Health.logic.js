@@ -12,16 +12,17 @@ const path = (pts) => pts.map((p, i) => (i ? 'L' : 'M') + cx(p.day) + ' ' + cy(p
 // Design values with a Demo pill until the layer is really there (SMAP / ECOSTRESS need the Earthdata login).
 const DESIGN_LAYERS = [['0.61', 'HLS 30 m'], ['0.38', 'HLS 30 m'], ['0.22', 'HLS 30 m'], ['24', 'ECOSTRESS 70 m, 27 Oct'], ['0.31', 'SMAP 9 km']];
 const demoLayer = ([value, src]) => ({ value, src, pv: 'pill pv-demo', pvL: 'Demo' });
-function layerCards(D) {
+function layerCards(D, demo) {
+  const none = (i, why) => (demo ? demoLayer(DESIGN_LAYERS[i]) : { value: '–', src: why, pv: 'pill', pvL: 'Waiting' });
   const N = D && D.ndvi && D.ndvi.available ? D.ndvi : null;
   const L = (D && D.layers) || {};
   const src = N ? (N.source.startsWith('NASA HLS') ? 'HLS 30 m' : 'Sentinel-2, ' + shortDate(N.date)) : null;
   const idx = (ix, i) => (N && N.indices[ix].median != null
-    ? { value: N.indices[ix].median.toFixed(2), src, pv: 'pill pv-sat', pvL: 'Satellite' } : demoLayer(DESIGN_LAYERS[i]));
+    ? { value: N.indices[ix].median.toFixed(2), src, pv: 'pill pv-sat', pvL: 'Satellite' } : none(i, 'No clear image yet'));
   const app = (k, i, fmt, label) => {
     const x = L[k];
     if (x && x.value != null) return { value: fmt(x.value), src: label + (x.date ? ', ' + shortDate(x.date) : ''), pv: 'pill pv-sat', pvL: 'Satellite' };
-    const d = demoLayer(DESIGN_LAYERS[i]);
+    const d = none(i, 'Not ready yet');
     if (x && x.updating) d.src = 'Updating from NASA…';
     return d;
   };
@@ -30,8 +31,16 @@ function layerCards(D) {
 }
 
 // Field health texts from GET /fields/{id}/health. null -> V11 design values.
-export function healthTexts(D) {
+export function healthTexts(D, demo) {
   const N = D && D.ndvi && D.ndvi.available ? D.ndvi : null;
+  if (!N && !demo) {
+    // A new field: say plainly that the first clear image has not arrived. No sample values.
+    return { live: false, layers: layerCards(D, false), eyebrow: 'Waiting for the first clear satellite image of your field.', pill: 'No image yet', pillCls: 'pill',
+      where: '', title: 'Bezra is waiting for a clear image',
+      body: 'NASA HLS and ESA Sentinel-2 pass every few days. When a pass is not cloudy over your field, the greenness of every 30 m square shows here.',
+      normalPath: '', thisPath: '', dot: ['-10', '-10'], compare: '', pv: 'pill', pvL: 'Waiting',
+      foot: 'Greenness from NASA HLS and ESA Sentinel-2. Moisture from NASA SMAP, surface temperature from NASA ECOSTRESS.' };
+  }
   if (!N) {
     return { live: false, layers: DESIGN_LAYERS.map(demoLayer), eyebrow: 'North plot. Latest clear image 10 November, HLS 30 m.', pill: 'Check this spot', pillCls: 'lv lv-med',
       where: 'NE corner, ~0.25 feddan', title: 'This corner looks weaker',
@@ -57,7 +66,7 @@ export function healthTexts(D) {
   }
   const last = C.this_season[C.this_season.length - 1];
   return {
-    live: true, layers: layerCards(D),
+    live: true, layers: layerCards(D, this.props.demo),
     eyebrow: `Your field. Latest clear image ${longDate(N.date)}, ${src}.`,
     pill: S ? 'Check this spot' : 'All squares look even', pillCls: S ? 'lv lv-med' : 'lv lv-low',
     where: S ? `${S.where}, ~${S.feddan} feddan` : `${N.grid.rows * N.grid.cols} squares of 30 m`,
@@ -101,15 +110,15 @@ const CL = [{ fill: 'url(#hatch)', label: 'Less green', sw: 'background: repeati
 const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = KL ? KL[r][c] : (v < .55 ? 0 : (v < .64 ? 1 : 2)), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v == null ? "–" : v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
 
 const ix = S.ix;
-const cells = mkCells(true);
+const cells = mkCells(true).map((c) => (!SQ && !this.props.demo ? Object.assign({}, c, { fill: '#FFFFFF', op: '.12', label: '' }) : c));
 // U6: plain words in Simple mode, index names only in Details
 const PLAIN = { NDVI: 'Greenness', EVI: 'Leaf cover', NDMI: 'Moisture' };
 const idx = ['NDVI', 'EVI', 'NDMI'].map((l) => ({ label: details ? l : PLAIN[l], p: String(ix === l), pick: () => set({ ix: l }), cls: 'segb press' + (ix === l ? ' on' : '') }));
 const seen = ['Yellow leaves', 'Dry soil', 'Insects', 'Looks fine'].map((l) => ({ label: l, p: String(S.seen === l), pick: () => set({ seen: l }), cls: 'btn sm press ' + (S.seen === l ? '' : 'soft') }));
 return { parcels: this._map.parcels, rowed: this._map.rowed, houses: this._map.houses, cells, idx, seen, dim: true, showNum: details,
 legend: CL.map((c) => ({ label: c.label, sw: 'width: 14px; height: 10px; border-radius: 3px; ' + c.sw })), legendNote: details ? ix + ', 30 m squares, compared with your field median' : 'Compared with the rest of your field',
-idxNote: ix + ' · ' + (SQ ? shortDate(this.props.ndvi.date) : '10 Nov'), pin: pinFor(this.props.ndvi), mapLive: !!SQ, H: healthTexts(this.props.data),
-mapLabel: SQ ? 'Greenness of your field in 12 squares.' + (this.props.ndvi.weak_spot ? ' The ' + this.props.ndvi.weak_spot.where + ' is less green.' : ' No weak spot.') : 'Greenness of North plot in 12 squares. The north east corner is less green.' };
+idxNote: ix + ' · ' + (SQ ? shortDate(this.props.ndvi.date) : (this.props.demo ? '10 Nov' : 'no image yet')), pin: pinFor(this.props.ndvi), mapLive: !!SQ, H: healthTexts(this.props.data, this.props.demo),
+mapLabel: SQ ? 'Greenness of your field in 12 squares.' + (this.props.ndvi.weak_spot ? ' The ' + this.props.ndvi.weak_spot.where + ' is less green.' : ' No weak spot.') : (this.props.demo ? 'Greenness of North plot in 12 squares. The north east corner is less green.' : 'Your field. Waiting for the first clear satellite image.') };
  })();
 return Object.assign(base, extra || {});
 }

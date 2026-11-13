@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 // Sign in / Create account (Phase 2 §D). Built only from V11 parts: Landing header, mascot speech bubble,
 // segmented control, inset fields, CTA button. Email + password; the backend keeps the session in an
 // httpOnly cookie. After sign in: farmer -> own field, engineer -> Engineer page, new account -> Add your field.
@@ -10,6 +11,7 @@ import { BrandMark, Mascot, Foot, ArrowUpRight } from '@/components/chrome';
 type Mode = 'signin' | 'signup';
 
 export default function SignInScreen() {
+  const tr = useT();
   const [mode, setMode] = useState<Mode>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -83,7 +85,7 @@ export default function SignInScreen() {
             <div className="row" style={{ gap: '12px', alignItems: 'flex-start' }}>
               <Mascot />
               <div className="col" style={{ gap: '6px', padding: '12px 16px', borderRadius: '6px 18px 18px 18px', background: 'var(--inset)' }}>
-                <span className="ar-t" lang="ar" dir="rtl" style={{ fontSize: '18px', fontWeight: 600 }}>{mode === 'signin' ? 'أهلاً بيك تاني' : 'أهلاً بيك في بذرة'}</span>
+                <span style={{ fontSize: '18px', fontWeight: 600 }}>{mode === 'signin' ? tr('Welcome back', 'أهلاً بيك تاني') : tr('Welcome to Bezra', 'أهلاً بيك في بذرة')}</span>
                 <span className="tl">{mode === 'signin' ? 'Sign in to see your fields' : 'Create your account, then add your field'}</span>
               </div>
             </div>

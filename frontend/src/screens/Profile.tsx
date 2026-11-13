@@ -1,17 +1,33 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Profile.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Profile.logic.js (verbatim from the design).
 import { Fragment, useState } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab, signOut, EngName } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, signOut, EngName, useUser, useDemo } from '@/lib/field';
+import { useApi } from '@/lib/api';
+import { useLang } from '@/lib/i18n';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import DeleteDataDialog from '@/components/DeleteDataDialog';
 import Logic from './Profile.logic';
 
 export default function ProfileScreen() {
-  const { fp } = useField();
+  const { fp, id } = useField();
+  const { user, fields } = useUser();
+  const demo = useDemo();
+  const { lang } = useLang();
+  const tr = useT();
+  // Everything below comes from the signed-in account and its field (GET /fields/{id}).
+  const F = useApi<any>(id ? `/fields/${id}` : null, undefined, true).data;
+  const plan = useApi<any>(id ? `/plans/${id}` : null, undefined, true).data;
+  const A = F?.accuracy || { pct: 0, level: 'low', missing: [] };
+  const mine = fields.filter((f) => !user || user.role !== 'farmer' || f.farmer === user.name);
+  const v = (x: any) => (x == null || x === '' ? 'Not yet' : String(x));
+  const cap = (x?: string) => (x ? x[0].toUpperCase() + x.slice(1) : x);
+  const dm = (iso?: string) => (iso ? new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Not yet');
   const __v = useDC(Logic);
   const [delOpen, setDelOpen] = useState(false);
   return (
@@ -55,6 +71,7 @@ export default function ProfileScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -88,14 +105,14 @@ export default function ProfileScreen() {
             <div className="head">
               <div className="row rise" style={{"--d":"0","gap":"16px"} as any}>
                 <span className="av" style={{"width":"72px","height":"72px","borderRadius":"36px","fontSize":"24px"} as any}>
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <div className="col" style={{"gap":"4px"} as any}>
                   <span className="eyebrow">
-                    {"Farmer, Shibin El Kom, Menoufia"}
+                    {[user?.role === "engineer" ? "Engineer" : "Farmer", F?.village, F?.governorate].filter(Boolean).join(", ")}
                   </span>
                   <h1 className="h1">
-                    {"Hassan Farouk"}
+                    <UserName />
                   </h1>
                 </div>
               </div>
@@ -119,22 +136,22 @@ export default function ProfileScreen() {
                 <section className="card rise " style={{"--d":"2"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"2"} as any} />
                   <div className="row" style={{"gap":"20px"} as any}>
-                    <svg viewBox="0 0 160 96" width="190" role="img" aria-label="Accuracy 58 percent, medium">
+                    <svg viewBox="0 0 160 96" width="190" role="img" aria-label={`Accuracy ${A.pct} percent, ${A.level}`}>
                       <path d="M14 86A66 66 0 0 1 146 86" stroke="#EDEDE9" strokeWidth="14" fill="none" strokeLinecap="round" />
-                      <path className="draw" pathLength="1" style={{"--d":"2","strokeDasharray":".58 1","strokeDashoffset":".58"} as any} d="M14 86A66 66 0 0 1 146 86" stroke="#F29B1E" strokeWidth="14" fill="none" strokeLinecap="round" />
+                      <path className="draw" pathLength="1" style={{"--d":"2","strokeDasharray":`${A.pct / 100} 1`,"strokeDashoffset":String(A.pct / 100)} as any} d="M14 86A66 66 0 0 1 146 86" stroke="#F29B1E" strokeWidth="14" fill="none" strokeLinecap="round" />
                       <text x="80" y="80" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="30" fontWeight="600" fill="#141A16">
-                        {"58%"}
+                        {F ? `${A.pct}%` : "…"}
                       </text>
                     </svg>
                     <div className="col" style={{"gap":"6px","flex":"1"} as any}>
-                      <span className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"15px","color":"var(--muted)","alignSelf":"flex-start"} as any}>
-                        {"دقة متوسطة"}
+                      <span style={{"fontSize":"15px","color":"var(--muted)","alignSelf":"flex-start"} as any}>
+                        {A.level === 'high' ? tr('High accuracy', 'دقة عالية') : A.level === 'medium' ? tr('Medium accuracy', 'دقة متوسطة') : tr('Low accuracy', 'دقة قليلة')}
                       </span>
                       <h2 className="h3">
-                        {"Your advice is medium accuracy"}
+                        {`Your advice is ${A.level} accuracy`}
                       </h2>
                       <p className="sub">
-                        {"Add your variety and your last harvests to make it high. Every answer makes the advice fit your field better."}
+                        {!F ? "Add your field to get advice made for it." : A.missing.length ? `Add ${A.missing.slice(0, 2).join(" and ").toLowerCase()} to make it higher. Every answer makes the advice fit your field better.` : "Bezra knows your field well. Keep logging your waterings."}
                       </p>
                     </div>
                     <div className="row" style={{"gap":"8px","alignSelf":"center"} as any}>
@@ -171,7 +188,7 @@ export default function ProfileScreen() {
                       </span>
                       <span className="lv lv-low">
                         <i />
-                        {"Complete"}
+                        {F && F.crop && F.sow_date && F.prev_crop && F.tenure && F.water_source && F.turn_days ? "Complete" : "To do"}
                       </span>
                     </div>
                     <div className="col" style={{"gap":"4px"} as any}>
@@ -181,7 +198,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Wheat"}
+                            {v(F?.crop_label)}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -194,7 +211,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"15 Oct"}
+                            {dm(F?.sow_date)}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -207,7 +224,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Maize"}
+                            {v(cap(F?.prev_crop))}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -220,7 +237,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Tenant"}
+                            {v(cap(F?.tenure))}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -233,7 +250,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Mesqa"}
+                            {v(F?.water_source)}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -246,7 +263,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Every 10 days"}
+                            {F?.turn_days ? `Every ${F.turn_days} days` : "Not yet"}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -277,7 +294,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Sakha 95"}
+                            {v(F?.variety_label)}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -290,7 +307,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"18, 17, ? ardeb"}
+                            {F?.yields ? `${F.yields} ardeb` : "Not yet"}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -303,7 +320,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Thirst 2024"}
+                            {v(F?.problems)}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -316,7 +333,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Tail"}
+                            {v(cap(F?.mesqa_position))}
                           </b>
                           <span className="pill pv-farm">
                             {"You"}
@@ -355,7 +372,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Not yet"}
+                            {v(F?.soil_ec)}
                           </b>
                         </span>
                       </div>
@@ -365,7 +382,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"Not yet"}
+                            {v(F?.water_ec)}
                           </b>
                         </span>
                       </div>
@@ -375,7 +392,7 @@ export default function ProfileScreen() {
                         </span>
                         <span className="row" style={{"gap":"6px"} as any}>
                           <b>
-                            {"None"}
+                            {F?.sensors || "None"}
                           </b>
                         </span>
                       </div>
@@ -404,42 +421,18 @@ export default function ProfileScreen() {
                     </Link>
                   </div>
                   <div className="grid" style={{"gridTemplateColumns":"1fr 1fr","gap":"8px"} as any}>
-                    <Link href={fp("")} className="inset lift" style={{"minHeight":"64px"} as any}>
+                    {mine.map((f) => (
+                    <Link key={f.id} href={`/field/${f.id}`} className="inset lift" style={{"minHeight":"64px"} as any}>
                       <span className="col">
-                        <b style={{"fontSize":"15px","fontWeight":"600","color":"var(--ink)"} as any}>
-                          {"North plot"}
-                        </b>
-                        <span className="tl">
-                          {"2.4 feddan, wheat"}
-                        </span>
+                        <b style={{"fontSize":"15px","fontWeight":"600","color":"var(--ink)"} as any}>{f.name}</b>
+                        <span className="tl">{`${f.area_feddan} feddan, ${f.crop.toLowerCase()}`}</span>
                       </span>
                       <span className="row" style={{"gap":"6px"} as any}>
-                        <span className="tl">
-                          {"Accuracy"}
-                        </span>
-                        <b>
-                          {"58%"}
-                        </b>
+                        <span className="tl">{"Accuracy"}</span>
+                        <b>{(f as any).accuracy != null ? `${(f as any).accuracy}%` : "…"}</b>
                       </span>
                     </Link>
-                    <Link href={fp("")} className="inset lift" style={{"minHeight":"64px"} as any}>
-                      <span className="col">
-                        <b style={{"fontSize":"15px","fontWeight":"600","color":"var(--ink)"} as any}>
-                          {"South plot"}
-                        </b>
-                        <span className="tl">
-                          {"0.6 feddan, berseem"}
-                        </span>
-                      </span>
-                      <span className="row" style={{"gap":"6px"} as any}>
-                        <span className="tl">
-                          {"Accuracy"}
-                        </span>
-                        <b>
-                          {"41%"}
-                        </b>
-                      </span>
-                    </Link>
+                    ))}
                   </div>
                 </section>
               </div>
@@ -455,7 +448,7 @@ export default function ProfileScreen() {
                         {"Language"}
                       </span>
                       <b>
-                        {"Egyptian Arabic"}
+                        {lang === 'ar' ? 'Egyptian Arabic' : 'English'}
                       </b>
                     </div>
                     <div className="inset">
@@ -463,15 +456,15 @@ export default function ProfileScreen() {
                         {"Alerts by"}
                       </span>
                       <b>
-                        {"WhatsApp voice note"}
+                        {demo ? "WhatsApp voice note" : "In the app"}
                       </b>
                     </div>
                     <div className="inset">
                       <span>
-                        {"Phone"}
+                        {demo ? "Phone" : "Email"}
                       </span>
                       <b>
-                        {"+20 1•• ••• 4471"}
+                        {demo ? "+20 1•• ••• 4471" : user?.email}
                       </b>
                     </div>
                   </div>
@@ -491,14 +484,14 @@ export default function ProfileScreen() {
                   </h2>
                   <div className="row" style={{"gap":"12px"} as any}>
                     <span className="av" style={{"background":"#DDEFE3","color":"#1E5B36"} as any}>
-                      {"MA"}
+                      {(user?.engineer_name || "E").split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
                     </span>
                     <span className="col">
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
                         <EngName full />
                       </b>
                       <span className="tl">
-                        {"Extension, Shibin El Kom. Plan review pending."}
+                        {plan?.status === "approved" ? `Approved your plan on ${new Date(plan.approved_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.` : "Plan review pending."}
                       </span>
                     </span>
                   </div>
@@ -527,13 +520,10 @@ export default function ProfileScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {"From your account and your field."}
                 <AboutLink />
               </span>
             </footer>

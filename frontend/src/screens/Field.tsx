@@ -1,10 +1,12 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Field.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Field.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab, useUser } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, useUser, useDemo } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -17,7 +19,7 @@ export default function FieldScreen() {
   // the farmer's own fields as chips (#01, #02, ...): the current field's owner
   const { fields: allFields } = useUser();
   const owner = allFields.find((f) => f.id === id)?.farmer;
-  const chipFields = owner ? allFields.filter((f) => f.farmer === owner).slice(0, 3) : [{ id: "north-plot", num: "01", name: "North plot", area_feddan: 2.4, crop: "Wheat" }, { id: "south-plot", num: "02", name: "South plot", area_feddan: 0.6, crop: "Berseem" }] as any[];
+  const chipFields = owner ? allFields.filter((f) => f.farmer === owner).slice(0, 3) : [] as any[];
   const summary = useApi(`/fields/${id}/summary`);
   const ndvi = useApi(`/fields/${id}/ndvi`);
   const health = useApi(`/fields/${id}/health`);
@@ -36,7 +38,8 @@ export default function FieldScreen() {
     photo = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${L},${B},${R},${T}&bboxSR=${frame.wkid}&imageSR=${frame.wkid}&size=2040,780&format=jpg&f=image`;
     if (frame.outline) outline = frame.outline.map(([x, y]: number[]) => `${(605 + (x - g.left) * sx).toFixed(1)},${(120 + (g.top - y) * sy).toFixed(1)}`).join(' ');
   }
-  const __v = useDC(Logic, { data: summary.data, loading: summary.loading, fieldId: id, ndvi: ndvi.data, health: health.data });
+  const demo = useDemo();
+  const __v = useDC(Logic, { demo, data: summary.data, loading: summary.loading, fieldId: id, ndvi: ndvi.data, health: health.data });
   return (
     <>
       <div className="root">
@@ -78,6 +81,7 @@ export default function FieldScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -146,7 +150,7 @@ export default function FieldScreen() {
                 </Link>
               </div>
             </div>
-            <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
+            <nav aria-label="Field sections" className="tabs rise" style={{"--d":"0"} as any}>
               <Link href={fp("")} aria-current="page">
                 {"Today"}
               </Link>
@@ -169,7 +173,7 @@ export default function FieldScreen() {
             <section aria-labelledby="hero-h" className="hero rise" style={{"--d":"2","minHeight":"520px","background":"#D9D6C8"} as any}>
               <i className={__v.skMap} aria-hidden="true" style={{"--d":"2"} as any} />
               <h2 id="hero-h" className="vh">
-                {"North plot from above"}
+                {"Your field from above"}
               </h2>
               {" "}
               <svg role="img" aria-label={__s(__v?.mapLabel) as any} width="100%" height="100%" viewBox="0 0 1360 520" preserveAspectRatio="xMidYMid slice" style={{"position":"absolute","inset":"0"} as any}>
@@ -512,7 +516,7 @@ export default function FieldScreen() {
               </div>
               <span className="float" style={{"position":"absolute","right":"18px","bottom":"18px","height":"34px","padding":"0 12px","borderRadius":"17px","display":"flex","alignItems":"center","gap":"8px","fontSize":"13px","fontWeight":"500"} as any}>
                 <span style={{"width":"7px","height":"7px","borderRadius":"4px","background":"#2E8B4A"} as any} />
-                {__s(__v?.stamp)}{__v.mapLive ? null : <>{" "}<span className="pill pv-demo">Demo</span></>}
+                {__s(__v?.stamp)}{__v.mapLive || !demo ? null : <>{" "}<span className="pill pv-demo">Demo</span></>}
               </span>
             </section>
             <section aria-label="Risks this week" className="grid" style={{"gridTemplateColumns":"repeat(4, minmax(0, 1fr))"} as any}>
@@ -601,7 +605,7 @@ export default function FieldScreen() {
                   </span>
                 </div>
                 <p className="sub" style={{"color":"var(--ink2)"} as any}>
-                  {"No pests reported near you."}{" "}<span className="pill pv-demo">Demo</span>
+                  {demo ? <>{"No pests reported near you."}{" "}<span className="pill pv-demo">Demo</span></> : "Pest reports are not connected yet."}
                 </p>
               </section>
             </section>
@@ -660,8 +664,8 @@ export default function FieldScreen() {
                     </small>
                   </span>
                   <span className="row wrap" style={{"gap":"4px"} as any}>
-                    <span className={__v.mapLive ? "pill pv-sat" : "pill pv-demo"}>
-                      {__v.mapLive ? "Satellite" : "Demo"}
+                    <span className={__v.mapLive ? "pill pv-sat" : demo ? "pill pv-demo" : "pill"}>
+                      {__v.mapLive ? "Satellite" : demo ? "Demo" : "Waiting"}
                     </span>
                     <span className="pill">
                       {"Your field"}
@@ -872,8 +876,8 @@ export default function FieldScreen() {
                 <Link href="/sim" className="card dk rise lift cta" style={{"--d":"14","flex":"1","justifyContent":"space-between","overflow":"hidden"} as any}>
                   <i className="sk" aria-hidden="true" style={{"--d":"14"} as any} />
                   <span className="row sp">
-                    <span className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"14px","color":"rgba(255,255,255,.72)"} as any}>
-                      {"جرّب موسمك"}
+                    <span style={{"fontSize":"14px","color":"rgba(255,255,255,.72)"} as any}>
+                      <T en="Try your season" ar="جرّب موسمك" />
                     </span>
                     <span className="ar" style={{"background":"var(--sun)"} as any}>
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -893,8 +897,8 @@ export default function FieldScreen() {
                 <Link href={fp("/plan")} className="card rise lift cta" style={{"--d":"15","flex":"1","justifyContent":"space-between"} as any}>
                   <i className={__v.sk} aria-hidden="true" style={{"--d":"15"} as any} />
                   <span className="row sp">
-                    <span className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"14px","color":"var(--muted)"} as any}>
-                      {"خطة موسمك"}
+                    <span style={{"fontSize":"14px","color":"var(--muted)"} as any}>
+                      <T en="Your season plan" ar="خطة موسمك" />
                     </span>
                     <span className="ar" style={{"background":"var(--inset)"} as any}>
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -908,10 +912,10 @@ export default function FieldScreen() {
                     </span>
                     <span className="row" style={{"gap":"8px"} as any}>
                       <span style={{"flex":"1","height":"6px","borderRadius":"3px","background":"var(--inset)","overflow":"hidden"} as any}>
-                        <span className="growx" style={{"display":"block","width":"33%","height":"100%","background":"var(--green)","borderRadius":"3px"} as any} />
+                        <span className="growx" style={{"display":"block","width":plan?.tracker?.due ? `${Math.round(plan.tracker.on_plan / plan.tracker.due * 100)}%` : "0%","height":"100%","background":"var(--green)","borderRadius":"3px"} as any} />
                       </span>
                       <span className="tl" style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"3 of 9 done"}{" "}<span className="pill pv-demo">Demo</span>
+                        {plan ? plan.tracker.text.replace("On plan: ", "") + " on plan" : "…"}
                       </span>
                     </span>
                   </span>
@@ -992,10 +996,7 @@ export default function FieldScreen() {
             ) : null}
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.T.foot}
@@ -1020,8 +1021,8 @@ export default function FieldScreen() {
                 <circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45" />
               </g>
             </svg>
-            <span className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"15px","fontWeight":"600"} as any}>
-              {"اسأل بذرة"}
+            <span style={{"fontSize":"15px","fontWeight":"600"} as any}>
+              <T en="Ask Bezra" ar="اسأل بذرة" />
             </span>
           </Link>
         </div>

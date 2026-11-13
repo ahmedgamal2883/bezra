@@ -23,7 +23,7 @@ const RAW = [
 ['Cotton', '#D9D3C2', 'nnnnnnnnryggyrrnnnnnnnnn']];
 // ---- real wheat windows from GET /fields/{id}/calendar (step 2). Other crops: design values (Demo).
 const D = this.props.data, E = D ? D.eras[era] : null;
-const crops = RAW.map(([name, col, pat], ci) => {
+const crops = RAW.filter((_, ci) => ci === 0 || this.props.demo).map(([name, col, pat], ci) => {
 let p = row(pat); if (ci === 0 && E) p = E.cells.map((c) => c.k); else if (ci === 0 && shift) { p = shift > 0 ? ['y'].concat(p.slice(0, 23)) : p.slice(1).concat(['y']); }
 return { name, sw: 'width: 10px; height: 10px; border-radius: 3px; background: ' + col + ';', cells: p.map((k, i) => {
 const sel = ci === 0 && S.pick === i;
@@ -49,7 +49,7 @@ return { eras, crops, eraLabel: era === 'Today' ? 'today\'s climate' : (era === 
   earlier90: ER ? days(ER.days_1990s) + (ER.days_1990s >= 0 ? ' later' : ' earlier') : '12 days later',
   earlier40: ER ? days(ER.days_2040) + (ER.days_2040 >= 0 ? ' earlier' : ' later') : '9 days earlier',
   earlierTitle: !ER || ER.days_1990s > 0 ? 'The best time is earlier now' : (ER.days_1990s === 0 ? 'The best time has barely moved' : 'The best time is moving later'),
-  foot: D ? 'Wheat: yield model on NASA POWER, every season 1990-2025. Other crops are Demo.' : 'All numbers on this screen are demo data.' };
+  foot: D ? (this.props.demo ? 'Wheat: yield model on NASA POWER, every season 1990-2025. Other crops are Demo.' : 'Wheat: yield model on NASA POWER, every season 1990-2025. Other crops are coming soon.') : 'All numbers on this screen are demo data.' };
  })();
 return Object.assign(base, extra || {});
 }

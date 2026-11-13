@@ -82,13 +82,13 @@ const height = D ? D.steps[m].plant_height_cm : Math.round([4, 15, 25, 55, 85, 9
 const soilW = D ? D.steps[m].soil_water_pct : [92, 70, 55 - wa * 12, 60 - wa * 8, 58, 50 - (hot ? 10 : 0), 30][m];
 const label = SOW[sw] + ', ' + VAR[va] + ', ' + WAT[wa].toLowerCase();
 return { sc, wetOn: !!sc.wet, rustOn: va === 1 && m >= 3 && m <= 4, rustDots: sc.prisms.filter((p) => p.rust), hazeOn: m === 5 && heat > .1,
-sceneLabel: 'North plot in 3D at ' + STAGE[m] + '. Ground from a satellite image, crop simulated.',
+sceneLabel: 'Your field in 3D at ' + STAGE[m] + '. Ground from a satellite image, crop simulated.',
 sow: opt(SOW, sw, 'sow'), va: opt(VAR, va, 'va'), wa: opt(WAT, wa, 'wa'), yr: opt(YR, yr, 'yr'),
 steps, stage: STAGE[m], when: mLabel(m), ev, height, soilW: D ? soilW : Math.max(18, soilW), yieldPct, wUse: wUse.toLocaleString('en-US'), hotDays: D ? D.hot_days_grain_fill : (hot ? (late ? 5 : (mid ? 3 : 1)) : (late ? 2 : 0)),
 req, live: !!D,
 checked: D ? `Checked against ${D.years_used} past seasons` : 'Checked against 30 past seasons',
 estCls: D ? 'pill pv-est' : 'pill pv-demo', estLabel: D ? 'Estimated' : 'Demo',
-foot: D ? `Weather of the ${D.season_year} season from NASA POWER. Variety traits are Demo, to verify with ARC.` : 'All numbers on this screen are demo data.',
+foot: D ? `Weather of the ${D.season_year} season from NASA POWER. Variety traits are estimates, to verify with ARC.` : 'All numbers on this screen are demo data.',
 next1: () => set({ m: Math.min(6, m + 1) }), next3: () => set({ m: Math.min(6, m + 3) }), back: () => set({ m: Math.max(0, m - 1) }), atEnd: m === 6, notEnd: m < 6,
 hazeChip: m === 5 && heat > .1, hasPin: !!pin, pinLabel: pin ? pin.label : '', pinY: pin ? pin.y : 0, pinW: pin ? pin.w : '', diff: pin ? (yieldPct - pin.y) : 0,
 diffTxt: pin ? (yieldPct === pin.y ? 'Same harvest' : (yieldPct > pin.y ? (yieldPct - pin.y) + '% more harvest than the pinned plan' : (pin.y - yieldPct) + '% less harvest than the pinned plan')) : '',

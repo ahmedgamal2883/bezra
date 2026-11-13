@@ -37,7 +37,7 @@ return { apP: String(ok), apL: ok ? 'Approved, stamped ' + stamp : 'Approve plan
   approve: () => (D && this.props.approveOn && selId ? this.props.approveOn(!ok, selId) : set({ ok: !S.ok })), selId,
   planActions: north && north.tasks != null ? 'Season plan, ' + north.tasks + ' actions' : 'Season plan, 9 actions',
   queue, note: this.props.note || '', setNote: this.props.setNote || (() => {}),
-  planField: north ? north.farmer + ', ' + north.field : 'Hassan Farouk, North plot', planStatus: ok ? 'Approved' : 'Pending', planLv: ok ? 'lv lv-low' : 'lv lv-med',
+  planField: north ? north.farmer + ', ' + north.field : (D ? '' : 'Hassan Farouk, North plot'), planStatus: ok ? 'Approved' : 'Pending', planLv: ok ? 'lv lv-low' : 'lv lv-med',
   hotPct: hot != null ? (hot >= 0 ? '+' : '') + hot + '%' : '+40%', hotNote: hot != null ? 'Than in the 1990s, NASA POWER' : 'Than in the 1990s, Demo',
   rankNote: D ? 'Ranked by risk. Tap a farmer to review the plan' : 'Ranked by risk and reach',
   foot: D ? 'Scores from each field\'s NASA POWER weather, forecast, satellite greenness and season plan.' : 'All numbers on this screen are demo data.' };

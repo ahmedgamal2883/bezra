@@ -1,19 +1,22 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Calendar.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Calendar.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, useDemo } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Calendar.logic';
 
 export default function CalendarScreen() {
-  const { fp, id } = useField();
+  const { fp, id, name } = useField();
   const cal = useApi(`/fields/${id}/calendar`);
-  const __v = useDC(Logic, { data: cal.data, loading: cal.loading, fieldId: id });
+  const demo = useDemo();
+  const __v = useDC(Logic, { demo, data: cal.data, loading: cal.loading, fieldId: id });
   return (
     <>
       <div className="root">
@@ -55,6 +58,7 @@ export default function CalendarScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -88,7 +92,7 @@ export default function CalendarScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"When to sow, crop by crop, for North plot"}
+                  {`When to sow, crop by crop, for ${name}`}
                 </span>
                 <h1 className="h1">
                   {"Planting calendar"}
@@ -109,7 +113,7 @@ export default function CalendarScreen() {
                 </div>
               </div>
             </div>
-            <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
+            <nav aria-label="Field sections" className="tabs rise" style={{"--d":"0"} as any}>
               <Link href={fp("")}>
                 {"Today"}
               </Link>
@@ -135,7 +139,7 @@ export default function CalendarScreen() {
                 <h2 className="h2">
                   {"Sowing windows, "}
                   {__s(__v?.eraLabel)}
-                  {__v.live ? <>{" "}<span className="pill pv-demo" style={{ verticalAlign: "middle" }}>Other crops: Demo</span></> : null}
+                  {__v.live && demo ? <>{" "}<span className="pill pv-demo" style={{ verticalAlign: "middle" }}>Other crops: Demo</span></> : null}
                 </h2>
                 <span className="row" style={{"gap":"14px","fontSize":"12px","color":"var(--ink2)"} as any}>
                   <span className="row" style={{"gap":"6px"} as any}>
@@ -358,10 +362,7 @@ export default function CalendarScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.foot}

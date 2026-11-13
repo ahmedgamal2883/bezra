@@ -1,10 +1,12 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Plan.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Plan.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab, EngName } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, EngName, useDemo } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -13,7 +15,8 @@ import PlanTracker, { progressOf } from '@/components/PlanTracker';
 import { usePlan } from '@/components/PlanToday';
 
 export default function PlanScreen() {
-  const { fp, id } = useField();
+  const { fp, id, field } = useField();
+  const demo = useDemo();
   const __v = useDC(Logic);
   // Engineer review status (step 6): GET /plans/{id}, set by the engineer's "Approve plan".
   const pl = useApi(`/plans/${id}`, undefined, true).data;
@@ -62,6 +65,7 @@ export default function PlanScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -95,7 +99,7 @@ export default function PlanScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"North plot, wheat, October 2026 to April 2027"}
+                  {field ? `${field.name}, ${field.crop.toLowerCase()}, this season` : "…"}
                 </span>
                 <h1 className="h1">
                   {"Season plan"}
@@ -118,7 +122,7 @@ export default function PlanScreen() {
                 </Link>
               </div>
             </div>
-            <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
+            <nav aria-label="Field sections" className="tabs rise" style={{"--d":"0"} as any}>
               <Link href={fp("")}>
                 {"Today"}
               </Link>
@@ -166,7 +170,7 @@ export default function PlanScreen() {
                         </span>
                         {plan ? <span className={plan.tracker.on_plan === plan.tracker.due ? "lv lv-low" : "lv lv-med"}><i />{plan.tracker.text}</span> : null}
                       </span>
-                      <h2 style={{"fontSize":"26px","lineHeight":"1.2","fontWeight":"600","letterSpacing":"-.6px"} as any}>
+                      {demo ? (<><h2 style={{"fontSize":"26px","lineHeight":"1.2","fontWeight":"600","letterSpacing":"-.6px"} as any}>
                         {"3 risks this season: late heat "}
                         <span style={{"color":"var(--sun)"} as any}>
                           {"high"}
@@ -188,7 +192,7 @@ export default function PlanScreen() {
                         </b>
                         {" of your harvest from these risks."}
                       </p>
-                      <span className="pill pv-demo" style={{"alignSelf":"flex-start"} as any}>{"Demo"}</span>
+                      <span className="pill pv-demo" style={{"alignSelf":"flex-start"} as any}>{"Demo"}</span></>) : (<h2 style={{"fontSize":"26px","lineHeight":"1.2","fontWeight":"600","letterSpacing":"-.6px"} as any}>{plan ? plan.status.text : "…"}</h2>)}
                     </div>
                   </div>
                 </section>
@@ -308,10 +312,7 @@ export default function PlanScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {"All numbers on this screen are demo data."}

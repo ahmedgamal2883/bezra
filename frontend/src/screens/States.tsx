@@ -1,10 +1,12 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-States.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./States.logic.js (verbatim from the design).
 import { Fragment } from 'react';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './States.logic';
@@ -53,6 +55,7 @@ export default function StatesScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -225,8 +228,8 @@ export default function StatesScreen() {
                     </h3>
                   </div>
                 </div>
-                <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"15px","lineHeight":"1.7"} as any}>
-                  {"بيانات التربة مش متاحة دلوقتي، استخدمنا تقدير لحد ما ترجع."}
+                <p style={{"fontSize":"15px","lineHeight":"1.7"} as any}>
+                  <T en="Soil data is not available right now. We used an estimate until it&apos;s back." ar="بيانات التربة مش متاحة دلوقتي، استخدمنا تقدير لحد ما ترجع." />
                 </p>
                 <span className="row" style={{"gap":"4px"} as any}>
                   <span className="pill pv-est">
@@ -265,8 +268,8 @@ export default function StatesScreen() {
                     </h3>
                   </div>
                 </div>
-                <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"15px","lineHeight":"1.7"} as any}>
-                  {"القمر الصناعي لسه مابعتش صورة جديدة بسبب السحاب."}
+                <p style={{"fontSize":"15px","lineHeight":"1.7"} as any}>
+                  <T en="The satellite has not sent a new image yet because of clouds." ar="القمر الصناعي لسه مابعتش صورة جديدة بسبب السحاب." />
                 </p>
                 <span className="row" style={{"gap":"4px"} as any}>
                   <span className="pill">
@@ -340,10 +343,7 @@ export default function StatesScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {"All numbers on this screen are demo data."}

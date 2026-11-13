@@ -20,13 +20,12 @@ const V = ['Sakha 95', 'Giza 171', 'Misr 3', 'Other'];
 const varieties = V.map((l) => ({ label: l, p: String(S.variety === l), pick: () => set({ variety: l }), style: chip(S.variety === l) }));
 // Accuracy grows as levels are filled (Profile shows 58% once Level 2 is in).
 const acc = S.step >= 3 ? 58 : (S.crop ? 42 : 30);
-const accAr = acc >= 75 ? 'دقة عالية' : (acc > 40 ? 'دقة متوسطة' : 'دقة قليلة');
 const steps = [['Your field', 1], ['Basics', 2], ['More accurate', 3], ['Expert', 4]].map(([label, n]) => ({
   label, n, done: n < S.step, cur: n === S.step, todo: n > S.step,
   textColor: n <= S.step ? 'var(--ink)' : 'var(--muted)',
   dot: 'width: 26px; height: 26px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 12px; ' + (n < S.step ? 'background: var(--green); color: #fff;' : n === S.step ? 'background: var(--dark); color: #fff;' : 'background: #fff;'),
 }));
-return { crop: S.crop, variety: S.variety, mesqaPick: S.mesqa, tenurePick: S.tenure, crops, varieties, acc, accAr, steps, step: S.step,
+return { crop: S.crop, variety: S.variety, mesqaPick: S.mesqa, tenurePick: S.tenure, crops, varieties, acc, steps, step: S.step,
   tenure: { owner: seg(S.tenure, 'owner', set, 'tenure'), tenant: seg(S.tenure, 'tenant', set, 'tenure') },
   mesqa: ['head', 'middle', 'tail'].reduce((o, m) => (o[m] = seg(S.mesqa, m, set, 'mesqa'), o), {}),
   goStep: (n) => () => { set({ step: n }); window.scrollTo(0, 0); },

@@ -57,6 +57,9 @@ button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .num small,.unit{font-size:14px;font-weight:500;color:var(--faint);letter-spacing:0}
 .pill{height:22px;padding:0 9px;box-sizing:border-box;border-radius:11px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--inset);color:var(--muted)}
 .pv-sat{background:var(--green-tint);color:var(--green)}.pv-est{background:#FBEBD2;color:#7A4A0B}.pv-farm{background:#ECECE8;color:var(--ink2)}.pv-agro{background:#DDEFE3;color:#1E5B36}.pv-meas{background:var(--water-tint);color:#1D4F73}.pv-demo{background:#FFF7E3;color:#7A5A12;box-shadow:inset 0 0 0 1px #E2BE6A;border:0}
+.pv-beta{background:#FFF7E3;color:#7A5A12;box-shadow:inset 0 0 0 1px #E2BE6A;border:0}
+/* Demo pills (sample values) exist only for the demo farmer; every other account never sees them */
+html[data-demo="0"] .pv-demo{display:none!important}
 .lv{height:24px;padding:0 10px 0 8px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
 .lv i{width:7px;height:7px;border-radius:4px;display:block}
 .lv-low{background:var(--green-tint);color:var(--green)}.lv-low i{background:#2E8B4A}

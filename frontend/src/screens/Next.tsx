@@ -1,10 +1,12 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Next.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Next.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, useDemo } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -13,7 +15,8 @@ import Logic from './Next.logic';
 export default function NextScreen() {
   const { fp, id } = useField();
   const nx = useApi(`/fields/${id}/next`);
-  const __v = useDC(Logic, { data: nx.data, loading: nx.loading, fieldId: id });
+  const demo = useDemo();
+  const __v = useDC(Logic, { demo, data: nx.data, loading: nx.loading, fieldId: id });
   return (
     <>
       <div className="root">
@@ -55,6 +58,7 @@ export default function NextScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -103,7 +107,7 @@ export default function NextScreen() {
                 </span>
               </Link>
             </div>
-            <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
+            <nav aria-label="Field sections" className="tabs rise" style={{"--d":"0"} as any}>
               <Link href={fp("")}>
                 {"Today"}
               </Link>
@@ -302,7 +306,7 @@ export default function NextScreen() {
                     {__v.N.twins[0]?.[1]}
                   </span>
                 </div>
-                <p className="body">
+                {demo ? (<><p className="body">
                   <b style={{"color":"var(--ink)"} as any}>
                     {"What they do:"}
                   </b>
@@ -312,7 +316,7 @@ export default function NextScreen() {
                   <span className="pill pv-demo">
                     {"Demo, to verify"}
                   </span>
-                </span>
+                </span></>) : null}
               </section>
               <section className="card rise lift" style={{"--d":"7","gap":"10px"} as any}>
                 <i className={__v.sk} aria-hidden="true" style={{"--d":"7"} as any} />
@@ -324,7 +328,7 @@ export default function NextScreen() {
                     {__v.N.twins[1]?.[1]}
                   </span>
                 </div>
-                <p className="body">
+                {demo ? (<><p className="body">
                   <b style={{"color":"var(--ink)"} as any}>
                     {"What they do:"}
                   </b>
@@ -334,7 +338,7 @@ export default function NextScreen() {
                   <span className="pill pv-demo">
                     {"Demo, to verify"}
                   </span>
-                </span>
+                </span></>) : null}
               </section>
               <section className="card rise lift" style={{"--d":"8","gap":"10px"} as any}>
                 <i className={__v.sk} aria-hidden="true" style={{"--d":"8"} as any} />
@@ -346,7 +350,7 @@ export default function NextScreen() {
                     {__v.N.twins[2]?.[1]}
                   </span>
                 </div>
-                <p className="body">
+                {demo ? (<><p className="body">
                   <b style={{"color":"var(--ink)"} as any}>
                     {"What they do:"}
                   </b>
@@ -356,10 +360,10 @@ export default function NextScreen() {
                   <span className="pill pv-demo">
                     {"Demo, to verify"}
                   </span>
-                </span>
+                </span></>) : null}
               </section>
             </div>
-            <div className="row sp rise" style={{"--d":"9","padding":"6px 4px 0"} as any}>
+            {demo ? (<><div className="row sp rise" style={{"--d":"9","padding":"6px 4px 0"} as any}>
               <h2 style={{"fontSize":"24px","fontWeight":"600","letterSpacing":"-.6px"} as any}>
                 {"Three ways to plan the next 3 years"}
               </h2>
@@ -483,13 +487,10 @@ export default function NextScreen() {
                   </span>
                 </Link>
               </section>
-            </div>
+            </div></>) : null}
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.N.foot}

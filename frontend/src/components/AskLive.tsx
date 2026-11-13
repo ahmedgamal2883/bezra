@@ -1,4 +1,5 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 // Live Ask Bezra conversation (POST /chat). Every bubble and card reuses the V11 Ask screen's styles:
 // white bubble + mascot for Bezra, dark bubble for the farmer, water-tint "fact" row, two-up "compare" box,
 // orange "Ask Eng. Mona" button, source pills, and the typing dots while Bezra thinks.
@@ -6,7 +7,16 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { API, PV } from '@/lib/api';
 import { Mascot } from './chrome';
-import { EngName } from '@/lib/field';
+import { EngName, useUser } from '@/lib/field';
+
+/** Greeting with the signed-in farmer's first name. */
+function Hello() {
+  const { user } = useUser();
+  const tr = useT();
+  const n = (user?.name || '').split(' ')[0];
+  return <>{tr(`Hi${n ? ' ' + n : ''}! I'm Bezra 🌱 I watch your field with NASA satellites. Ask me anything.`,
+    `أهلاً${n ? ' يا ' + n : ''}! أنا بذرة 🌱 بشوف أرضك بأقمار ناسا. اسألني أي حاجة.`)}</>;
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Card = { type: 'fact' | 'compare' | 'engineer'; title: string; items: { label: string; value: string; highlight: boolean }[]; provenance: string };
@@ -123,20 +133,20 @@ export function LiveMessages({ msgs, busy, greeting }: { msgs: Msg[]; busy: bool
         <div className="row rise" style={{ '--d': '2', gap: '10px', alignItems: 'flex-end', maxWidth: '640px' } as React.CSSProperties}>
           <Mascot size={40} sway={false} />
           <div className="col" style={bubble}>
-            <p className="ar-t" lang="ar" dir="rtl" style={{ fontSize: '16px', lineHeight: '1.7' }}>{'أهلاً يا حاج حسن! أنا بذرة 🌱 بشوف أرضك بأقمار ناسا. اسألني أي حاجة.'}</p>
+            <p style={{ fontSize: '16px', lineHeight: '1.7' }}><Hello /></p>
           </div>
         </div>
       ) : null}
       {msgs.map((m, i) =>
         m.role === 'user' ? (
-          <div key={i} className="ar-t" dir="auto" style={{ alignSelf: 'flex-end', maxWidth: '460px', padding: '12px 16px', borderRadius: '18px 18px 6px 18px', background: 'var(--dark)', color: '#fff', fontSize: '16px', lineHeight: '1.6' }}>
+          <div key={i} dir="auto" style={{ alignSelf: 'flex-end', maxWidth: '460px', padding: '12px 16px', borderRadius: '18px 18px 6px 18px', background: 'var(--dark)', color: '#fff', fontSize: '16px', lineHeight: '1.6' }}>
             {m.text}
           </div>
         ) : (
           <div key={i} className="row" style={{ gap: '10px', alignItems: 'flex-end', maxWidth: '640px' }}>
             <Mascot size={40} sway={false} mood={MOOD[m.mood || 'happy'] || 'happy'} />
             <div className="col" style={bubble}>
-              <p className="ar-t" dir="auto" style={{ fontSize: '16px', lineHeight: '1.7' }}>{m.text}</p>
+              <p dir="auto" style={{ fontSize: '16px', lineHeight: '1.7' }}>{m.text}</p>
               {(m.cards || []).map((c, j) => <CardView key={j} c={c} />)}
               {m.error ? <span className="pill pv-demo" style={{ alignSelf: 'flex-start' }}>{'Not connected'}</span> : null}
               {m.sources && m.sources.length ? (

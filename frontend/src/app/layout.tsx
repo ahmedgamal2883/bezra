@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ModeProvider } from '@/lib/dc';
 import { FieldProvider } from '@/lib/field';
+import { LangProvider } from '@/lib/i18n';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,9 +24,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
-        <ModeProvider>
-          <FieldProvider>{children}</FieldProvider>
-        </ModeProvider>
+        <LangProvider>
+          <ModeProvider>
+            <FieldProvider>{children}</FieldProvider>
+          </ModeProvider>
+        </LangProvider>
       </body>
     </html>
   );

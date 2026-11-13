@@ -198,7 +198,7 @@ export function SatelliteAsk({ fieldId, details, onDone }: { fieldId: string; de
     <div className="col" style={{ gap: '8px', padding: '12px 14px', borderRadius: '12px', background: 'var(--inset)' }}>
       <span className="row sp" style={{ gap: '8px' }}>
         <span className="tl" style={{ fontWeight: 600 }}>{'Seen from space'}</span>
-        <span className="pill pv-demo">{'Beta'}</span>
+        <span className="pill pv-beta">{'Beta'}</span>
       </span>
       <b style={{ fontSize: '15px' }}>{`It looks like your field was watered between ${sd(ev.window_start)} and ${sd(ev.window_end)}. Is that right?`}</b>
       <div className="row wrap" style={{ gap: '4px' }}>

@@ -40,7 +40,7 @@ function fromData(D) {
     pos90: pos(D.windows['1990s']), posToday: pos(t), pos40: pos(D.windows['2040']),
     twins: D.twins.map((x) => [x.name, `${x.similarity}% same weather`, ' ' + x.practice]),
     srcSat: 'pill pv-sat', srcSatL: 'NASA POWER', src40L: '2040: trend',
-    foot: 'Hot days and sowing windows from NASA POWER 1990-2026. Twin practices and the three plans are Demo.',
+    foot: this.props.demo ? 'Hot days and sowing windows from NASA POWER 1990-2026. Twin practices and the three plans are Demo.' : 'Hot days, sowing windows and climate twins from NASA POWER 1990-2026.',
   };
 }
 

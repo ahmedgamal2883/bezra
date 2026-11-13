@@ -1,4 +1,5 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Sim.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Sim.logic.js (verbatim from the design).
@@ -6,6 +7,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useApi } from '@/lib/api';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Sim.logic';
@@ -59,6 +61,7 @@ export default function SimScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -200,7 +203,7 @@ export default function SimScreen() {
                         {__s(__v?.when)}
                       </span>
                       <span className="pill">
-                        {sim.data?.field ? `${sim.data.field.name}, ${sim.data.field.area_feddan} feddan` : "North plot, 2.4 feddan"}
+                        {sim.data?.field ? `${sim.data.field.name}, ${sim.data.field.area_feddan} feddan` : "…"}
                       </span>
                     </div>
                     <h3 className="h3">
@@ -482,10 +485,7 @@ export default function SimScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.foot}

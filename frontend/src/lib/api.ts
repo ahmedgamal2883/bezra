@@ -17,6 +17,13 @@ export type Loadable<T = any> = { data: T | null; loading: boolean; error: strin
 
 const memo = new Map<string, any>();
 
+// Demo farmer (Hassan) only: when a request fails, screens may fall back to the design's sample values.
+// Everyone else keeps the loading state (skeleton) and the request keeps retrying: no sample values, ever.
+let demoAccount = false;
+export function setDemoAccount(on: boolean) {
+  demoAccount = on;
+}
+
 export function useApi<T = any>(path: string | null, body?: unknown, fresh = false): Loadable<T> {
   const key = path ? path + (body ? JSON.stringify(body) : '') : '';
   if (fresh) memo.delete(key); // e.g. plan approval status: always ask again
@@ -45,7 +52,10 @@ export function useApi<T = any>(path: string | null, body?: unknown, fresh = fal
         .catch((e) => {
           if (!alive) return;
           if (n < 3) timer = setTimeout(() => attempt(n + 1), 3000 * (n + 1));
-          else setState({ data: null, loading: false, error: String(e.message || e) });
+          else if (!demoAccount && !String(e.message).startsWith('4')) {
+            setState({ data: null, loading: true, error: String(e.message || e) });
+            timer = setTimeout(() => attempt(0), 15000);
+          } else setState({ data: null, loading: false, error: String(e.message || e) });
         });
     attempt(0);
     return () => {

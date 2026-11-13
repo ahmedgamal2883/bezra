@@ -1,20 +1,21 @@
 'use client';
+import { useT } from '@/lib/i18n';
 // Chat with your engineer (Eng. Mona). Not in the V11 artboards; built from the Ask Bezra layout
 // (chat panel + side cards), the engineer avatar from Profile and the rules card from Ask.
 // Demo conversation: messages are kept in the page only, nothing is sent yet.
 import Link from 'next/link';
-import { useField, FieldWho, EngName } from '@/lib/field';
+import { useField, FieldWho, EngName, useDemo } from '@/lib/field';
 import { useState } from 'react';
 import { FarmerHeader, Foot, Mascot } from '@/components/chrome';
 
 type Msg = { from: 'mona' | 'me'; text: string; tag?: string };
 
-const START: Msg[] = [
-  { from: 'mona', text: 'أهلاً يا حاج حسن. استلمت خطة الموسم بتاعتك وهراجعها النهارده.' },
-  { from: 'me', text: 'تمام يا باشمهندسة. السماد التاني امتى؟' },
-  { from: 'mona', text: 'حوالي ٥ ديسمبر، بعد الرية على طول. الكمية هكتبهالك في الخطة بعد ما أشوف الأرض.' },
-  { from: 'me', text: 'أرش كام لتر مبيد للدودة؟', tag: 'Sent from Ask Bezra' },
-  { from: 'mona', text: 'متستعجلش. هعدّي عليك الخميس أشوف الركن اللي ضعيف وبعدها نقرر.' },
+const start = (tr: (en: string, ar?: string) => string): Msg[] => [
+  { from: 'mona', text: tr("Hello Hassan. I got your season plan and I'll review it today.", 'أهلاً يا حاج حسن. استلمت خطة الموسم بتاعتك وهراجعها النهارده.') },
+  { from: 'me', text: tr('Thanks. When is the second fertilizer?', 'تمام يا باشمهندسة. السماد التاني امتى؟') },
+  { from: 'mona', text: tr("Around 5 December, right after the watering. I'll write the amount in your plan after I see the field.", 'حوالي ٥ ديسمبر، بعد الرية على طول. الكمية هكتبهالك في الخطة بعد ما أشوف الأرض.') },
+  { from: 'me', text: tr('How many litres of pesticide should I spray for the worms?', 'أرش كام لتر مبيد للدودة؟'), tag: 'Sent from Ask Bezra' },
+  { from: 'mona', text: tr("No rush. I'll visit on Thursday to see the weak corner, then we decide.", 'متستعجلش. هعدّي عليك الخميس أشوف الركن اللي ضعيف وبعدها نقرر.') },
 ];
 
 const MonaAvatar = ({ size = 36 }: { size?: number }) => (
@@ -22,6 +23,10 @@ const MonaAvatar = ({ size = 36 }: { size?: number }) => (
 );
 
 export default function MessagesScreen() {
+  const tr = useT();
+  const demo = useDemo();
+  const { field } = useField();
+  const START = demo ? start(tr) : [];
   const { fp } = useField();
   const [msgs, setMsgs] = useState<Msg[]>(START);
   const [draft, setDraft] = useState('');
@@ -44,10 +49,10 @@ export default function MessagesScreen() {
                   <MonaAvatar size={48} />
                   <span className="col">
                     <b style={{ fontSize: '20px', fontWeight: 600 }}><EngName full /></b>
-                    <span className="tl">{'Extension, Shibin El Kom. Usually answers the same day.'}</span>
+                    <span className="tl">{demo ? 'Extension, Shibin El Kom. Usually answers the same day.' : 'Your engineer'}</span>
                   </span>
                 </span>
-                <span className="pill pv-demo">{'Demo chat'}</span>
+                {demo ? <span className="pill pv-demo">{'Demo chat'}</span> : null}
               </div>
               <div className="col" style={{ gap: '14px', flex: '1' }}>
                 {msgs.map((m, i) =>
@@ -55,13 +60,13 @@ export default function MessagesScreen() {
                     <div key={i} className="row rise" style={{ '--d': String(2 + i), gap: '10px', alignItems: 'flex-end', maxWidth: '640px' } as React.CSSProperties}>
                       <MonaAvatar />
                       <div className="col" style={{ gap: '8px', padding: '14px 16px', borderRadius: '18px 18px 18px 6px', background: '#fff', boxShadow: '0 1px 2px rgba(20,26,22,.05)' }}>
-                        <p className="ar-t" lang="ar" dir="rtl" style={{ fontSize: '16px', lineHeight: '1.7' }}>{m.text}</p>
+                        <p style={{ fontSize: '16px', lineHeight: '1.7' }}>{m.text}</p>
                       </div>
                     </div>
                   ) : (
                     <div key={i} className="col rise" style={{ '--d': String(2 + i), alignSelf: 'flex-end', alignItems: 'flex-end', gap: '4px', maxWidth: '460px' } as React.CSSProperties}>
                       {m.tag ? <span className="pill">{m.tag}</span> : null}
-                      <div className="ar-t" lang="ar" dir="rtl" style={{ padding: '12px 16px', borderRadius: '18px 18px 6px 18px', background: 'var(--dark)', color: '#fff', fontSize: '16px', lineHeight: '1.6' }}>{m.text}</div>
+                      <div style={{ padding: '12px 16px', borderRadius: '18px 18px 6px 18px', background: 'var(--dark)', color: '#fff', fontSize: '16px', lineHeight: '1.6' }}>{m.text}</div>
                     </div>
                   ),
                 )}
@@ -70,9 +75,9 @@ export default function MessagesScreen() {
                 <label className="vh" htmlFor="monaq">{'Your message'}</label>
                 <input
                   id="monaq"
-                  className="ar-t"
+                 
                   dir="rtl"
-                  placeholder="اكتب رسالتك للمهندسة"
+                  placeholder={tr('Write to your engineer', 'اكتب رسالتك للمهندسة')}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
@@ -89,7 +94,7 @@ export default function MessagesScreen() {
               <section className="card rise" style={{ '--d': '2' } as React.CSSProperties}>
                 <h2 className="h2"><>{'What '}<EngName />{' sees'}</></h2>
                 <div className="col" style={{ gap: '4px' }}>
-                  <div className="inset"><span>{'Field'}</span><b>{'North plot, wheat'}</b></div>
+                  <div className="inset"><span>{'Field'}</span><b>{field ? `${field.name}, ${field.crop.toLowerCase()}` : '…'}</b></div>
                   <div className="inset"><span>{'Stage'}</span><b>{'Tillering, day 30'}</b></div>
                   <div className="inset"><span>{'Season plan'}</span><b>{'Waiting for review'}</b></div>
                   <div className="inset"><span>{'Weak corner'}</span><b>{'NE, ~0.25 feddan'}</b></div>

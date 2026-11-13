@@ -139,7 +139,8 @@ def me(user: dict = Depends(current_user)):
         with db.conn() as k:
             r = k.execute("SELECT name FROM users WHERE id=?", (user["engineer_id"],)).fetchone()
         eng = r["name"] if r else None
-    return user | {"engineer_name": eng, "fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
+    demo = user["email"] == os.environ.get("DEMO_FARMER_EMAIL", "hassan@demo.bezra.app")
+    return user | {"demo": demo, "engineer_name": eng, "fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
 
 
 @app.get("/demo")
@@ -155,7 +156,8 @@ def demo_login():
 def _field_card(f: dict) -> dict:
     return {"id": f["id"], "num": f.get("num"), "name": f["name"], "crop": fields.CROP_LABEL.get(f["crop"], f["crop"]),
             "area_feddan": f["area_feddan"], "farmer": f["farmer"], "village": f.get("village"),
-            "governorate": f.get("governorate"), "lat": f["lat"], "lon": f["lon"]}
+            "governorate": f.get("governorate"), "lat": f["lat"], "lon": f["lon"],
+            "accuracy": fields.accuracy(f)["pct"]}
 
 
 @app.get("/status/apis")
@@ -202,7 +204,10 @@ def add_field(req: NewField, user: dict = Depends(current_user)):
 
 @app.get("/fields/{field_id}")
 def get_field(field_id: str, user: dict = Depends(current_user)):
-    return _ctx(field_id, user).f
+    f = _ctx(field_id, user).f
+    return f | {"accuracy": fields.accuracy(f), "crop_label": fields.CROP_LABEL.get(f["crop"], f["crop"]),
+                "variety_label": (fields.VARIETIES.get(f.get("variety") or "") or {}).get("label"),
+                "demo": f.get("farmer") == "Hassan Farouk" and f["id"] in ("north-plot", "south-plot")}
 
 
 @app.get("/fields/{field_id}/summary")

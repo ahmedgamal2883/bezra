@@ -1,7 +1,9 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 // Shared page chrome copied 1:1 from the V11 screens (header, footer, mascot), for the screens
 // that were added later (sign in, messages, report). Uses the same classes as the design.
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import type { ReactNode } from 'react';
 import { useMode } from '@/lib/dc';
@@ -80,6 +82,7 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
         <EngineerTab />
       </nav>
       <div className="tools">
+        <DataLive />
         <div role="group" aria-label="Detail level" className="seg">
           <button type="button" className={'segb press' + (details ? '' : ' on')} onClick={() => setDetails(false)} aria-pressed={!details}>{'Simple'}</button>
           <button type="button" className={'segb press' + (details ? ' on' : '')} onClick={() => setDetails(true)} aria-pressed={details}>{'Details'}</button>
@@ -106,8 +109,7 @@ export function Foot({ note = 'All numbers on this screen are demo data.' }: { n
   return (
     <footer className="foot">
       <span>
-        <span lang="ar" dir="rtl" className="ar-t">{'الأداة دي بتساعدك تفكر، مش بتقرر بدالك.'}</span>
-        {" Bezra helps you think. It doesn't decide for you."}
+        <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
       </span>
       <span>
         {note}

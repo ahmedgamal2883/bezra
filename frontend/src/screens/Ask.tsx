@@ -1,17 +1,20 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Ask.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Ask.logic.js (verbatim from the design).
 import { Fragment, useState } from 'react';
 import { useApi } from '@/lib/api';
 import { LiveMessages, useAskChat, useMic } from '@/components/AskLive';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab, EngName } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, EngName, useDemo } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Ask.logic';
 
 export default function AskScreen() {
+  const tr = useT();
   const { fp, id } = useField();
   const __v = useDC(Logic);
   // Ask Bezra: POST /chat (step 3). Without a Claude API key the design's sample conversation stays as Demo.
@@ -22,7 +25,8 @@ export default function AskScreen() {
   const [draft, setDraft] = useState('');
   const mic = useMic((t) => setDraft(t));
   const sendDraft = () => { if (draft.trim()) { chat.send(draft); setDraft(''); } };
-  const showDemo = !ready && chat.msgs.length === 0;
+  const demo = useDemo();
+  const showDemo = demo && !ready && chat.msgs.length === 0;
   return (
     <>
       <div className="root">
@@ -64,6 +68,7 @@ export default function AskScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -115,8 +120,8 @@ export default function AskScreen() {
                       </g>
                     </svg>
                     <span className="col">
-                      <b className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                        {"اسأل بذرة"}
+                      <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
+                        <T en="Ask Bezra" ar="اسأل بذرة" />
                       </b>
                       <span className="tl">
                         {"Answers from your field's data. Says so when it doesn't know."}
@@ -151,13 +156,13 @@ export default function AskScreen() {
                       </g>
                     </svg>
                     <div className="col" style={{"gap":"8px","padding":"14px 16px","borderRadius":"18px 18px 18px 6px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                      <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
-                        {"أهلاً يا حاج حسن! أنا بذرة 🌱 بشوف أرضك بأقمار ناسا. اسألني أي حاجة."}
+                      <p style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
+                        <T en="Hi Hassan! I&apos;m Bezra 🌱 I watch your field with NASA satellites. Ask me anything." ar="أهلاً يا حاج حسن! أنا بذرة 🌱 بشوف أرضك بأقمار ناسا. اسألني أي حاجة." />
                       </p>
                     </div>
                   </div>
-                  <div className="rise ar-t" lang="ar" dir="rtl" style={{"--d":"3","alignSelf":"flex-end","maxWidth":"460px","padding":"12px 16px","borderRadius":"18px 18px 6px 18px","background":"var(--dark)","color":"#fff","fontSize":"16px","lineHeight":"1.6"} as any}>
-                    {"أروي ولا لأ النهارده؟"}
+                  <div className="rise" style={{"--d":"3","alignSelf":"flex-end","maxWidth":"460px","padding":"12px 16px","borderRadius":"18px 18px 6px 18px","background":"var(--dark)","color":"#fff","fontSize":"16px","lineHeight":"1.6"} as any}>
+                    <T en="Should I water today?" ar="أروي ولا لأ النهارده؟" />
                   </div>
                   <div className="row rise" style={{"--d":"4","gap":"10px","alignItems":"flex-end","maxWidth":"640px"} as any}>
                     <svg aria-hidden="true" width="40" height="40" viewBox="0 0 60 60">
@@ -177,8 +182,8 @@ export default function AskScreen() {
                       </g>
                     </svg>
                     <div className="col" style={{"gap":"8px","padding":"14px 16px","borderRadius":"18px 18px 18px 6px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                      <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
-                        {"لأ، استنى نوبتك يوم الخميس. الأرض عندها 38% مية، والقمح في مرحلة التفريع، فمتفوتش النوبة دي."}
+                      <p style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
+                        <T en="No, wait for your turn on Thursday. The soil has 38% water and the wheat is tillering, so don&apos;t miss that turn." ar="لأ، استنى نوبتك يوم الخميس. الأرض عندها 38% مية، والقمح في مرحلة التفريع، فمتفوتش النوبة دي." />
                       </p>
                       <div className="inset" style={{"background":"var(--water-tint)"} as any}>
                         <span style={{"color":"var(--water)"} as any}>
@@ -206,8 +211,8 @@ export default function AskScreen() {
                       </span>
                     </div>
                   </div>
-                  <div className="rise ar-t" lang="ar" dir="rtl" style={{"--d":"5","alignSelf":"flex-end","maxWidth":"460px","padding":"12px 16px","borderRadius":"18px 18px 6px 18px","background":"var(--dark)","color":"#fff","fontSize":"16px","lineHeight":"1.6"} as any}>
-                    {"طب لو زرعت السنة الجاية متأخر أسبوعين؟"}
+                  <div className="rise" style={{"--d":"5","alignSelf":"flex-end","maxWidth":"460px","padding":"12px 16px","borderRadius":"18px 18px 6px 18px","background":"var(--dark)","color":"#fff","fontSize":"16px","lineHeight":"1.6"} as any}>
+                    <T en="What if I sow two weeks later next year?" ar="طب لو زرعت السنة الجاية متأخر أسبوعين؟" />
                   </div>
                   <div className="row rise" style={{"--d":"6","gap":"10px","alignItems":"flex-end","maxWidth":"640px"} as any}>
                     <svg aria-hidden="true" width="40" height="40" viewBox="0 0 60 60">
@@ -227,8 +232,8 @@ export default function AskScreen() {
                       </g>
                     </svg>
                     <div className="col" style={{"gap":"8px","padding":"14px 16px","borderRadius":"18px 18px 18px 6px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                      <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
-                        {"جربتلك ده في المحاكي. لو اتأخرت أسبوعين، المحصول متوقع يقل حوالي 8%، عشان طرد الحبوب هييجي في حر أبريل."}
+                      <p style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
+                        <T en="I tried it in the simulator. Two weeks later, the harvest is expected to drop about 8%, because grain filling lands in the April heat." ar="جربتلك ده في المحاكي. لو اتأخرت أسبوعين، المحصول متوقع يقل حوالي 8%، عشان طرد الحبوب هييجي في حر أبريل." />
                       </p>
                       <Link href="/sim" className="lift" style={{"display":"grid","gridTemplateColumns":"1fr 1fr","gap":"6px","padding":"8px","borderRadius":"12px","background":"var(--inset)"} as any}>
                         <span className="col" style={{"padding":"8px 10px","borderRadius":"8px","background":"#fff"} as any}>
@@ -258,8 +263,8 @@ export default function AskScreen() {
                       </span>
                     </div>
                   </div>
-                  <div className="rise ar-t" lang="ar" dir="rtl" style={{"--d":"7","alignSelf":"flex-end","maxWidth":"460px","padding":"12px 16px","borderRadius":"18px 18px 6px 18px","background":"var(--dark)","color":"#fff","fontSize":"16px","lineHeight":"1.6"} as any}>
-                    {"أرش كام لتر مبيد للدودة؟"}
+                  <div className="rise" style={{"--d":"7","alignSelf":"flex-end","maxWidth":"460px","padding":"12px 16px","borderRadius":"18px 18px 6px 18px","background":"var(--dark)","color":"#fff","fontSize":"16px","lineHeight":"1.6"} as any}>
+                    <T en="How many litres of pesticide should I spray for the worms?" ar="أرش كام لتر مبيد للدودة؟" />
                   </div>
                   <div className="row rise" style={{"--d":"8","gap":"10px","alignItems":"flex-end","maxWidth":"640px"} as any}>
                     <svg aria-hidden="true" width="40" height="40" viewBox="0 0 60 60">
@@ -280,8 +285,8 @@ export default function AskScreen() {
                       </g>
                     </svg>
                     <div className="col" style={{"gap":"8px","padding":"14px 16px","borderRadius":"18px 18px 18px 6px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                      <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
-                        {"دي جرعة لازم مهندسك يحددها، أنا مش بدي جرعات. ممكن أبعت سؤالك لم. منى دلوقتي."}
+                      <p style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
+                        <T en="Your engineer has to set that dose. I don&apos;t give doses. I can send your question to your engineer now." ar="دي جرعة لازم مهندسك يحددها، أنا مش بدي جرعات. ممكن أبعت سؤالك لم. منى دلوقتي." />
                       </p>
                       <Link href="/messages" className="btn sun sm press" style={{"alignSelf":"flex-start"} as any}>
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -318,17 +323,17 @@ export default function AskScreen() {
                 </>
                 ) : <LiveMessages msgs={chat.msgs} busy={chat.busy} greeting />}
                 <div className="row wrap rise" style={{"--d":"10","gap":"6px","justifyContent":"flex-end"} as any}>
-                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl" onClick={() => chat.send("ليه لازم أزرع بدري؟")} disabled={chat.busy}>
-                    {"ليه لازم أزرع بدري؟"}
+                  <button type="button" className="btn line sm press" onClick={() => chat.send(tr('Why should I sow early?', 'ليه لازم أزرع بدري؟'))} disabled={chat.busy}>
+                    <T en="Why should I sow early?" ar="ليه لازم أزرع بدري؟" />
                   </button>
-                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl" onClick={() => chat.send("يعني إيه NDVI؟")} disabled={chat.busy}>
-                    {"يعني إيه NDVI؟"}
+                  <button type="button" className="btn line sm press" onClick={() => chat.send(tr('What does greenness mean?', 'يعني إيه NDVI؟'))} disabled={chat.busy}>
+                    <T en="What does greenness mean?" ar="يعني إيه NDVI؟" />
                   </button>
-                  <Link href="/sim" className="btn line sm press ar-t" lang="ar" dir="rtl">
-                    {"جرّب في المحاكي"}
+                  <Link href="/sim" className="btn line sm press">
+                    <T en="Try it in the simulator" ar="جرّب في المحاكي" />
                   </Link>
-                  <Link href="/messages" className="btn line sm press ar-t" lang="ar" dir="rtl">
-                    {"كلّم المهندس"}
+                  <Link href="/messages" className="btn line sm press">
+                    <T en="Talk to your engineer" ar="كلّم المهندس" />
                   </Link>
                 </div>
                 <div className="row rise" style={{"--d":"11","gap":"8px","padding":"6px","borderRadius":"999px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.06)"} as any}>
@@ -340,7 +345,7 @@ export default function AskScreen() {
                   <label className="vh" htmlFor="askq">
                     {"Your question"}
                   </label>
-                  <input id="askq" className="ar-t" dir="auto" placeholder="اكتب سؤالك أو دوس على المايك" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendDraft(); }} style={{"flex":"1","height":"44px","border":"0","outline":"0","fontSize":"16px","background":"transparent","fontFamily":"inherit"} as any} />
+                  <input id="askq" dir="auto" placeholder={tr('Type your question or tap the mic', 'اكتب سؤالك أو دوس على المايك')} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendDraft(); }} style={{"flex":"1","height":"44px","border":"0","outline":"0","fontSize":"16px","background":"transparent","fontFamily":"inherit"} as any} />
                   <button type="button" className="ibtn press" aria-label="Send" onClick={sendDraft} disabled={chat.busy} style={{"background":"var(--dark)","color":"#fff"} as any}>
                     <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12 20 5l-4 15-4-6zM12 14l8-9" />
@@ -360,7 +365,7 @@ export default function AskScreen() {
                         {"Field"}
                       </span>
                       <b>
-                        {S ? `${S.field.name}, ${S.field.crop.toLowerCase()}` : "North plot, wheat"}
+                        {S ? `${S.field.name}, ${S.field.crop.toLowerCase()}` : "…"}
                       </b>
                     </div>
                     <div className="inset">
@@ -506,10 +511,7 @@ export default function AskScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {ready ? "Answers by Claude from your field's NASA data. Check them with your engineer." : "All numbers on this screen are demo data."}

@@ -1,4 +1,5 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Engineer.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Engineer.logic.js (verbatim from the design).
@@ -6,6 +7,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useApi, API } from '@/lib/api';
 import { useField, FieldWho, UserName, UserInitials, useUser } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Engineer.logic';
@@ -81,6 +83,7 @@ export default function EngineerScreen() {
               </Link>
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -371,10 +374,7 @@ export default function EngineerScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.foot}

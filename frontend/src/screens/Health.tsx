@@ -1,12 +1,14 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Health.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Health.logic.js (verbatim from the design).
 import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { sendCase } from '@/lib/photos';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, useDemo } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -15,7 +17,8 @@ import Logic from './Health.logic';
 export default function HealthScreen() {
   const { fp, id } = useField();
   const health = useApi(`/fields/${id}/health`);
-  const __v = useDC(Logic, { data: health.data, ndvi: health.data?.ndvi, loading: health.loading, fieldId: id });
+  const demo = useDemo();
+  const __v = useDC(Logic, { demo, data: health.data, ndvi: health.data?.ndvi, loading: health.loading, fieldId: id });
   // "Take a photo" -> POST /cases -> open the case on Diagnose (step 6).
   const router = useRouter();
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -77,6 +80,7 @@ export default function HealthScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -126,7 +130,7 @@ export default function HealthScreen() {
                 ))}
               </div>
             </div>
-            <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
+            <nav aria-label="Field sections" className="tabs rise" style={{"--d":"0"} as any}>
               <Link href={fp("")}>
                 {"Today"}
               </Link>
@@ -338,7 +342,7 @@ export default function HealthScreen() {
                       {"Satellite"}
                     </span>
                   </div>
-                  <svg viewBox="0 0 320 150" width="100%" role="img" aria-label="Greenness this season tracks slightly above the 5 year average for North plot.">
+                  <svg viewBox="0 0 320 150" width="100%" role="img" aria-label="Greenness this season compared with the 5 year average for your field.">
                     <g stroke="#EDEDE9">
                       <path d="M0 30H320M0 70H320M0 110H320" />
                     </g>
@@ -478,10 +482,7 @@ export default function HealthScreen() {
             ) : null}
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.H.foot}

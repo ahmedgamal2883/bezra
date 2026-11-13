@@ -108,3 +108,29 @@ def from_drawing(d: dict) -> dict:
         "turn_days": int(d.get("turn_days") or 10), "next_turn": d.get("next_turn"), "waterings": [],
         "tenure": d.get("tenure") or "owner", "soil": "clay",
     }
+
+
+# ---- how much Bezra knows about a field (Profile / Onboarding "accuracy") ----------------------------
+def accuracy(f: dict) -> dict:
+    """Accuracy grows with every answer (V11 Profile: Level 1 basics, Level 2 more accurate, Level 3 expert).
+    Points: location 30; Level 1 (crop, sowing date, last crop, tenure, water source, turn) 2 each;
+    Level 2 variety 5, last yields 6, past problems 3, mesqa position 2; Level 3 soil test 12, water EC 10,
+    sensors 8; field drawn on the map 5; a watering logged in the last 30 days 5. Max 100."""
+    from datetime import date, timedelta
+    pts, missing = 30, []
+    for k in ("crop", "sow_date", "prev_crop", "tenure", "water_source", "turn_days"):
+        pts += 2 if f.get(k) else 0
+    for k, n, label in (("variety", 5, "Variety"), ("yields", 6, "Last 3 yields"), ("problems", 3, "Past problems"),
+                        ("mesqa_position", 2, "Mesqa position"), ("soil_ec", 12, "Lab soil test"),
+                        ("water_ec", 10, "Water EC"), ("sensors", 8, "Sensors"), ("polygon", 5, "Field drawn on the map")):
+        if f.get(k):
+            pts += n
+        else:
+            missing.append(label)
+    recent = (date.today() - timedelta(days=30)).isoformat()
+    if any(w["date"] >= recent for w in f.get("waterings", [])):
+        pts += 5
+    else:
+        missing.append("A watering logged in the last 30 days")
+    pts = min(100, pts)
+    return {"pct": pts, "level": "high" if pts >= 75 else ("medium" if pts > 40 else "low"), "missing": missing}

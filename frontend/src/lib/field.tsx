@@ -3,11 +3,11 @@
 // Field pages (/field/[id]/...) set the current field; every screen builds its links with fp().
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { API } from './api';
+import { API, setDemoAccount } from './api';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type FieldCard = { id: string; num?: string; name: string; crop: string; area_feddan: number; farmer: string; village?: string; governorate?: string; lat: number; lon: number };
-export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin'; engineer_name?: string | null };
+export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin'; engineer_name?: string | null; demo?: boolean };
 
 type Ctx = { user: User | null; fields: FieldCard[]; loaded: boolean; id: string; setId: (id: string) => void; reload: () => void };
 const C = createContext<Ctx>({ user: null, fields: [], loaded: false, id: '', setId: () => {}, reload: () => {} });
@@ -25,7 +25,10 @@ export function FieldProvider({ children }: { children: ReactNode }) {
     try {
       const me = await fetch(API + '/auth/me');
       if (!me.ok) { setUser(null); setFields([]); return; }
-      setUser(await me.json());
+      const u: User = await me.json();
+      setDemoAccount(!!u.demo);
+      document.documentElement.dataset.demo = u.demo ? '1' : '0';
+      setUser(u);
       const fl: FieldCard[] = await (await fetch(API + '/fields')).json();
       fl.forEach((f) => { FIELD_NAMES[f.id] = f.name; });
       setFields(fl);
@@ -37,7 +40,12 @@ export function FieldProvider({ children }: { children: ReactNode }) {
   }, []);
   // reload after signing in / out (the page changes)
   useEffect(() => { load(); }, [load, path === '/sign-in']); // eslint-disable-line react-hooks/exhaustive-deps
-  return <C.Provider value={{ user, fields, loaded, id, setId, reload: load }}>{children}</C.Provider>;
+  // A farmer without a field yet goes to Onboarding from any field screen.
+  const needsField = loaded && user?.role === 'farmer' && fields.length === 0 && /^\/(field|sim|ask|plan|report)/.test(path || '');
+  useEffect(() => { if (needsField) window.location.replace('/onboarding'); }, [needsField]);
+  // Nothing renders until we know who is signed in: no other person's name or field ever flashes on screen.
+  const ready = loaded && !needsField;
+  return <C.Provider value={{ user, fields, loaded, id, setId, reload: load }}>{ready ? children : <div className="root" aria-busy="true" />}</C.Provider>;
 }
 
 export function SetField({ id }: { id: string }) {
@@ -58,7 +66,7 @@ export function useField() {
   const params = useParams();
   // the field in the address, else the last one opened, else the user's own first field
   const own = ctx.fields.find((f) => ctx.user && f.farmer === ctx.user.name) || ctx.fields[0];
-  const id = (typeof params?.id === 'string' ? params.id : '') || ctx.id || own?.id || 'north-plot';
+  const id = (typeof params?.id === 'string' ? params.id : '') || ctx.id || own?.id || '';
   const field = ctx.fields.find((f) => f.id === id);
   const fp = (tab = '') => `/field/${id}${tab}`;
   return { id, name: field?.name || FIELD_NAMES[id] || id, field, fp };
@@ -76,18 +84,25 @@ export function FieldWho() {
 export function EngName({ full = false }: { full?: boolean }) {
   const { user } = useUser();
   const n = user?.role === 'farmer' ? user.engineer_name : user?.name;
-  if (!n) return <>{full ? 'Eng. Mona Adel' : (user ? 'your engineer' : 'Eng. Mona')}</>;
+  if (!n) return <>{user ? (full ? 'No engineer yet' : 'your engineer') : (full ? 'Eng. Mona Adel' : 'Eng. Mona')}</>;
   return <>{'Eng. ' + (full ? n : n.split(' ')[0])}</>;
+}
+
+/** Demo content (the design's sample values) is only for the demo farmer Hassan and his two fields. */
+export function useDemo() {
+  const { user } = useUser();
+  const { id } = useField();
+  return !!user?.demo || id === 'north-plot' || id === 'south-plot';
 }
 
 export function UserName() {
   const { user } = useUser();
-  return <>{user?.name || 'Hassan Farouk'}</>;
+  return <>{user?.name || ''}</>;
 }
 
 export function UserInitials() {
   const { user } = useUser();
-  const n = user?.name || 'Hassan Farouk';
+  const n = user?.name || '';
   return <>{n.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase()}</>;
 }
 

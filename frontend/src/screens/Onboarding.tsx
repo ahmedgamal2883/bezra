@@ -1,4 +1,5 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // From design/html/V11-Onboarding.html (layout and copy 1:1 for step 2, "Basics").
 // Steps 1, 3 and 4 of the design's own step bar are built from the same parts:
@@ -34,11 +35,11 @@ const Mascot = () => (
   </svg>
 );
 
-const Bubble = ({ ar, sub }: { ar: string; sub: string }) => (
+const Bubble = ({ en, ar, sub }: { en: string; ar: string; sub: string }) => (
   <div className="row" style={{ gap: '12px', alignItems: 'flex-start' }}>
     <Mascot />
     <div className="col" style={{ gap: '6px', padding: '12px 16px', borderRadius: '6px 18px 18px 18px', background: 'var(--inset)' }}>
-      <span className="ar-t" lang="ar" dir="rtl" style={{ fontSize: '18px', fontWeight: '600' }}>{ar}</span>
+      <span style={{ fontSize: '18px', fontWeight: '600' }}><T en={en} ar={ar} /></span>
       <span className="tl">{sub}</span>
     </div>
   </div>
@@ -95,6 +96,7 @@ const BackIcon = () => (
 );
 
 export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: number }) {
+  const tr = useT();
   const { fp } = useField();
   const __v = useDC(Logic, { initialStep });
   const step: number = __v.step;
@@ -103,7 +105,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
   const [drawing, setDrawing] = useState(false);
   const [q, setQ] = useState('');
   const [place, setPlace] = useState('');
-  const [name, setName] = useState('North plot');
+  const [name, setName] = useState('');
   const [sow, setSow] = useState(iso(new Date()));
   const [prev, setPrev] = useState('Maize');
   const [nextTurn, setNextTurn] = useState(iso(new Date(Date.now() + 10 * 86400000)));
@@ -135,7 +137,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
   const accuracy = (
     <div className="col" style={{ gap: '8px', padding: '14px', borderRadius: '12px', background: 'var(--sun-tint)' }}>
       <div className="row sp">
-        <span className="ar-t" lang="ar" dir="rtl" style={{ fontSize: '15px', fontWeight: '600' }}>{__s(__v?.accAr)}</span>
+        <span style={{ fontSize: '15px', fontWeight: '600' }}>{__v.acc >= 75 ? tr('High accuracy', 'دقة عالية') : __v.acc > 40 ? tr('Medium accuracy', 'دقة متوسطة') : tr('Low accuracy', 'دقة قليلة')}</span>
         <b>{__s(__v?.acc)}{'%'}</b>
       </div>
       <span style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,.7)', overflow: 'hidden' }}>
@@ -203,8 +205,8 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
                 </svg>
-                <input className="ar-t" dir="auto" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') find(); }}
-                  placeholder="شبين الكوم، المنوفية" aria-label="Search your village" style={{ flex: '1', minWidth: 0, fontSize: '15px', border: 0, background: 'transparent', outline: 'none', color: 'var(--ink)' }} />
+                <input dir="auto" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') find(); }}
+                  placeholder={tr('Shibin El Kom, Menoufia', 'شبين الكوم، المنوفية')} aria-label="Search your village" style={{ flex: '1', minWidth: 0, fontSize: '15px', border: 0, background: 'transparent', outline: 'none', color: 'var(--ink)' }} />
                 <button type="button" className="btn sm press" aria-pressed={drawing} onClick={() => { if (!drawing) mapRef.current?.draw(); }}>
                   <Icon d={I.pencil} />
                   {drawing ? (corners.length >= 3 ? 'Tap first corner' : 'Tap corners') : 'Draw'}
@@ -231,7 +233,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
             <section key={step} className="col rise" style={{ '--d': '2', gap: '18px', padding: '26px', borderRadius: 'var(--r-hero)', background: '#fff' } as any}>
               {step === 1 ? (
                 <>
-                  <Bubble ar="فين أرضك؟" sub="Find your field, then draw its edges" />
+                  <Bubble en="Where is your field?" ar="فين أرضك؟" sub="Find your field, then draw its edges" />
                   <div className="col" style={{ gap: '8px' }}>
                     <span className="h2">{'How to draw it'}</span>
                     {[
@@ -246,7 +248,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                     ))}
                   </div>
                   <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <InField label="Field name" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} icon={I.pencil} />
+                    <InField label="Field name" value={name} placeholder="e.g. Home plot" onChange={(e) => setName(e.target.value)} maxLength={40} icon={I.pencil} />
                     <Field label="Area" value={hasField ? fed.toFixed(1) + ' feddan' : 'Draw it first'} icon={I.list} />
                   </div>
                   <div className="row" style={{ gap: '12px', padding: '14px', borderRadius: '12px', background: 'var(--sun-tint)', color: '#5A3B0B', fontSize: '14px', lineHeight: '1.45' }}>
@@ -262,7 +264,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
 
               {step === 2 ? (
                 <>
-                  <Bubble ar="قولي زرعت إيه؟" sub="Level 1 of 3, about 2 minutes" />
+                  <Bubble en="What did you plant?" ar="قولي زرعت إيه؟" sub="Level 1 of 3, about 2 minutes" />
                   <div className="col" style={{ gap: '8px' }}>
                     <span className="h2">{'Crop this season'}</span>
                     <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
@@ -295,7 +297,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
 
               {step === 3 ? (
                 <>
-                  <Bubble ar="عايز نصايح أدق؟" sub="Level 2 of 3, optional, about 2 minutes" />
+                  <Bubble en="Want sharper advice?" ar="عايز نصايح أدق؟" sub="Level 2 of 3, optional, about 2 minutes" />
                   <div className="col" style={{ gap: '8px' }}>
                     <span className="h2">{'Variety'}</span>
                     <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
@@ -326,7 +328,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
 
               {step === 4 ? (
                 <>
-                  <Bubble ar="عندك تحليل تربة؟" sub="Level 3 of 3, optional" />
+                  <Bubble en="Do you have a soil test?" ar="عندك تحليل تربة؟" sub="Level 3 of 3, optional" />
                   <div className="col" style={{ gap: '10px' }}>
                     <Field label="Lab soil test (ECe)" value="Not yet" icon={I.flask} />
                     <Field label="Water EC" value="Not yet" icon={I.drop} />

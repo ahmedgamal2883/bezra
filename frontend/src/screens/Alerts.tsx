@@ -1,10 +1,12 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Alerts.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Alerts.logic.js (verbatim from the design).
 import { Fragment } from 'react';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
+import DataLive from '@/components/DataLive';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -55,6 +57,7 @@ export default function AlertsScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
+              <DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -106,7 +109,7 @@ export default function AlertsScreen() {
                 </span>
               </div>
             </div>
-            <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
+            <nav aria-label="Field sections" className="tabs rise" style={{"--d":"0"} as any}>
               <Link href={fp("")}>
                 {"Today"}
               </Link>
@@ -357,8 +360,8 @@ export default function AlertsScreen() {
                     ))}
                   </div>
                   <span className="col" style={{"alignItems":"flex-end"} as any}>
-                    <span className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"14px"} as any}>
-                      {"رسالة صوتية من بذرة"}
+                    <span style={{"fontSize":"14px"} as any}>
+                      <T en="Voice message from Bezra" ar="رسالة صوتية من بذرة" />
                     </span>
                     <span style={{"fontSize":"12px","color":"rgba(255,255,255,.65)"} as any}>
                       {__v.voiceLen}
@@ -444,10 +447,7 @@ export default function AlertsScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {__v.foot}

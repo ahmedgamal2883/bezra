@@ -1,4 +1,5 @@
 'use client';
+import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Landing.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Landing.logic.js (verbatim from the design).
@@ -32,7 +33,7 @@ export default function LandingScreen() {
                 <button type="button" className="segb on">
                   {"English"}
                 </button>
-                <button type="button" className="segb ar-t">
+                <button type="button" className="segb">
                   {"العربية"}
                 </button>
               </div>
@@ -53,8 +54,8 @@ export default function LandingScreen() {
                 <h1 className="rise" style={{"--d":"1","fontSize":"68px","lineHeight":"1","fontWeight":"600","letterSpacing":"-2.6px"} as any}>
                   {"Try your season before you plant it."}
                 </h1>
-                <p className="ar-t rise" lang="ar" dir="rtl" style={{"--d":"2","alignSelf":"flex-start","fontSize":"26px","fontWeight":"600","color":"var(--ink2)"} as any}>
-                  {"جرّب موسمك قبل ما تزرعه"}
+                <p className="rise" style={{"--d":"2","alignSelf":"flex-start","fontSize":"26px","fontWeight":"600","color":"var(--ink2)"} as any}>
+                  <T en="Try your season before you plant it" ar="جرّب موسمك قبل ما تزرعه" />
                 </p>
                 <p className="rise" style={{"--d":"3","fontSize":"18px","lineHeight":"1.55","color":"var(--ink2)","maxWidth":"520px"} as any}>
                   {"Bezra shows your real field from space. Then you test sowing dates, water and varieties, and watch the result grow month by month, before you spend a pound."}
@@ -260,10 +261,7 @@ export default function LandingScreen() {
             </div>
             <footer className="foot">
               <span>
-                <span lang="ar" dir="rtl" className="ar-t">
-                  {"الأداة دي بتساعدك تفكر، مش بتقرر بدالك."}
-                </span>
-                {" Bezra helps you think. It doesn't decide for you."}
+                <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
                 {"All numbers on this screen are demo data."}

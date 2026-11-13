@@ -62,7 +62,7 @@ export function todayTexts(D, fieldId) {
     afterLabel: D.after_turn.label, after: D.after_turn.value != null ? `About ${Math.round(D.after_turn.value / 5) * 5}% full` : '—',
     yearRange: `Oct ${yr} to Sep ${yr + 1}`, todayLeft: `calc(${D.year.today_week + 0.5} / 52 * 100%)`, yearNote: D.year.note,
     powerLag: `${lag} day${lag === 1 ? '' : 's'} lag`, forecast: fcGen ? `Updated ${fcGen.slice(11, 16)}` : 'Not available',
-    foot: 'Weather from NASA POWER and Open-Meteo. Map, greenness, pests and plan are still Demo.',
+    foot: 'Weather from NASA POWER and Open-Meteo. Greenness from NASA HLS and ESA Sentinel-2. Plan from your field and your log.',
     pvEst: PV.estimated, pvSat: PV.satellite, pvFarm: PV.farmer,
     gaugeLabel: `Root zone water gauge: ${sw} percent. Refill point 50 percent.`,
   };
@@ -97,11 +97,15 @@ const CL = [{ fill: 'url(#hatch)', label: 'Less green', sw: 'background: repeati
 const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = KL ? KL[r][c] : (v < .55 ? 0 : (v < .64 ? 1 : 2)), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v == null ? "–" : v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
 
 const view = S.view;
-const cells = mkCells(view === 'green');
+// No clear image of this field yet (new field) and not the demo farmer: plain squares, no sample greenness.
+const NOIMG = !SQ && !this.props.demo;
+const cells = mkCells(view === 'green').map((c) => (NOIMG ? Object.assign({}, c, { fill: '#FFFFFF', op: '.12', label: '' }) : c));
 const views = [{ id: 'photo', label: 'Satellite photo' }, { id: 'green', label: 'Crop health' }].map((v) => ({ label: v.label, pressed: String(view === v.id), pick: () => set({ view: v.id }), cls: 'segb press' + (view === v.id ? ' on' : '') }));
 // ---- real data from GET /fields/{id}/summary (step 2). T = texts shown; design values when there is no data.
 const D = this.props.data, L = !!this.props.loading;
-const T = todayTexts(D, this.props.fieldId);
+const T0 = todayTexts(D, this.props.fieldId);
+// Not the demo farmer: never show the design's sample texts while loading.
+const T = (!D && !this.props.demo) ? Object.assign({}, T0, { eyebrow: '', hello: '', num: '', name: '', cropLine: '', foot: '', title: '…', body: '' }) : T0;
 const soilFrac = D && D.soil_water.value != null ? D.soil_water.value / 100 : .38;
 const gauge = []; const cx = 120, cy = 100, R = 82, N = 14;
 const pt = (f) => { const a = Math.PI * (1 - f); return [cx + R * Math.cos(a), cy - R * Math.sin(a)]; };
@@ -126,11 +130,11 @@ if (D) {
 for (let w = 0; w < 52; w++) { let bg = '#C9B26A', h = 30 + Math.min(w, 20) * 1.6; if (w >= 28 && w < 30) bg = 'bare'; else if (w >= 30 && w < 50) { bg = '#6E9A4A'; h = 56; } else if (w >= 50) bg = 'bare'; const hot = (w >= 27 && w <= 28) || (w >= 38 && w <= 44 && w % 2 === 0); let st = '--i:' + w + '; flex: 1 1 0; min-width: 0; border-radius: 3px; height: ' + (bg === 'bare' ? 16 : h) + 'px; '; st += bg === 'bare' ? 'background: repeating-linear-gradient(45deg,#D7D4CB 0 2px,#fff 2px 4px); box-shadow: inset 0 0 0 1px #D7D4CB;' : 'background: ' + (hot ? '#F29B1E' : bg) + ';' + (w > 4 && !hot ? ' opacity: .55;' : ''); if (w === 4) st += ' background: #141A16; height: 72px; opacity: 1;'; weeks.push({ style: st }); }
 return { parcels: this._map.parcels, rowed: this._map.rowed, houses: this._map.houses, cells, views, gauge, weeks, dim: view === 'green', showNum: details && view === 'green',
 legend: CL.map((c) => ({ label: c.label, sw: 'width: 14px; height: 10px; border-radius: 3px; ' + c.sw })),
-legendNote: details ? (SQ ? sourceShort(this.props.ndvi) + ', NDVI vs your field' : 'NASA HLS NDVI, 30 m squares, vs your area') : 'Compared with the rest of your field',
-stamp: SQ ? (view === 'green' ? 'Image from ' + shortDate(this.props.ndvi.date) + ', ' + this.props.ndvi.days_ago + ' days ago' : 'Satellite pass ' + shortDate(this.props.ndvi.date)) : (view === 'green' ? 'Image from 10 Nov, 4 days ago' : 'Satellite pass 10 Nov'),
-pin: pinFor(this.props.ndvi), mapLive: !!SQ,
-mapLabel: SQ ? (this.props.ndvi.weak_spot ? 'Your field from above, 12 squares of 30 metres. The ' + this.props.ndvi.weak_spot.where + ' is less green.' : 'Your field from above, 12 squares of 30 metres. No weak spot in the last two images.') : 'North plot from above, 12 squares of 30 metres. The north east corner is less green than normal.',
-green: SQ ? (details ? SQ.median.toFixed(2) : greenWord(this.props.health)) : (details ? '0.61' : 'Normal'), greenU: details ? ' NDVI' : '',
+legendNote: details ? (SQ ? sourceShort(this.props.ndvi) + ', NDVI vs your field' : 'NASA HLS NDVI, 30 m squares, vs your area') : 'Each square is 30 × 30 m of your field, seen from space. Colour: greenness compared with the rest of your field.',
+stamp: NOIMG ? 'Waiting for the first clear satellite image' : SQ ? (view === 'green' ? 'Image from ' + shortDate(this.props.ndvi.date) + ', ' + this.props.ndvi.days_ago + ' days ago' : 'Satellite pass ' + shortDate(this.props.ndvi.date)) : (view === 'green' ? 'Image from 10 Nov, 4 days ago' : 'Satellite pass 10 Nov'),
+pin: pinFor(this.props.ndvi), mapLive: !!SQ, noImg: NOIMG,
+mapLabel: NOIMG ? 'Your field from above. Waiting for the first clear satellite image.' : SQ ? (this.props.ndvi.weak_spot ? 'Your field from above, 12 squares of 30 metres. The ' + this.props.ndvi.weak_spot.where + ' is less green.' : 'Your field from above, 12 squares of 30 metres. No weak spot in the last two images.') : 'North plot from above, 12 squares of 30 metres. The north east corner is less green than normal.',
+green: NOIMG ? '–' : SQ ? (details ? SQ.median.toFixed(2) : greenWord(this.props.health)) : (details ? '0.61' : 'Normal'), greenU: details ? ' NDVI' : '',
 doneP: String(!!S.done), doneLabel: S.done ? 'Done, thanks' : T.doneLabel, doneCls: 'btn press' + (S.done ? ' soft' : ''), toggleDone: () => set({ done: !S.done }),
 T, sk: 'sk ' + (L ? 'hold' : ''), skMap: 'sk map' + (L ? ' hold' : '') };
  })();
