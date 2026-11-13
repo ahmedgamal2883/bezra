@@ -31,7 +31,7 @@ def field(fid, num, name, gov, village, lat, lon, area, crop, variety, sow, mesq
             "log": [{"kind": k, "date": d, "source": "You"} for k, d in log]}
 
 
-# Farmers and their fields. Coordinates are on cropland (checked against Sentinel-2 greenness in checkpoint 5).
+# Farmers and their fields. Coordinates are on cropland: checked in checkpoint 5, MODIS greenness peak last winter >= 0.56 at every field.
 FARMERS = [
     ("hassan@demo.bezra.app", "Hassan Farouk", [FIELDS["north-plot"], FIELDS["south-plot"]]),
     ("samia@demo.bezra.app", "Samia Ibrahim", [field(
@@ -41,10 +41,10 @@ FARMERS = [
         "ahmed-beheira", "01", "Big field", "Beheira", "Damanhour", 30.9900, 30.4300, 3.0, "wheat", "giza171",
         "2026-11-01", "head", 10, "2026-11-21", [("2026-11-01", 700), ("2026-11-11", 640)])]),
     ("fathy@demo.bezra.app", "Fathy Nour", [field(
-        "fathy-fayoum", "01", "Home plot", "Fayoum", "Sinnuris", 29.3800, 30.7800, 1.2, "wheat", "giza171",
+        "fathy-fayoum", "01", "Home plot", "Fayoum", "Sinnuris", 29.4000, 30.8600, 1.2, "wheat", "giza171",
         "2026-11-10", "middle", 14, "2026-11-24", [("2026-11-10", 300)])]),
     ("omkarim@demo.bezra.app", "Om Karim", [field(
-        "omkarim-minya", "01", "River plot", "Minya", "Minya", 28.1500, 30.7000, 0.9, "wheat", "sakha95",
+        "omkarim-minya", "01", "River plot", "Minya", "Minya", 28.1500, 30.6600, 0.9, "wheat", "sakha95",
         "2026-10-28", "head", 10, "2026-11-17", [("2026-10-28", 230), ("2026-11-07", 210)])]),
     ("mahmoud@demo.bezra.app", "Mahmoud Adel", [field(
         "mahmoud-quesna", "01", "East plot", "Menoufia", "Quesna", 30.5600, 31.1400, 2.0, "wheat", "sakha95",

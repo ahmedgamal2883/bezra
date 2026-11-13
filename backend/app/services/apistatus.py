@@ -80,6 +80,11 @@ def _dem():
          headers={"Range": "bytes=0-15"})
 
 
+def _s1():
+    _get("https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-rtc")
+    _get("https://planetarycomputer.microsoft.com/api/sas/v1/token/sentinel-1-rtc")
+
+
 def _esri():
     _get("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/14/6796/9601")
 
@@ -103,8 +108,8 @@ APIS = [
     ("NASA ECOSTRESS (AppEEARS)", "Crop surface temperature (Details)", _appeears_layer("ecostress"), ""),
     ("Copernicus DEM GLO-30", "Slope and low spots", _dem, ""),
     ("Claude API", "Ask Bezra, photo check", _claude, ""),
-    ("Esri World Imagery", "Real satellite photo map", _esri, "Planned: checkpoint 3 (onboarding map)"),
-    ("Sentinel-1 RTC (ESA, extra)", "Irrigation detection (Beta)", None, "Planned: checkpoint 5"),
+    ("Esri World Imagery", "Real satellite photo map (onboarding)", _esri, ""),
+    ("Sentinel-1 RTC (ESA, extra)", "Irrigation detection (Beta)", _s1, ""),
     ("NASA GPM IMERG", "Rain that fell", None, "Rain comes from NASA POWER for now"),
     ("NASA SRTM (AppEEARS)", "Slope and low spots", None, "Copernicus DEM used instead (same 30 m)"),
     ("ISRIC SoilGrids", "Soil type", None, "Soil is a default guess for now"),

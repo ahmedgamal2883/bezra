@@ -170,3 +170,52 @@ export function LogSheet({ fieldId, open, onClose, onSaved }: { fieldId: string;
     document.body,
   );
 }
+
+const SIG: Record<string, string> = { NDMI: 'Moisture jump (NASA HLS / Sentinel-2)', S1: 'Radar jump (ESA Sentinel-1, extra)', LST: 'Cooler surface (NASA ECOSTRESS)' };
+
+/** Phase 2 §B, Beta: "It looks like your field was watered between X and Y. Is that right?" [Yes, on ...] [No]. */
+export function SatelliteAsk({ fieldId, details, onDone }: { fieldId: string; details: boolean; onDone: () => void }) {
+  const [ev, setEv] = useState<any>(null);
+  const [day, setDay] = useState('');
+  const [done, setDone] = useState('');
+  useEffect(() => {
+    let alive = true;
+    fetch(`${API}/fields/${fieldId}/irrigation`, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (alive && j?.ask) { setEv(j.ask); setDay(j.ask.window_end); } }).catch(() => {});
+    return () => { alive = false; };
+  }, [fieldId]);
+  if (!ev) return null;
+  const sd = (s: string) => new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  if (done) return <div className="inset" style={{ fontSize: '14px' }}>{done}</div>;
+  const days: string[] = [];
+  for (let d = new Date(ev.window_start + 'T00:00:00'); iso(d) <= ev.window_end; d = new Date(d.getTime() + 86400000)) days.push(iso(d));
+  const send = async (yes: boolean) => {
+    const r = await fetch(`${API}/fields/${fieldId}/irrigation/${ev.id}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ yes, on: yes ? day : null }) });
+    if (r.ok) { setDone(yes ? `Saved: watered on ${sd(day)}. Thanks.` : 'Thanks. Bezra will not count it.'); onDone(); }
+  };
+  return (
+    <div className="col" style={{ gap: '8px', padding: '12px 14px', borderRadius: '12px', background: 'var(--inset)' }}>
+      <span className="row sp" style={{ gap: '8px' }}>
+        <span className="tl" style={{ fontWeight: 600 }}>{'Seen from space'}</span>
+        <span className="pill pv-demo">{'Beta'}</span>
+      </span>
+      <b style={{ fontSize: '15px' }}>{`It looks like your field was watered between ${sd(ev.window_start)} and ${sd(ev.window_end)}. Is that right?`}</b>
+      <div className="row wrap" style={{ gap: '4px' }}>
+        {days.map((d) => (
+          <button key={d} type="button" className="press" aria-pressed={day === d} onClick={() => setDay(d)}
+            style={{ height: '32px', padding: '0 8px', border: 0, borderRadius: '9px', fontSize: '12px', fontWeight: 600, background: day === d ? '#17251C' : '#fff', color: day === d ? '#fff' : '#141A16' }}>{sd(d)}</button>
+        ))}
+      </div>
+      <span className="row" style={{ gap: '6px' }}>
+        <button type="button" className="btn sm press" style={{ flex: 1 }} onClick={() => send(true)}>{`Yes, on ${sd(day)}`}</button>
+        <button type="button" className="btn soft sm press" onClick={() => send(false)}>{'No'}</button>
+      </span>
+      <span className="row wrap" style={{ gap: '4px' }}>
+        <span className="pill pv-sat">{'Satellite'}</span>
+        <span className="tl">{`Confidence ${ev.confidence.toLowerCase()}`}</span>
+      </span>
+      {details ? <span className="tl">{ev.signals.map((s: string) => SIG[s]).join(' + ') + (ev.detail?.ndmi_rise ? `, NDMI +${ev.detail.ndmi_rise}` : '') + '. No rain in between.'}</span> : null}
+    </div>
+  );
+}

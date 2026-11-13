@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from . import config  # noqa: F401  (loads backend/.env)
 from . import db, fields
 from .chat import bezra
-from .services import alerts, apistatus, plan, calendar, cases, engineer, nextseason, satellite, sim, summary
+from .services import alerts, apistatus, irrigation, plan, calendar, cases, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 COOKIE = "bezra_session"
@@ -245,6 +245,26 @@ def post_log(field_id: str, req: LogReq, user: dict = Depends(current_user)):
     except ValueError as e:
         raise HTTPException(422, str(e))
     return entry
+
+
+@app.get("/fields/{field_id}/irrigation")
+def get_irrigation(field_id: str, user: dict = Depends(current_user)):
+    """Beta: waterings seen from space (NDMI jump, radar, surface temperature) waiting for the farmer's yes / no."""
+    return irrigation.detect(_ctx(field_id, user))
+
+
+class DetectAnswer(BaseModel):
+    yes: bool
+    on: str | None = None
+
+
+@app.post("/fields/{field_id}/irrigation/{event_id}")
+def post_irrigation(field_id: str, event_id: str, req: DetectAnswer, user: dict = Depends(current_user)):
+    c = _ctx(field_id, user)
+    try:
+        return irrigation.answer(c, event_id, req.yes, req.on)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
 
 
 @app.get("/fields/{field_id}/health")

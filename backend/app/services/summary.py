@@ -24,6 +24,9 @@ def _next_turn(c: Ctx) -> date:
 
 def _plan_turns(c: Ctx, next_turn: date, skip: date | None = None) -> set[date]:
     past = {date.fromisoformat(x["date"]) for x in c.f["waterings"]}
+    # Phase 2 §B: a watering the satellites saw but the farmer has not answered yet counts as "Satellite (unconfirmed)"
+    from .irrigation import unconfirmed_dates
+    past |= {d for d in unconfirmed_dates(c) if d <= c.today}
     future = set(season.turns(next_turn, c.f["turn_days"], c.today + timedelta(days=240)))
     if skip:
         future.discard(skip)

@@ -25,7 +25,7 @@ def test_case_goes_to_engineer_without_model(monkeypatch, tmp_path):
     out = cases.create(_Ctx(), ["data:image/png;base64," + PNG], "Yellow leaves")
     assert out["status"] == "sent_to_engineer" and out["photos"] == 1 and out["seen"] == "Yellow leaves"
     assert cases.photo_path(out["id"], 0).exists()
-    assert out["follow_up"]["due"] == "2026-11-20"
+    assert out["follow_up"]["due"] == (__import__("datetime").date.today() + __import__("datetime").timedelta(days=7)).isoformat()
 
 
 def test_bad_inputs_are_refused(tmp_path, monkeypatch):

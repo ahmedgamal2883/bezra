@@ -28,7 +28,8 @@ FIELDS: dict[str, dict] = {
         "sow_date": "2026-10-20", "prev_crop": "maize", "prev_crop_harvest": None,
         "water_source": "Mesqa, head end", "mesqa_position": "head", "turn_days": 10,
         "next_turn": "2026-11-17",
-        "waterings": [{"date": "2026-10-20", "m3": 150}, {"date": "2026-10-28", "m3": 120}, {"date": "2026-11-07", "m3": 130}],
+        "waterings": [{"date": "2026-10-20", "m3": 150}, {"date": "2026-10-28", "m3": 120}],
+        # the 7 Nov watering is not logged: the satellites see it (NDMI jump 3 -> 8 Nov) and Bezra asks (Beta)
         "tenure": "owner", "soil": "clay",
     },
 }

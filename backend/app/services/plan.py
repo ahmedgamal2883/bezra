@@ -120,6 +120,10 @@ def build(c: Ctx) -> dict:
     nt, base, _ = season_runs(c)
     ripe = base.ripe or (c.sow + timedelta(days=150))
     log = log_entries(f)
+    # Phase 2 §B: waterings seen from space but not answered yet count, marked "Satellite (unconfirmed)"
+    from .irrigation import unconfirmed_dates
+    sat = [d for d in unconfirmed_dates(c) if d <= today]
+    log = sorted(log + [{"kind": "water", "date": d.isoformat(), "source": "Satellite (unconfirmed)"} for d in sat], key=lambda x: x["date"])
     used: set = set()
     tasks: list[dict] = []
 
@@ -175,7 +179,9 @@ def build(c: Ctx) -> dict:
         status = _status(t, done, today)
         if decision == "skip" and not done and t < today:
             status = "Done"  # skipping a "can skip" turn is following the plan
+        src = next((x.get("source") for x in log if done and x["kind"] == "water" and x["date"] == done.isoformat()), None)
         task(f"turn-{t.isoformat()}", "water", title, why, t, status=status, done=done, benefit=benefit,
+             note={"Satellite (unconfirmed)": "Seen by satellite, not confirmed", "Satellite + You": "Satellite + You"}.get(src),
              amount={"m3": m3, "label": f"about {m3:.0f} m³"} if decision != "skip" else None,
              source="FAO-56 water balance, NASA POWER + Open-Meteo")
 

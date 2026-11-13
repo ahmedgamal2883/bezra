@@ -10,7 +10,7 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Field.logic';
 import { useState as useStateP } from 'react';
-import { usePlan, StatusLine, MoreTasks, Changed, LogSheet, logAction } from '@/components/PlanToday';
+import { usePlan, StatusLine, MoreTasks, Changed, LogSheet, logAction, SatelliteAsk } from '@/components/PlanToday';
 
 export default function FieldScreen() {
   const { fp, id } = useField();
@@ -461,6 +461,7 @@ export default function FieldScreen() {
                 </div>
                 <MoreTasks plan={plan} fieldId={id} skipWater onDone={reload} />
                 <Changed plan={plan} details={!!__v?.details} />
+                <SatelliteAsk fieldId={id} details={!!__v?.details} onDone={reload} />
                 <button type="button" className="btn soft sm press" onClick={() => setSheet(true)}>{'+ Log what you did'}</button>
               </article>
               <LogSheet fieldId={id} open={sheet} onClose={() => setSheet(false)} onSaved={() => { reload(); }} />
