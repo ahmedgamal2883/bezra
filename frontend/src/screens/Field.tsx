@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import AboutLink from '@/components/AboutLink';
 import Logic from './Field.logic';
 
 export default function FieldScreen() {
@@ -89,7 +90,7 @@ export default function FieldScreen() {
                 </h1>
               </div>
               <div role="list" aria-label="Your fields" className="row rise" style={{"--d":"1","gap":"8px"} as any}>
-                <a href="#" className="press lift" aria-current="true" style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":"0 0 0 2px #141A16"} as any}>
+                <Link href="/field/north-plot" className="press lift" aria-current="true" style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":"0 0 0 2px #141A16"} as any}>
                   <span className="col" style={{"gap":"1px"} as any}>
                     <span className="tl" style={{"fontWeight":"600"} as any}>
                       {"#01"}
@@ -107,7 +108,7 @@ export default function FieldScreen() {
                     <rect x="48" width="16" height="48" fill="#B1A584" />
                     <rect x="21" y="9" width="24" height="30" fill="#fff" fillOpacity=".2" stroke="#fff" strokeWidth="2" />
                   </svg>
-                </a>
+                </Link>
                 <a href="#" className="press lift" aria-current="false" style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
                   <span className="col" style={{"gap":"1px"} as any}>
                     <span className="tl" style={{"fontWeight":"600"} as any}>
@@ -971,6 +972,7 @@ export default function FieldScreen() {
               </span>
               <span>
                 {"All numbers on this screen are demo data."}
+                <AboutLink />
               </span>
             </footer>
           </main>

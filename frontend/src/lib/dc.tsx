@@ -29,7 +29,12 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   return <ModeCtx.Provider value={{ details, setDetails }}>{children}</ModeCtx.Provider>;
 }
 
-type LogicClass = new (p: any) => DCLogic & { renderVals(): any };
+// For hand-built screens (outside the design's logic classes).
+export function useMode() {
+  return useContext(ModeCtx);
+}
+
+type LogicClass =new (p: any) => DCLogic & { renderVals(): any };
 
 export function useDC(Logic: LogicClass, extraProps: Record<string, unknown> = {}): any {
   const { details, setDetails } = useContext(ModeCtx);

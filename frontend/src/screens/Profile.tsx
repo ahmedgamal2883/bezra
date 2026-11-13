@@ -2,13 +2,16 @@
 /* eslint-disable */
 // Generated from design/html/V11-Profile.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Profile.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import AboutLink from '@/components/AboutLink';
+import DeleteDataDialog from '@/components/DeleteDataDialog';
 import Logic from './Profile.logic';
 
 export default function ProfileScreen() {
   const __v = useDC(Logic);
+  const [delOpen, setDelOpen] = useState(false);
   return (
     <>
       <div className="root">
@@ -94,12 +97,12 @@ export default function ProfileScreen() {
                 </div>
               </div>
               <div className="row rise" style={{"--d":"1","gap":"8px"} as any}>
-                <a href="#" className="btn line press">
+                <Link href="/report" className="btn line press">
                   <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />
                   </svg>
                   {"Season report, PDF"}
-                </a>
+                </Link>
               </div>
             </div>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 380px","alignItems":"start"} as any}>
@@ -312,7 +315,7 @@ export default function ProfileScreen() {
                         </span>
                       </div>
                     </div>
-                    <Link href="/onboarding" className="btn soft cta press">
+                    <Link href="/onboarding?step=3" className="btn soft cta press">
                       {"Complete level 2"}
                       <span className="ar">
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -368,7 +371,7 @@ export default function ProfileScreen() {
                         </span>
                       </div>
                     </div>
-                    <Link href="/onboarding" className="btn soft cta press">
+                    <Link href="/onboarding?step=4" className="btn soft cta press">
                       {"Complete level 3"}
                       <span className="ar">
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -490,7 +493,7 @@ export default function ProfileScreen() {
                       </span>
                     </span>
                   </div>
-                  <Link href="/ask" className="btn soft cta press">
+                  <Link href="/messages" className="btn soft cta press">
                     {"Message Eng. Mona"}
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -507,7 +510,7 @@ export default function ProfileScreen() {
                   <p className="sub">
                     {"Bezra keeps your field shape, answers and logs to make advice fit. It never sells them."}
                   </p>
-                  <button type="button" className="btn line sm press" style={{"alignSelf":"flex-start","color":"var(--risk)"} as any}>
+                  <button type="button" className="btn line sm press" onClick={() => setDelOpen(true)} style={{"alignSelf":"flex-start","color":"var(--risk)"} as any}>
                     {"Delete my data"}
                   </button>
                 </section>
@@ -522,10 +525,12 @@ export default function ProfileScreen() {
               </span>
               <span>
                 {"All numbers on this screen are demo data."}
+                <AboutLink />
               </span>
             </footer>
           </main>
         </div>
+      <DeleteDataDialog open={delOpen} onClose={() => setDelOpen(false)} />
       </div>
     </>
   );

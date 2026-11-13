@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import AboutLink from '@/components/AboutLink';
 import Logic from './Plan.logic';
 
 export default function PlanScreen() {
@@ -692,7 +693,7 @@ export default function PlanScreen() {
                       </p>
                     </>
                   ) : null}
-                  <Link href="/engineer" className="btn soft cta press">
+                  <Link href="/messages" className="btn soft cta press">
                     {"Ask Eng. Mona"}
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -740,6 +741,7 @@ export default function PlanScreen() {
               </span>
               <span>
                 {"All numbers on this screen are demo data."}
+                <AboutLink />
               </span>
             </footer>
           </main>

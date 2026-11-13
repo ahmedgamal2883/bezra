@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import AboutLink from '@/components/AboutLink';
 import Logic from './States.logic';
 
 export default function StatesScreen() {
@@ -343,6 +344,7 @@ export default function StatesScreen() {
               </span>
               <span>
                 {"All numbers on this screen are demo data."}
+                <AboutLink />
               </span>
             </footer>
           </main>

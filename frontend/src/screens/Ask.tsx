@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import AboutLink from '@/components/AboutLink';
 import Logic from './Ask.logic';
 
 export default function AskScreen() {
@@ -266,12 +267,12 @@ export default function AskScreen() {
                       <p className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"16px","lineHeight":"1.7"} as any}>
                         {"دي جرعة لازم مهندسك يحددها، أنا مش بدي جرعات. ممكن أبعت سؤالك لم. منى دلوقتي."}
                       </p>
-                      <button type="button" className="btn sun sm press" style={{"alignSelf":"flex-start"} as any}>
+                      <Link href="/messages" className="btn sun sm press" style={{"alignSelf":"flex-start"} as any}>
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0" />
                         </svg>
                         {"Ask Eng. Mona"}
-                      </button>
+                      </Link>
                     </div>
                   </div>
                   <div className="row rise" style={{"--d":"9","gap":"10px","alignItems":"center"} as any}>
@@ -305,12 +306,12 @@ export default function AskScreen() {
                   <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl">
                     {"يعني إيه NDVI؟"}
                   </button>
-                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl">
+                  <Link href="/sim" className="btn line sm press ar-t" lang="ar" dir="rtl">
                     {"جرّب في المحاكي"}
-                  </button>
-                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl">
+                  </Link>
+                  <Link href="/messages" className="btn line sm press ar-t" lang="ar" dir="rtl">
                     {"كلّم المهندس"}
-                  </button>
+                  </Link>
                 </div>
                 <div className="row rise" style={{"--d":"11","gap":"8px","padding":"6px","borderRadius":"999px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.06)"} as any}>
                   <button type="button" className="ibtn press" aria-label="Speak" style={{"background":"var(--sun)"} as any}>
@@ -494,6 +495,7 @@ export default function AskScreen() {
               </span>
               <span>
                 {"All numbers on this screen are demo data."}
+                <AboutLink />
               </span>
             </footer>
           </main>

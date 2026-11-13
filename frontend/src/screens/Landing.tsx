@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import AboutLink from '@/components/AboutLink';
 import Logic from './Landing.logic';
 
 export default function LandingScreen() {
@@ -31,7 +32,7 @@ export default function LandingScreen() {
                   {"العربية"}
                 </button>
               </div>
-              <Link href="/field/north-plot" className="btn soft press">
+              <Link href="/sign-in" className="btn soft press">
                 {"Sign in"}
               </Link>
             </div>
@@ -256,6 +257,7 @@ export default function LandingScreen() {
               </span>
               <span>
                 {"All numbers on this screen are demo data."}
+                <AboutLink />
               </span>
             </footer>
           </main>
