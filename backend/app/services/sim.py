@@ -17,6 +17,7 @@ from ..engine.season import MM_TO_M3_PER_FEDDAN
 from .context import Ctx
 
 SEASONS = range(1990, 2026)
+SEASON_DAYS = {"maize": 125}  # FAO-56 Table 11, grain maize (days)
 
 
 def _add_months(d: date, k: int) -> date:
@@ -56,8 +57,11 @@ def _irrigation_rule(sow: date, every: int, watering: str):
 def run_one(c: Ctx, sow_md: tuple[int, int], variety: str, watering: str, season_year: int):
     sow = date(season_year + (1 if sow_md[0] < 6 else 0), *sow_md)
     rule, skipped = _irrigation_rule(sow, c.f["turn_days"], watering)
-    r = season.run(c.w.historical, sow, variety=fields.VARIETIES[variety], irrigate=rule, skipped=skipped,
+    wheat = c.f["crop"] == "wheat"  # the field's own crop; variety traits only apply to wheat
+    r = season.run(c.w.historical, sow, crop=c.f["crop"], variety=fields.VARIETIES[variety] if wheat else None, irrigate=rule, skipped=skipped,
                    every=c.f["turn_days"], lat=c.f["lat"])
+    if not r.ripe and not wheat:  # the warmth model ripens wheat only; maize: FAO-56 typical season length
+        r.ripe = sow + timedelta(days=SEASON_DAYS.get(c.f["crop"], 125))
     return sow, r, skipped
 
 
@@ -69,6 +73,7 @@ def _cells(c: Ctx):
         nd = satellite.ndvi(c)
     except Exception:
         return None
+    c.__dict__["_ground"] = {"date": nd.get("date"), "source": nd.get("source")} if nd.get("available") else None
     if not nd.get("available"):
         return None
     med = nd["indices"]["ndvi"]["median"]
@@ -132,7 +137,9 @@ def build(c: Ctx, req: dict) -> dict:
     return {
         "yield_pct": y_pct, "yield_range": [round(q[0]), round(q[2])],
         "water_m3_per_feddan": int(round(r.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1)),
-        "hot_days_grain_fill": hot, "steps": steps, "cells": _cells(c),
+        "hot_days_grain_fill": hot, "steps": steps, "cells": _cells(c), "ground": c.__dict__.get("_ground"),
+        "field": {"name": c.f["name"], "area_feddan": c.f["area_feddan"], "crop": fields.CROP_LABEL[c.f["crop"]],
+                  "harvest_year": yr + 1, "next_harvest": (sow.year + 1) if sow.month >= 6 else sow.year},
         "season_year": f"{yr}-{yr + 1}", "years_used": len(all_y),
         "factors": {k: round(v, 3) if isinstance(v, float) else v for k, v in r.factors.items()},
         "skipped_turns": [d.isoformat() for d in sorted(skipped)],

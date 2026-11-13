@@ -92,7 +92,7 @@ export default function SimScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"Next season on North plot, wheat 2027. Nothing changes on your real field."}
+                  {sim.data?.field ? `Next season on ${sim.data.field.name}, ${sim.data.field.crop.toLowerCase()} ${new Date().getMonth() >= 5 ? new Date().getFullYear() + 1 : new Date().getFullYear()}. Nothing changes on your real field.` : "Next season on your field. Nothing changes on your real field."}
                 </span>
                 <h1 className="h1">
                   {"Try your season first"}
@@ -101,7 +101,7 @@ export default function SimScreen() {
               <div className="row rise" style={{"--d":"1","gap":"8px"} as any}>
                 <span className="pill" style={{"height":"30px","padding":"0 12px","fontSize":"12.5px"} as any}>
                   <span style={{"width":"8px","height":"8px","borderRadius":"4px","background":"#8C9C5A"} as any} />
-                  {"Ground: satellite image, 12 Nov"}{" "}<span className="pill pv-demo" style={{ height: "18px" }}>Demo</span>
+                  {sim.data?.ground?.date ? <>{"Ground: satellite image, " + new Date(sim.data.ground.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}{" "}<span className="pill pv-sat" style={{ height: "18px" }}>Satellite</span></> : <>{"Ground: satellite image, 12 Nov"}{" "}<span className="pill pv-demo" style={{ height: "18px" }}>Demo</span></>}
                 </span>
                 <span className="pill pv-est" style={{"height":"30px","padding":"0 12px","fontSize":"12.5px"} as any}>
                   {"Crop: simulated"}
@@ -200,7 +200,7 @@ export default function SimScreen() {
                         {__s(__v?.when)}
                       </span>
                       <span className="pill">
-                        {"North plot, 2.4 feddan"}
+                        {sim.data?.field ? `${sim.data.field.name}, ${sim.data.field.area_feddan} feddan` : "North plot, 2.4 feddan"}
                       </span>
                     </div>
                     <h3 className="h3">
