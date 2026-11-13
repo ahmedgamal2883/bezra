@@ -13,7 +13,9 @@ import Logic from './Field.logic';
 export default function FieldScreen() {
   const { fp, id } = useField();
   const summary = useApi(`/fields/${id}/summary`);
-  const __v = useDC(Logic, { data: summary.data, loading: summary.loading, fieldId: id });
+  const ndvi = useApi(`/fields/${id}/ndvi`);
+  const health = useApi(`/fields/${id}/health`);
+  const __v = useDC(Logic, { data: summary.data, loading: summary.loading, fieldId: id, ndvi: ndvi.data, health: health.data });
   return (
     <>
       <div className="root">
@@ -259,10 +261,12 @@ export default function FieldScreen() {
                   {" "}
                   <rect x="605" y="120" width="160" height="220" fill="none" stroke="#141A16" strokeWidth="2" />
                   {" "}
-                  <g transform="translate(738 147) rotate(9)">
+                  {__v.pin ? (
+                  <g transform={__v.pin}>
                     <circle r="9" fill="#F29B1E" className="pulse" />
                     <circle r="9" fill="#F29B1E" stroke="#FFFFFF" strokeWidth="3" />
                   </g>
+                  ) : null}
                   {" "}
                 </g>
                 {" "}
@@ -489,7 +493,7 @@ export default function FieldScreen() {
               </div>
               <span className="float" style={{"position":"absolute","right":"18px","bottom":"18px","height":"34px","padding":"0 12px","borderRadius":"17px","display":"flex","alignItems":"center","gap":"8px","fontSize":"13px","fontWeight":"500"} as any}>
                 <span style={{"width":"7px","height":"7px","borderRadius":"4px","background":"#2E8B4A"} as any} />
-                {__s(__v?.stamp)}{" "}<span className="pill pv-demo">Demo</span>
+                {__s(__v?.stamp)}{__v.mapLive ? null : <>{" "}<span className="pill pv-demo">Demo</span></>}
               </span>
             </section>
             <section aria-label="Risks this week" className="grid" style={{"gridTemplateColumns":"repeat(4, minmax(0, 1fr))"} as any}>
@@ -637,8 +641,8 @@ export default function FieldScreen() {
                     </small>
                   </span>
                   <span className="row wrap" style={{"gap":"4px"} as any}>
-                    <span className="pill pv-demo">
-                      {"Demo"}
+                    <span className={__v.mapLive ? "pill pv-sat" : "pill pv-demo"}>
+                      {__v.mapLive ? "Satellite" : "Demo"}
                     </span>
                     <span className="pill">
                       {"Your field"}
@@ -647,7 +651,7 @@ export default function FieldScreen() {
                   {__v?.details ? (
                     <>
                       <span className="tl" style={{"fontSize":"11px"} as any}>
-                        {"NASA HLS v2.0, 30 m, 10 Nov"}
+                        {__v.mapLive ? __v.legendNote.split(",")[0] + ", " + __v.stamp.replace("Image from ", "").split(",")[0] : "NASA HLS v2.0, 30 m, 10 Nov"}
                       </span>
                     </>
                   ) : null}
@@ -921,13 +925,13 @@ export default function FieldScreen() {
                     </div>
                     <div className="inset" style={{"flexDirection":"column","alignItems":"flex-start","gap":"4px"} as any}>
                       <span>
-                        {"HLS v2.0"}
+                        {__v.mapLive && !String(ndvi.data?.source).startsWith("NASA") ? "Sentinel-2" : "HLS v2.0"}
                       </span>
                       <b>
                         {"Greenness, 30 m"}
                       </b>
                       <span className="tl">
-                        {__v.T.demo ? "Image 10 Nov" : "Demo until step 4"}
+                        {__v.mapLive ? "Image " + __v.stamp.replace("Image from ", "").split(",")[0] : (__v.T.demo ? "Image 10 Nov" : "Not connected")}
                       </span>
                     </div>
                     <div className="inset" style={{"flexDirection":"column","alignItems":"flex-start","gap":"4px"} as any}>

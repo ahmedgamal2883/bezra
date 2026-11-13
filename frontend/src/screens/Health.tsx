@@ -5,13 +5,15 @@
 import { Fragment } from 'react';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Health.logic';
 
 export default function HealthScreen() {
-  const { fp } = useField();
-  const __v = useDC(Logic);
+  const { fp, id } = useField();
+  const health = useApi(`/fields/${id}/health`);
+  const __v = useDC(Logic, { data: health.data, ndvi: health.data?.ndvi, loading: health.loading, fieldId: id });
   return (
     <>
       <div className="root">
@@ -85,7 +87,7 @@ export default function HealthScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"North plot. Latest clear image 10 November, HLS 30 m."}
+                  {__v.H.eyebrow}
                 </span>
                 <h1 className="h1">
                   {"Field health"}
@@ -222,10 +224,12 @@ export default function HealthScreen() {
                     {" "}
                     <rect x="605" y="120" width="160" height="220" fill="none" stroke="#141A16" strokeWidth="2" />
                     {" "}
-                    <g transform="translate(738 147) rotate(9)">
+                    {__v.pin ? (
+                    <g transform={__v.pin}>
                       <circle r="9" fill="#F29B1E" className="pulse" />
                       <circle r="9" fill="#F29B1E" stroke="#FFFFFF" strokeWidth="3" />
                     </g>
+                    ) : null}
                     {" "}
                   </g>
                   {" "}
@@ -255,8 +259,8 @@ export default function HealthScreen() {
                   ) : null}
                 </div>
                 <span className="float" style={{"position":"absolute","right":"18px","top":"18px","height":"34px","padding":"0 12px","borderRadius":"17px","display":"flex","alignItems":"center","gap":"8px","fontSize":"13px","fontWeight":"500"} as any}>
-                  <span className="pill pv-sat">
-                    {"Satellite"}
+                  <span className={__v.H.pv}>
+                    {__v.H.pvL}
                   </span>
                   {__s(__v?.idxNote)}
                 </span>
@@ -265,19 +269,19 @@ export default function HealthScreen() {
                 <section className="card rise " style={{"--d":"3"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"3"} as any} />
                   <div className="row sp">
-                    <span className="lv lv-med">
+                    <span className={__v.H.pillCls}>
                       <i />
-                      {"Check this spot"}
+                      {__v.H.pill}
                     </span>
                     <span className="tl">
-                      {"NE corner, ~0.25 feddan"}
+                      {__v.H.where}
                     </span>
                   </div>
                   <h2 className="h3">
-                    {"This corner looks weaker"}
+                    {__v.H.title}
                   </h2>
                   <p className="body">
-                    {"It has been 20% less green than the rest of your field in the last two satellite images. It is also the driest corner. The satellite can't tell why, so please go and look."}
+                    {__v.H.body}
                   </p>
                   <span className="tl" style={{"fontWeight":"600","color":"var(--ink)"} as any}>
                     {"What did you see there?"}
@@ -314,9 +318,9 @@ export default function HealthScreen() {
                     <g stroke="#EDEDE9">
                       <path d="M0 30H320M0 70H320M0 110H320" />
                     </g>
-                    <path d="M10 135C60 132 90 110 130 80S220 30 300 26" stroke="#B9BDB6" strokeWidth="2" strokeDasharray="4 5" fill="none" />
-                    <path className="draw" pathLength="1" style={{"--d":"4"} as any} d="M10 136C50 130 80 112 110 92S150 70 170 64" stroke="#1F4A33" strokeWidth="3" fill="none" strokeLinecap="round" />
-                    <circle className="pop" style={{"--i":"8"} as any} cx="170" cy="64" r="6" fill="#1F4A33" stroke="#fff" strokeWidth="2.5" />
+                    <path d={__v.H.normalPath} stroke="#B9BDB6" strokeWidth="2" strokeDasharray="4 5" fill="none" />
+                    <path className="draw" pathLength="1" style={{"--d":"4"} as any} d={__v.H.thisPath} stroke="#1F4A33" strokeWidth="3" fill="none" strokeLinecap="round" />
+                    <circle className="pop" style={{"--i":"8"} as any} cx={__v.H.dot[0]} cy={__v.H.dot[1]} r="6" fill="#1F4A33" stroke="#fff" strokeWidth="2.5" />
                     <g fontFamily="Hanken Grotesk, sans-serif" fontSize="10" fill="#8B918C">
                       <text x="8" y="148">
                         {"Oct"}
@@ -343,7 +347,7 @@ export default function HealthScreen() {
                     </span>
                   </div>
                   <p className="sub">
-                    {"Slightly better than a normal year for mid November."}
+                    {__v.H.compare}
                   </p>
                 </section>
               </div>
@@ -456,7 +460,7 @@ export default function HealthScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.H.foot}
                 <AboutLink />
               </span>
             </footer>

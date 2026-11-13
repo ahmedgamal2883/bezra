@@ -29,7 +29,7 @@ for (let i = 0; i < 6; i++) for (let j = 0; j < 8; j++) cells.push({ i, j });
 cells.sort((p, q) => (p.i + p.j) - (q.i + q.j));
 const prisms = [];
 cells.forEach(({ i, j }) => {
-const dry = (i >= 4 && j <= 2) ? .55 : ((i + j * 7) % 5) * .04;
+const dry = o.dry ? o.dry[i * 8 + j] : ((i >= 4 && j <= 2) ? .55 : ((i + j * 7) % 5) * .04); // real dryness from the greenness map (step 4)
 let stress = m >= 2 ? Math.min(1, dry * o.water + (m >= 5 ? o.heat : 0) + (m >= 3 && o.rust && (i * 3 + j) % 7 === 0 ? .35 : 0)) : 0;
 const jit = ((i * 7 + j * 13) % 9) / 9;
 const z = Math.max(.35, st[0] * (1 - stress * .32) * (.9 + jit * .16));
@@ -60,7 +60,7 @@ const hot = yr === 1, late = sw === 2, mid = sw === 1;
 const heat = D ? Math.min(.45, D.hot_days_grain_fill * .05) : (hot ? (late ? .45 : (mid ? .3 : .15)) : (late ? .2 : (mid ? .08 : 0)));
 const water = D ? .35 + D.steps[m].water_stress * 2 : [.35, .75, 1.25][wa];
 const rustAt = (k) => (D ? D.steps[k].rust : va === 1 && k >= 3 && k <= 4);
-const sc = scene({ month: m, water, heat: m >= 5 ? heat : 0, rust: D ? (rustAt(3) || rustAt(4)) : va === 1, wet: m <= 2 && (m !== 2 || wa === 0) });
+const sc = scene({ dry: D && D.cells ? D.cells.map((x) => x.dry) : null, month: m, water, heat: m >= 5 ? heat : 0, rust: D ? (rustAt(3) || rustAt(4)) : va === 1, wet: m <= 2 && (m !== 2 || wa === 0) });
 const loss = 3 + [0, 4, 10][wa] + [0, 5, 12][sw] + (hot ? (late ? 12 : (mid ? 7 : 3)) : 0) + (va === 1 ? 6 : 0);
 const yieldPct = D ? D.yield_pct : 100 - loss;
 const wUse = D ? D.water_m3_per_feddan : [3150, 2800, 2450][wa] + (hot ? 150 : 0);

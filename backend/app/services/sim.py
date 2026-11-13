@@ -61,6 +61,27 @@ def run_one(c: Ctx, sow_md: tuple[int, int], variety: str, watering: str, season
     return sow, r, skipped
 
 
+def _cells(c: Ctx):
+    """6 x 8 simulator squares (brief §5 'cells'): dryness from the latest greenness map. Each 30 m square
+    of the field (3 across x 4 down) covers 2 x 2 simulator squares; less green = drier (0 to ~0.6)."""
+    from . import satellite
+    try:
+        nd = satellite.ndvi(c)
+    except Exception:
+        return None
+    if not nd.get("available"):
+        return None
+    med = nd["indices"]["ndvi"]["median"]
+    val = {(x["r"], x["c"]): x["value"] for x in nd["indices"]["ndvi"]["cells"]}
+    out = []
+    for i in range(6):          # across (west -> east)
+        for j in range(8):      # down (north -> south)
+            v = val.get((j // 2, i // 2))
+            dry = 0.0 if v is None else max(0.0, min(1.0, (med - v) / 0.15)) * 0.6
+            out.append({"i": i, "j": j, "dry": round(dry, 2)})
+    return out
+
+
 def build(c: Ctx, req: dict) -> dict:
     sow_req = date.fromisoformat(req["sow"])
     md = (sow_req.month, sow_req.day)
@@ -111,7 +132,7 @@ def build(c: Ctx, req: dict) -> dict:
     return {
         "yield_pct": y_pct, "yield_range": [round(q[0]), round(q[2])],
         "water_m3_per_feddan": int(round(r.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1)),
-        "hot_days_grain_fill": hot, "steps": steps, "cells": None,
+        "hot_days_grain_fill": hot, "steps": steps, "cells": _cells(c),
         "season_year": f"{yr}-{yr + 1}", "years_used": len(all_y),
         "factors": {k: round(v, 3) if isinstance(v, float) else v for k, v in r.factors.items()},
         "skipped_turns": [d.isoformat() for d in sorted(skipped)],

@@ -15,7 +15,7 @@ import anthropic
 from . import config  # noqa: F401  (loads backend/.env)
 from . import fields
 from .chat import bezra
-from .services import calendar, nextseason, sim, summary
+from .services import calendar, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 app = FastAPI(title="Bezra API", version="0.2")
@@ -62,6 +62,16 @@ def get_calendar(field_id: str):
 @app.get("/fields/{field_id}/next")
 def get_next(field_id: str):
     return nextseason.build(_ctx(field_id))
+
+
+@app.get("/fields/{field_id}/ndvi")
+def get_ndvi(field_id: str):
+    return satellite.ndvi(_ctx(field_id))
+
+
+@app.get("/fields/{field_id}/health")
+def get_health(field_id: str):
+    return satellite.health(_ctx(field_id))
 
 
 class SimReq(BaseModel):

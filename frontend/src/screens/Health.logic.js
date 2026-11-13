@@ -1,6 +1,51 @@
 /* eslint-disable */
 // Verbatim logic from design/html/V11-Health.html.
 import { DCLogic } from '@/lib/dc';
+import { squares, pinFor, shortDate, longDate, sourceShort } from '@/lib/squares';
+
+// Curve axes of the design's chart: Oct 1 at x=10, Apr 1 at x=300; NDVI 0.1 at y=136, 0.9 at y=26.
+const cx = (day) => (10 + (day / 182) * 290).toFixed(1);
+const cy = (v) => Math.max(20, Math.min(140, 136 - ((v - 0.1) / 0.8) * 110)).toFixed(1);
+const path = (pts) => pts.map((p, i) => (i ? 'L' : 'M') + cx(p.day) + ' ' + cy(p.ndvi)).join(' ');
+
+// Field health texts from GET /fields/{id}/health. null -> V11 design values.
+export function healthTexts(D) {
+  const N = D && D.ndvi && D.ndvi.available ? D.ndvi : null;
+  if (!N) {
+    return { live: false, eyebrow: 'North plot. Latest clear image 10 November, HLS 30 m.', pill: 'Check this spot', pillCls: 'lv lv-med',
+      where: 'NE corner, ~0.25 feddan', title: 'This corner looks weaker',
+      body: "It has been 20% less green than the rest of your field in the last two satellite images. It is also the driest corner. The satellite can't tell why, so please go and look.",
+      normalPath: 'M10 135C60 132 90 110 130 80S220 30 300 26', thisPath: 'M10 136C50 130 80 112 110 92S150 70 170 64', dot: ['170', '64'],
+      compare: 'Slightly better than a normal year for mid November.', pv: 'pill pv-demo', pvL: 'Demo',
+      foot: 'All numbers on this screen are demo data.' };
+  }
+  const C = D.curve, S = N.weak_spot;
+  const src = N.source.startsWith('NASA HLS') ? 'HLS 30 m' : 'Sentinel-2';
+  let body = '';
+  if (S) {
+    const nd = N.indices.ndmi.cells;
+    const spotNdmi = S.squares.map(([r, c]) => (nd.find((x) => x.r === r && x.c === c) || {}).value).filter((v) => v != null);
+    const minNdmi = Math.min(...nd.filter((x) => x.value != null).map((x) => x.value));
+    const driest = spotNdmi.length && Math.min(...spotNdmi) <= minNdmi + 0.005;
+    body = `It has been ${S.pct_less_green}% less green than the rest of your field in the last two satellite images.` +
+      (driest ? ' It is also the driest corner.' : '') + " The satellite can't tell why, so please go and look.";
+  }
+  const last = C.this_season[C.this_season.length - 1];
+  return {
+    live: true,
+    eyebrow: `Your field. Latest clear image ${longDate(N.date)}, ${src}.`,
+    pill: S ? 'Check this spot' : 'All squares look even', pillCls: S ? 'lv lv-med' : 'lv lv-low',
+    where: S ? `${S.where}, ~${S.feddan} feddan` : `${N.grid.rows * N.grid.cols} squares of 30 m`,
+    title: S ? (S.where.endsWith('corner') ? 'This corner looks weaker' : 'This part looks weaker') : 'No weak spot right now',
+    body: S ? body : 'No square was less green than the rest of your field in the last two satellite images. Keep an eye on the corners after each water turn.',
+    normalPath: C.normal.length ? path(C.normal.filter((p) => p.day <= 190)) : '',
+    thisPath: C.this_season.length ? path(C.this_season) : '',
+    dot: last ? [cx(last.day), cy(last.ndvi)] : ['-20', '-20'],
+    compare: C.compare ? C.compare.text : 'Not enough images yet to compare with a normal year.',
+    pv: 'pill pv-sat', pvL: 'Satellite',
+    foot: `Greenness from ${N.source}; normal year from NASA MODIS (${C.normal_seasons.length} seasons). Moisture and heat layers are still Demo.`,
+  };
+}
 
 export default class Component extends DCLogic {
 constructor(props) { super(props); this.state = Object.assign({ mode: null }, { ix: 'NDVI', seen: null }); }
@@ -23,9 +68,12 @@ for (let i = 0; i < 150; i++) houses.push({ x: (1046 + rnd() * 288).toFixed(1), 
 return { parcels, rowed, houses };
 };
 if (!this._map) this._map = buildMap();
-const NDVI = [[.63, .55, .48], [.65, .60, .52], [.67, .64, .61], [.68, .66, .64]];
+// Real squares from GET /fields/{id}/ndvi when available (step 4); else the design values.
+const SQ = squares(this.props.ndvi, (this.state.ix || "NDVI").toLowerCase());
+const NDVI = SQ ? SQ.NDVI : [[.63, .55, .48], [.65, .60, .52], [.67, .64, .61], [.68, .66, .64]];
+const KL = SQ ? SQ.KL : null;
 const CL = [{ fill: 'url(#hatch)', label: 'Less green', sw: 'background: repeating-linear-gradient(45deg,#F29B1E 0 3px,#F7C67E 3px 5px);' }, { fill: '#D9DE9C', label: 'Normal', sw: 'background: #D9DE9C;' }, { fill: '#3E7F35', label: 'Greener', sw: 'background: #3E7F35;' }];
-const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = v < .55 ? 0 : (v < .64 ? 1 : 2), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
+const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = KL ? KL[r][c] : (v < .55 ? 0 : (v < .64 ? 1 : 2)), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v == null ? "–" : v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
 
 const ix = S.ix;
 const cells = mkCells(true);
@@ -33,7 +81,8 @@ const idx = ['NDVI', 'EVI', 'NDMI'].map((l) => ({ label: l, p: String(ix === l),
 const seen = ['Yellow leaves', 'Dry soil', 'Insects', 'Looks fine'].map((l) => ({ label: l, p: String(S.seen === l), pick: () => set({ seen: l }), cls: 'btn sm press ' + (S.seen === l ? '' : 'soft') }));
 return { parcels: this._map.parcels, rowed: this._map.rowed, houses: this._map.houses, cells, idx, seen, dim: true, showNum: details,
 legend: CL.map((c) => ({ label: c.label, sw: 'width: 14px; height: 10px; border-radius: 3px; ' + c.sw })), legendNote: details ? ix + ', 30 m squares, compared with your field median' : 'Compared with the rest of your field',
-idxNote: ix + ' · 10 Nov', mapLabel: 'Greenness of North plot in 12 squares. The north east corner is less green.' };
+idxNote: ix + ' · ' + (SQ ? shortDate(this.props.ndvi.date) : '10 Nov'), pin: pinFor(this.props.ndvi), mapLive: !!SQ, H: healthTexts(this.props.data),
+mapLabel: SQ ? 'Greenness of your field in 12 squares.' + (this.props.ndvi.weak_spot ? ' The ' + this.props.ndvi.weak_spot.where + ' is less green.' : ' No weak spot.') : 'Greenness of North plot in 12 squares. The north east corner is less green.' };
  })();
 return Object.assign(base, extra || {});
 }

@@ -9,7 +9,7 @@ FIELDS: dict[str, dict] = {
     "north-plot": {
         "id": "north-plot", "num": "01", "name": "North plot", "farmer": "Hassan Farouk",
         "village": "Shibin El Kom", "governorate": "Menoufia",
-        "lat": 30.5560, "lon": 31.0100,
+        "lat": 30.55351, "lon": 30.98915,  # farmland 2.3 km west of Shibin El Kom (checked on Sentinel-2)
         "area_feddan": 2.4, "crop": "wheat", "variety": "sakha95",
         "sow_date": "2026-10-15", "prev_crop": "maize", "prev_crop_harvest": "2026-12-10",
         "water_source": "Mesqa, tail end", "mesqa_position": "tail", "turn_days": 10,
@@ -21,7 +21,7 @@ FIELDS: dict[str, dict] = {
     "south-plot": {
         "id": "south-plot", "num": "02", "name": "South plot", "farmer": "Hassan Farouk",
         "village": "Shibin El Kom", "governorate": "Menoufia",
-        "lat": 30.5480, "lon": 31.0060,
+        "lat": 30.54990, "lon": 30.98915,  # ~400 m south of North plot
         "area_feddan": 0.6, "crop": "berseem", "variety": None,
         "sow_date": "2026-10-20", "prev_crop": "maize", "prev_crop_harvest": None,
         "water_source": "Mesqa, head end", "mesqa_position": "head", "turn_days": 10,

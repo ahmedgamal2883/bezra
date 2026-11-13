@@ -1,8 +1,11 @@
 /* eslint-disable */
 // Verbatim logic from design/html/V11-Field.html.
 import { DCLogic } from '@/lib/dc';
+import { squares, pinFor, shortDate, longDate, sourceShort } from '@/lib/squares';
 import { PV, LV, dm } from '@/lib/api';
 
+// Today's 'Crop greenness' in Simple mode: this season vs the MODIS normal at the latest image.
+const greenWord = (h) => { const d = h && h.curve && h.curve.compare ? h.curve.compare.diff : 0; return d > 0.03 ? 'Greener' : (d < -0.03 ? 'Less green' : 'Normal'); };
 const WD = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const pill = (prov, D) => (D ? PV[prov] : PV.demo);
 
@@ -85,9 +88,12 @@ for (let i = 0; i < 150; i++) houses.push({ x: (1046 + rnd() * 288).toFixed(1), 
 return { parcels, rowed, houses };
 };
 if (!this._map) this._map = buildMap();
-const NDVI = [[.63, .55, .48], [.65, .60, .52], [.67, .64, .61], [.68, .66, .64]];
+// Real squares from GET /fields/{id}/ndvi when available (step 4); else the design values.
+const SQ = squares(this.props.ndvi, (this.state.ix || "NDVI").toLowerCase());
+const NDVI = SQ ? SQ.NDVI : [[.63, .55, .48], [.65, .60, .52], [.67, .64, .61], [.68, .66, .64]];
+const KL = SQ ? SQ.KL : null;
 const CL = [{ fill: 'url(#hatch)', label: 'Less green', sw: 'background: repeating-linear-gradient(45deg,#F29B1E 0 3px,#F7C67E 3px 5px);' }, { fill: '#D9DE9C', label: 'Normal', sw: 'background: #D9DE9C;' }, { fill: '#3E7F35', label: 'Greener', sw: 'background: #3E7F35;' }];
-const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = v < .55 ? 0 : (v < .64 ? 1 : 2), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
+const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = KL ? KL[r][c] : (v < .55 ? 0 : (v < .64 ? 1 : 2)), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v == null ? "–" : v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
 
 const view = S.view;
 const cells = mkCells(view === 'green');
@@ -119,10 +125,11 @@ if (D) {
 for (let w = 0; w < 52; w++) { let bg = '#C9B26A', h = 30 + Math.min(w, 20) * 1.6; if (w >= 28 && w < 30) bg = 'bare'; else if (w >= 30 && w < 50) { bg = '#6E9A4A'; h = 56; } else if (w >= 50) bg = 'bare'; const hot = (w >= 27 && w <= 28) || (w >= 38 && w <= 44 && w % 2 === 0); let st = '--i:' + w + '; flex: 1 1 0; min-width: 0; border-radius: 3px; height: ' + (bg === 'bare' ? 16 : h) + 'px; '; st += bg === 'bare' ? 'background: repeating-linear-gradient(45deg,#D7D4CB 0 2px,#fff 2px 4px); box-shadow: inset 0 0 0 1px #D7D4CB;' : 'background: ' + (hot ? '#F29B1E' : bg) + ';' + (w > 4 && !hot ? ' opacity: .55;' : ''); if (w === 4) st += ' background: #141A16; height: 72px; opacity: 1;'; weeks.push({ style: st }); }
 return { parcels: this._map.parcels, rowed: this._map.rowed, houses: this._map.houses, cells, views, gauge, weeks, dim: view === 'green', showNum: details && view === 'green',
 legend: CL.map((c) => ({ label: c.label, sw: 'width: 14px; height: 10px; border-radius: 3px; ' + c.sw })),
-legendNote: details ? 'NASA HLS NDVI, 30 m squares, vs your area' : 'Compared with the rest of your field',
-stamp: view === 'green' ? 'Image from 10 Nov, 4 days ago' : 'Satellite pass 10 Nov',
-mapLabel: 'North plot from above, 12 squares of 30 metres. The north east corner is less green than normal.',
-green: details ? '0.61' : 'Normal', greenU: details ? ' NDVI' : '',
+legendNote: details ? (SQ ? sourceShort(this.props.ndvi) + ', NDVI vs your field' : 'NASA HLS NDVI, 30 m squares, vs your area') : 'Compared with the rest of your field',
+stamp: SQ ? (view === 'green' ? 'Image from ' + shortDate(this.props.ndvi.date) + ', ' + this.props.ndvi.days_ago + ' days ago' : 'Satellite pass ' + shortDate(this.props.ndvi.date)) : (view === 'green' ? 'Image from 10 Nov, 4 days ago' : 'Satellite pass 10 Nov'),
+pin: pinFor(this.props.ndvi), mapLive: !!SQ,
+mapLabel: SQ ? (this.props.ndvi.weak_spot ? 'Your field from above, 12 squares of 30 metres. The ' + this.props.ndvi.weak_spot.where + ' is less green.' : 'Your field from above, 12 squares of 30 metres. No weak spot in the last two images.') : 'North plot from above, 12 squares of 30 metres. The north east corner is less green than normal.',
+green: SQ ? (details ? SQ.median.toFixed(2) : greenWord(this.props.health)) : (details ? '0.61' : 'Normal'), greenU: details ? ' NDVI' : '',
 doneP: String(!!S.done), doneLabel: S.done ? 'Done, thanks' : T.doneLabel, doneCls: 'btn press' + (S.done ? ' soft' : ''), toggleDone: () => set({ done: !S.done }),
 T, sk: 'sk ' + (L ? 'hold' : ''), skMap: 'sk map' + (L ? ' hold' : '') };
  })();
