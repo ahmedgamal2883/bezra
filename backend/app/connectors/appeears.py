@@ -27,6 +27,9 @@ LAYERS = {  # product prefix -> (layer, how far back to ask)
 }
 _running: set[str] = set()
 _lock = threading.Lock()
+_failed: dict[str, float] = {}           # key -> time of the last failure: wait an hour before trying again
+_tok: dict[str, float | str] = {}        # one login reused for an hour (AppEEARS answers 429 to many logins)
+_slots = threading.Semaphore(2)          # at most 2 AppEEARS jobs at once
 
 
 def available() -> bool:
@@ -40,9 +43,14 @@ def latest_version(prefix: str) -> str:
 
 
 def _token() -> str:
+    with _lock:
+        if _tok.get("t") and time.time() - float(_tok["at"]) < 3600:
+            return str(_tok["t"])
     r = httpx.post(f"{API}/login", auth=(os.environ["EARTHDATA_USERNAME"], os.environ["EARTHDATA_PASSWORD"]), timeout=60)
     r.raise_for_status()
-    return r.json()["token"]
+    with _lock:
+        _tok.update(t=r.json()["token"], at=time.time())
+    return str(_tok["t"])
 
 
 def _run_task(key: str, lat: float, lon: float, product: str, layer: str, start: date, end: date) -> list[dict]:
@@ -84,19 +92,22 @@ def point_series(name: str, lat: float, lon: float, today: date) -> dict:
         import json
         cached = json.loads(path.read_text(encoding="utf-8"))
     fresh = cached and time.time() - cached["saved_at"] < 24 * 3600
-    if not fresh and available():
+    if not fresh and available() and time.time() - _failed.get(key, 0) > 3600:
         with _lock:
             start_it = key not in _running
             _running.add(key)
         if start_it:
             def work():
                 try:
+                    _slots.acquire()
                     product = latest_version(prefix)
                     fetch_cached(key, 0, lambda: {"product": product, "rows": _run_task(
                         key, lat, lon, product, layer, today - timedelta(days=days), today)})
                 except Exception as e:  # keep the last good answer; the screen shows "stale"
                     print("AppEEARS", name, "failed:", e)
+                    _failed[key] = time.time()
                 finally:
+                    _slots.release()
                     _running.discard(key)
             threading.Thread(target=work, daemon=True).start()
     return {"data": cached["data"] if cached else None, "updating": key in _running,

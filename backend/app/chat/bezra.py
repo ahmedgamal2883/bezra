@@ -40,7 +40,7 @@ Output fields:
   - "fact": one important number. title = short label (e.g. "Soil water 82%, refill at 50%"), items empty.
   - "compare": two to three options side by side (e.g. two sowing dates), items = [{label, value, highlight}];
     highlight=true marks the worse option.
-  - "engineer": a button to ask Eng. Mona. title = "Ask Eng. Mona", items empty, provenance "none".
+  - "engineer": a button to ask Eng. Mona. title = "Ask your engineer", items empty, provenance "none".
   provenance: "estimated" (Bezra calculated it), "satellite" (straight from NASA), "farmer" (the farmer told us),
   "demo" (placeholder), "none".
 - sources: short names of what you used, e.g. "NASA POWER", "FAO-56", "Open-Meteo", "Simulator, 36 past seasons".
@@ -92,6 +92,17 @@ TOOLS = [
     {"name": "get_calendar", "strict": True,
      "description": "Best wheat sowing window for the field in the 1990s, today and around 2040, the cost of sowing "
                     "late after the previous crop, and how the best date moved.",
+     "input_schema": {"type": "object", "properties": {}, "required": [], "additionalProperties": False}},
+    {"name": "get_season_plan", "strict": True,
+     "description": "The field's season plan and tracking: every task (water turns full / light / can skip, fertilizer "
+                    "and weeding timing, rust walk, heat prep, harvest window) with planned date, done date and status "
+                    "(Done / On time / Late / Skipped), 'On plan: X of Y', today's checklist, 'What changed' weather "
+                    "cards and the farmer's recent log. Fertilizer has dates only: the engineer sets amounts.",
+     "input_schema": {"type": "object", "properties": {}, "required": [], "additionalProperties": False}},
+    {"name": "get_irrigation_detection", "strict": True,
+     "description": "Beta: waterings seen from space (moisture index jump in NASA HLS / Sentinel-2, radar jump in "
+                    "ESA Sentinel-1, cooler surface in NASA ECOSTRESS) with the date window, confidence and whether "
+                    "the farmer confirmed it. Use when the farmer asks if Bezra knows they watered.",
      "input_schema": {"type": "object", "properties": {}, "required": [], "additionalProperties": False}},
     {"name": "search_kb", "strict": True,
      "description": "Search Bezra's notes: what NDVI means, why sow early, how soil water is estimated, rust weather, "
@@ -157,9 +168,32 @@ def run_tool(c: Ctx, name: str, args: dict):
                 "best_date": {e: v["best_date"] for e, v in cal["eras"].items()},
                 "late_after_previous_crop": cal["late_prev_crop"], "best_date_shift_days": cal["earlier"],
                 "note": "2040 is a linear trend of NASA POWER 1990-2025 (estimated)."}
+    if name == "get_season_plan":
+        from ..services import plan
+        p = plan.build(c)
+        return {"status": p["status"]["text"], "tracker": p["tracker"]["text"],
+                "tasks": [{k: t[k] for k in ("title", "planned_date", "window", "done_date", "status", "note")} |
+                          {"amount": (t.get("amount") or {}).get("label"), "benefit": (t.get("benefit") or {}).get("text")}
+                          for t in p["tasks"]],
+                "today_checklist": [x["title"] for x in p["checklist"]], "what_changed": p["changed"], "recent_log": p["log"]}
+    if name == "get_irrigation_detection":
+        from ..services import irrigation
+        d = irrigation.detect(c)
+        return {"beta": True, "events": d["events"], "waiting_for_answer": d["ask"], "rules": d["rules"]}
     if name == "search_kb":
         return kb.search(args["query"])
     raise ValueError(f"unknown tool {name}")
+
+
+def _engineer_name(c: Ctx) -> str:
+    from .. import db
+    eid = c.f.get("engineer_id")
+    if eid:
+        with db.conn() as k:
+            r = k.execute("SELECT name FROM users WHERE id=?", (eid,)).fetchone()
+        if r:
+            return "Eng. " + r["name"]
+    return "your engineer"
 
 
 def _guard(reply: dict) -> dict:
@@ -169,7 +203,7 @@ def _guard(reply: dict) -> dict:
         arabic = bool(re.search(r"[؀-ۿ]", reply["text"]))
         reply["text"] = ("الكمية دي لازم مهندسك يحددها بعد ما يشوف الأرض. أنا بقولك امتى، مش قد إيه."
                          if arabic else "Your engineer decides that amount after seeing the field. I can tell you when, not how much.")
-        reply["cards"] = [{"type": "engineer", "title": "Ask Eng. Mona", "items": [], "provenance": "none"}]
+        reply["cards"] = [{"type": "engineer", "title": "Ask your engineer", "items": [], "provenance": "none"}]
         reply["mood"] = "thinking"
     return reply
 
@@ -183,8 +217,10 @@ def chat(c: Ctx, history: list[dict], message: str) -> dict:
         resp = client.beta.messages.create(
             model=MODEL,
             max_tokens=16000,
-            system=SYSTEM + f"\nThe farmer is Hassan Farouk. Field: {c.f['name']} ({c.f['crop']}), {c.f['village']}, "
-                            f"{c.f['governorate']}. Today is {c.today:%A %d %B %Y}.",
+            system=SYSTEM.replace("Eng. Mona Adel", _engineer_name(c)).replace("Eng. Mona", _engineer_name(c))
+                   + f"\nThe farmer is {c.f.get('farmer') or 'the farmer'}. Their engineer is {_engineer_name(c)}. "
+                     f"Field: {c.f['name']} ({c.f['crop']}), {c.f.get('village')}, "
+                     f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}.",
             messages=messages,
             tools=TOOLS,
             output_config={"effort": "medium", "format": {"type": "json_schema", "schema": OUTPUT_SCHEMA}},
@@ -192,8 +228,8 @@ def chat(c: Ctx, history: list[dict], message: str) -> dict:
             fallbacks="default",
         )
         if resp.stop_reason == "refusal":
-            return {"text": "I can't help with that one. Ask Eng. Mona.", "mood": "thinking",
-                    "cards": [{"type": "engineer", "title": "Ask Eng. Mona", "items": [], "provenance": "none"}],
+            return {"text": "I can't help with that one. Ask your engineer.", "mood": "thinking",
+                    "cards": [{"type": "engineer", "title": "Ask your engineer", "items": [], "provenance": "none"}],
                     "sources": [], "tools": used_tools}
         messages.append({"role": "assistant", "content": resp.content})
         if resp.stop_reason == "pause_turn":

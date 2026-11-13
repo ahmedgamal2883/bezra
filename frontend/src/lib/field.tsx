@@ -7,7 +7,7 @@ import { API } from './api';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type FieldCard = { id: string; num?: string; name: string; crop: string; area_feddan: number; farmer: string; village?: string; governorate?: string; lat: number; lon: number };
-export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin' };
+export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin'; engineer_name?: string | null };
 
 type Ctx = { user: User | null; fields: FieldCard[]; loaded: boolean; id: string; setId: (id: string) => void; reload: () => void };
 const C = createContext<Ctx>({ user: null, fields: [], loaded: false, id: '', setId: () => {}, reload: () => {} });
@@ -70,6 +70,14 @@ export function FieldWho() {
   const { field } = useField();
   if (user?.role === 'engineer') return <>{field ? `Engineer · ${field.farmer}` : 'Engineer'}</>;
   return <>{field ? `${field.name}, ${field.governorate || ''}`.replace(/, $/, '') : 'Your fields'}</>;
+}
+
+/** The farmer's engineer (from their account); the design's "Eng. Mona Adel" only when signed out. */
+export function EngName({ full = false }: { full?: boolean }) {
+  const { user } = useUser();
+  const n = user?.role === 'farmer' ? user.engineer_name : user?.name;
+  if (!n) return <>{full ? 'Eng. Mona Adel' : (user ? 'your engineer' : 'Eng. Mona')}</>;
+  return <>{'Eng. ' + (full ? n : n.split(' ')[0])}</>;
 }
 
 export function UserName() {

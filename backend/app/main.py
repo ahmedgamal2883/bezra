@@ -134,7 +134,12 @@ def signout(request: Request, resp: Response):
 
 @app.get("/auth/me")
 def me(user: dict = Depends(current_user)):
-    return user | {"fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
+    eng = None
+    if user.get("engineer_id"):
+        with db.conn() as k:
+            r = k.execute("SELECT name FROM users WHERE id=?", (user["engineer_id"],)).fetchone()
+        eng = r["name"] if r else None
+    return user | {"engineer_name": eng, "fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
 
 
 @app.get("/demo")

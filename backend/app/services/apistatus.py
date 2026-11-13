@@ -58,8 +58,7 @@ def _modis():
 def _appeears_login():
     if not appeears.available():
         raise RuntimeError("needs Earthdata login")
-    r = httpx.post(f"{appeears.API}/login", auth=(os.environ["EARTHDATA_USERNAME"], os.environ["EARTHDATA_PASSWORD"]), timeout=30)
-    r.raise_for_status()
+    appeears._token()  # reuses one login for an hour
 
 
 def _appeears_layer(name: str):

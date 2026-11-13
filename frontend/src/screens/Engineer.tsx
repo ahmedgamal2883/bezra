@@ -9,6 +9,9 @@ import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Engineer.logic';
+import dynamic from 'next/dynamic';
+
+const EngineerMap = dynamic(() => import('@/components/EngineerMap'), { ssr: false });
 
 export default function EngineerScreen() {
   const { fp } = useField();
@@ -25,7 +28,13 @@ export default function EngineerScreen() {
     const r = await fetch(API + '/plans/' + fid + '/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note, approved: on }) });
     if (r.ok) setPlan(await r.json());
   };
-  const __v = useDC(Logic, { data: ws.data, plan, approveOn, note, setNote });
+  const [filter, setFilter] = useState('all');
+  const [sel, setSel] = useState<string | null>(null);
+  const __v = useDC(Logic, { data: ws.data, plan, approveOn, note, setNote, filter, sel });
+  const K = ws.data?.kpi;
+  const rowsAll = (ws.data?.fields || []).filter((x: any) => x.score != null);
+  const DRV: Record<string, string> = { rust: 'rust', water: 'water', heat: 'heat', greenness: 'greenness', plan: 'plan' };
+  const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   return (
     <>
       <div className="root">
@@ -105,26 +114,26 @@ export default function EngineerScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"Saturday, 14 November. Shibin El Kom district."}
+                  {K ? `${today}. Your farmers in ${K.places.length} places.` : "Saturday, 14 November. Shibin El Kom district."}
                 </span>
                 <h1 className="h1">
                   {"Where to go first"}
                 </h1>
               </div>
               <div className="row rise wrap" style={{"--d":"1","gap":"6px"} as any}>
-                <button type="button" className="btn sm press ">
+                <button type="button" className={"btn sm press" + (filter === "all" ? "" : " line")} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>
                   {"All risks"}
                 </button>
-                <button type="button" className="btn sm press line">
+                <button type="button" className={"btn sm press" + (filter === "rust" ? "" : " line")} aria-pressed={filter === "rust"} onClick={() => setFilter("rust")}>
                   {"Rust"}
                 </button>
-                <button type="button" className="btn sm press line">
+                <button type="button" className={"btn sm press" + (filter === "water" ? "" : " line")} aria-pressed={filter === "water"} onClick={() => setFilter("water")}>
                   {"Water"}
                 </button>
-                <button type="button" className="btn sm press line">
+                <button type="button" className={"btn sm press" + (filter === "pests" ? "" : " line")} aria-pressed={filter === "pests"} onClick={() => setFilter("pests")}>
                   {"Pests"}
                 </button>
-                <button type="button" className="btn sm press line">
+                <button type="button" className={"btn sm press" + (filter === "pending" ? "" : " line")} aria-pressed={filter === "pending"} onClick={() => setFilter("pending")}>
                   {"Pending approval"}
                 </button>
               </div>
@@ -136,13 +145,13 @@ export default function EngineerScreen() {
                   {"Fields at high risk"}
                 </span>
                 <span className="num">
-                  {"14"}
+                  {K ? String(K.high) : "14"}
                   <small>
-                    {" of 212"}
+                    {K ? ` of ${K.fields}` : " of 212"}
                   </small>
                 </span>
                 <span className="sub" style={{"fontSize":"13px"} as any}>
-                  {"9 rust, 5 water"}
+                  {K ? (Object.entries(K.high_by).map(([k, v]) => `${v} ${DRV[k] || k}`).join(", ") || "None today") : "9 rust, 5 water"}
                 </span>
               </section>
               <section className="card rise " style={{"--d":"2","gap":"8px"} as any}>
@@ -151,11 +160,11 @@ export default function EngineerScreen() {
                   {"Plans to approve"}
                 </span>
                 <span className="num">
-                  {"23"}
+                  {K ? String(K.plans_pending) : "23"}
                   <small />
                 </span>
                 <span className="sub" style={{"fontSize":"13px"} as any}>
-                  {"Oldest 4 days"}
+                  {K ? `${K.fields - K.plans_pending} approved` : "Oldest 4 days"}
                 </span>
               </section>
               <section className="card rise " style={{"--d":"3","gap":"8px"} as any}>
@@ -164,13 +173,13 @@ export default function EngineerScreen() {
                   {"Photo cases"}
                 </span>
                 <span className="num">
-                  {"6"}
+                  {K ? String(K.cases_new) : "6"}
                   <small>
                     {" new"}
                   </small>
                 </span>
                 <span className="sub" style={{"fontSize":"13px"} as any}>
-                  {"2 armyworm, 1 rust"}
+                  {K ? `${K.cases_total} in all, last 7 days new` : "2 armyworm, 1 rust"}
                 </span>
               </section>
               <section className="card rise " style={{"--d":"4","gap":"8px"} as any}>
@@ -192,7 +201,8 @@ export default function EngineerScreen() {
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 460px","alignItems":"stretch"} as any}>
               <section aria-label="Risk map" className="hero rise" style={{"--d":"3","minHeight":"600px","background":"#E3E0D4"} as any}>
                 <i className="sk map" aria-hidden="true" style={{"--d":"3"} as any} />
-                <svg viewBox="0 0 960 560" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{"position":"absolute","inset":"0"} as any} role="img" aria-label="Fields in the district coloured by risk. Most are green, a cluster near Batanoun is orange and red.">
+                {ws.data ? <EngineerMap rows={rowsAll} focus={sel} /> : (
+<svg viewBox="0 0 960 560" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{"position":"absolute","inset":"0"} as any} role="img" aria-label="Fields in the district coloured by risk. Most are green, a cluster near Batanoun is orange and red.">
                   <rect width="960" height="560" fill="#E3E0D4" />
                   <path d="M-20 300C200 280 380 340 560 300S820 240 980 270" stroke="#9CC1DA" strokeWidth="12" fill="none" />
                   <path d="M300 -20C320 160 280 340 330 580" stroke="#D7D1BE" strokeWidth="8" fill="none" />
@@ -278,7 +288,8 @@ export default function EngineerScreen() {
                     </text>
                   </g>
                 </svg>
-                <div className="float" style={{"position":"absolute","left":"18px","bottom":"18px","padding":"10px 14px","display":"flex","gap":"14px","fontSize":"13px","fontWeight":"500"} as any}>
+)}
+                <div className="float" style={{"zIndex":500,"position":"absolute","left":"18px","bottom":"18px","padding":"10px 14px","display":"flex","gap":"14px","fontSize":"13px","fontWeight":"500"} as any}>
                   <span className="lv lv-high">
                     <i />
                     {"High"}
@@ -304,7 +315,7 @@ export default function EngineerScreen() {
                 </div>
                 <ol style={{"margin":"0","padding":"0","display":"flex","flexDirection":"column","gap":"8px"} as any}>
                   {(__v.queue as any[]).map((q, k) => (
-                  <li key={q.name} className="rise lift" style={{"--d":String(3 + k),"listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
+                  <li key={q.key || q.name} className="rise lift press" onClick={() => q.fieldId && setSel(q.fieldId)} aria-current={q.fieldId && q.fieldId === __v.selId ? true : undefined} style={{"cursor":q.fieldId ? "pointer" : undefined,"outline":q.fieldId && q.fieldId === __v.selId ? "2px solid #141A16" : undefined,"--d":String(3 + k),"listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
                     <b style={{"fontSize":"15px","color":"var(--muted)"} as any}>
                       {String(k + 1)}
                     </b>
@@ -340,7 +351,7 @@ export default function EngineerScreen() {
                         {__v.planField}
                       </span>
                       <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
-                        {"Season plan, 9 actions"}
+                        {__v.planActions}
                       </b>
                     </span>
                     <span className={__v.planLv}>

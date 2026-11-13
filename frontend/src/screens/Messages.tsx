@@ -3,7 +3,7 @@
 // (chat panel + side cards), the engineer avatar from Profile and the rules card from Ask.
 // Demo conversation: messages are kept in the page only, nothing is sent yet.
 import Link from 'next/link';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, EngName } from '@/lib/field';
 import { useState } from 'react';
 import { FarmerHeader, Foot, Mascot } from '@/components/chrome';
 
@@ -43,7 +43,7 @@ export default function MessagesScreen() {
                 <span className="row" style={{ gap: '12px' }}>
                   <MonaAvatar size={48} />
                   <span className="col">
-                    <b style={{ fontSize: '20px', fontWeight: 600 }}>{'Eng. Mona Adel'}</b>
+                    <b style={{ fontSize: '20px', fontWeight: 600 }}><EngName full /></b>
                     <span className="tl">{'Extension, Shibin El Kom. Usually answers the same day.'}</span>
                   </span>
                 </span>
@@ -87,7 +87,7 @@ export default function MessagesScreen() {
             </section>
             <aside className="col" style={{ gap: '14px' }}>
               <section className="card rise" style={{ '--d': '2' } as React.CSSProperties}>
-                <h2 className="h2">{'What Eng. Mona sees'}</h2>
+                <h2 className="h2"><>{'What '}<EngName />{' sees'}</></h2>
                 <div className="col" style={{ gap: '4px' }}>
                   <div className="inset"><span>{'Field'}</span><b>{'North plot, wheat'}</b></div>
                   <div className="inset"><span>{'Stage'}</span><b>{'Tillering, day 30'}</b></div>

@@ -3,7 +3,7 @@
 // Generated from design/html/V11-Profile.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Profile.logic.js (verbatim from the design).
 import { Fragment, useState } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab, signOut } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, signOut, EngName } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -495,7 +495,7 @@ export default function ProfileScreen() {
                     </span>
                     <span className="col">
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Eng. Mona Adel"}
+                        <EngName full />
                       </b>
                       <span className="tl">
                         {"Extension, Shibin El Kom. Plan review pending."}
@@ -503,7 +503,7 @@ export default function ProfileScreen() {
                     </span>
                   </div>
                   <Link href="/messages" className="btn soft cta press">
-                    {"Message Eng. Mona"}
+                    <>{"Message "}<EngName /></>
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M7 17 17 7M9 7h8v8" />

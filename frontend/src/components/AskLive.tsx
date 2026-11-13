@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { API, PV } from '@/lib/api';
 import { Mascot } from './chrome';
+import { EngName } from '@/lib/field';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Card = { type: 'fact' | 'compare' | 'engineer'; title: string; items: { label: string; value: string; highlight: boolean }[]; provenance: string };
@@ -78,7 +79,7 @@ function CardView({ c }: { c: Card }) {
     return (
       <Link href="/messages" className="btn sun sm press" style={{ alignSelf: 'flex-start' }}>
         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0" /></svg>
-        {c.title || 'Ask Eng. Mona'}
+        {c.title && !/Mona|your engineer/.test(c.title) ? c.title : <>{'Ask '}<EngName /></>}
       </Link>
     );
   }

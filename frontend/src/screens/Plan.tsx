@@ -3,7 +3,7 @@
 // Generated from design/html/V11-Plan.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Plan.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, EngName } from '@/lib/field';
 import Link from 'next/link';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -253,7 +253,7 @@ export default function PlanScreen() {
                     </span>
                     <span className="col">
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Eng. Mona Adel"}
+                        <EngName full />
                       </b>
                       <span className="tl">
                         {planOk ? `Approved your plan on ${planDate}` : "Will review doses and approve the plan"}
@@ -268,7 +268,7 @@ export default function PlanScreen() {
                     </>
                   ) : null}
                   <Link href="/messages" className="btn soft cta press">
-                    {"Ask Eng. Mona"}
+                    <>{"Ask "}<EngName /></>
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M7 17 17 7M9 7h8v8" />

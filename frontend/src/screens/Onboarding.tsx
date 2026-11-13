@@ -10,7 +10,7 @@ import { areaM2 } from '@/components/MapDraw';
 import { API } from '@/lib/api';
 
 const MapDraw = dynamic(() => import('@/components/MapDraw'), { ssr: false });
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, EngName } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Logic from './Onboarding.logic';
@@ -333,7 +333,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                     <Field label="Sensors" value="None" icon={I.chip} />
                   </div>
                   <div className="row" style={{ gap: '12px', padding: '14px', borderRadius: '12px', background: 'var(--sun-tint)', color: '#5A3B0B', fontSize: '14px', lineHeight: '1.45' }}>
-                    {"Don't have these? That's fine. Eng. Mona can add them after a visit."}
+                    <>{"Don't have these? That's fine. "}<EngName />{" can add them after a visit."}</>
                   </div>
                   {accuracy}
                   {actions(

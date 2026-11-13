@@ -4,7 +4,7 @@
 // Logic lives in ./Diagnose.logic.js (verbatim from the design).
 import { Fragment, useEffect, useState } from 'react';
 import { useApi, API } from '@/lib/api';
-import { FIELD_NAMES, UserName, UserInitials, EngineerTab } from '@/lib/field';
+import { FIELD_NAMES, UserName, UserInitials, EngineerTab, EngName } from '@/lib/field';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -212,7 +212,7 @@ export default function DiagnoseScreen() {
                   </span>
                 </div>
                 )) : (
-                <p className="body">{"Bezra could not check this photo itself. It went to Eng. Mona, who will look and reply."}</p>
+                <p className="body"><>{"Bezra could not check this photo itself. It went to "}<EngName />{", who will look and reply."}</></p>
                 )) : (<>
                 <div className="col" style={{"gap":"6px"} as any}>
                   <div className="row sp">
@@ -263,7 +263,7 @@ export default function DiagnoseScreen() {
                   </span>
                   <span className={C ? "lv lv-med" : "lv lv-low"}>
                     <i />
-                    {C ? "Waiting for Eng. Mona" : "Confirmed by Eng. Mona"}
+                    <>{C ? "Waiting for " : "Confirmed by "}<EngName /></>
                   </span>
                 </div>
               </section>
@@ -286,7 +286,7 @@ export default function DiagnoseScreen() {
                         <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M9 4h6l-1 7h4v4H6v-4h4zM5 19h14" />
                         </svg>
-                        {C ? ` Sent to Eng. Mona, ${cdate}` : " Eng. Mona Adel, 14 Jul"}
+                        {C ? <>{" Sent to "}<EngName />{`, ${cdate}`}</> : " Eng. Mona Adel, 14 Jul"}
                       </span>
                     </span>
                   </div>
