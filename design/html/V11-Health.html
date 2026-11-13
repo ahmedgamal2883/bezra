@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bezra, Field health</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>.static .rise,.static .fade,.static .pop,.static .grow,.static .growx,.static .tabs a[aria-current=page]::after{animation:none!important}
+.static .draw{animation:none!important;stroke-dashoffset:0}
+.static .sk:not(.hold){display:none}
+x-dc{display:block}
+</style>
+<script>(function(){
+window.DCLogic = class { constructor(p){ this.props = p || {}; } setState(o){ Object.assign(this.state, o); if (this.__render) this.__render(); } };
+function get(ctx, path){ return path.split('.').reduce(function(o,k){ return o==null?undefined:o[k]; }, ctx); }
+function sub(str, ctx){ return str.replace(/\{\{([^}]+)\}\}/g, function(_,p){ var v=get(ctx,p.trim()); return v==null||typeof v==='function'?'':String(v); }); }
+function walk(node, ctx, out){
+  Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+    if (ch.nodeType===3){ out.appendChild(document.createTextNode(sub(ch.textContent, ctx))); return; }
+    if (ch.nodeType!==1) return;
+    var tag=ch.tagName.toLowerCase();
+    if (tag==='sc-for'){ var m=ch.getAttribute('list').match(/\{\{(.+)\}\}/); var list=get(ctx,m[1].trim())||[]; var as=ch.getAttribute('as');
+      list.forEach(function(item){ var c=Object.create(ctx); c[as]=item; walk(ch,c,out); }); return; }
+    if (tag==='sc-if'){ var m2=ch.getAttribute('value').match(/\{\{(.+)\}\}/); if (get(ctx,m2[1].trim())) walk(ch,ctx,out); return; }
+    var el = ch.namespaceURI==='http://www.w3.org/2000/svg' ? document.createElementNS(ch.namespaceURI, ch.tagName) : document.createElement(ch.tagName);
+    Array.prototype.slice.call(ch.attributes).forEach(function(a){
+      if (/^on/i.test(a.name)){ var mm=a.value.match(/\{\{(.+)\}\}/); var fn=mm&&get(ctx,mm[1].trim()); if (typeof fn==='function') el.addEventListener(a.name.slice(2).toLowerCase(), function(e){ fn(e); }); return; }
+      el.setAttribute(a.name, sub(a.value, ctx)); });
+    walk(ch, ctx, el); out.appendChild(el);
+  });
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var x=document.querySelector('x-dc');
+  var h=x.querySelector('helmet'); if(h){ document.head.insertAdjacentHTML('beforeend', h.innerHTML); h.remove(); }
+  var tpl=document.createElement('div'); tpl.innerHTML=x.innerHTML;
+  var js=document.querySelector('script[data-dc-script]').textContent;
+  var C=new Function(js+';return Component;')(); var c=new C({details:false}); var first=true;
+  c.__render=function(){ if(!first) document.documentElement.classList.add('static'); first=false; var v=c.renderVals(); x.innerHTML=''; walk(tpl, v, x); };
+  c.__render();
+});
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4E5E0;--shell:#F4F4F1;--card:#FFFFFF;--inset:#F4F4F1;--line:#E8E8E3;--ink:#141A16;--ink2:#3D4440;--muted:#6A716C;--faint:#8B918C;--dark:#17251C;--sun:#F29B1E;--sun-tint:#FFF4E3;--water:#2F6FA8;--water-tint:#E8F1F9;--green:#1F4A33;--green-tint:#E4EFE7;--risk:#C2412A;--risk-tint:#FBE6E1;--r-card:12px;--r-float:20px;--r-hero:24px;--ease:cubic-bezier(.16,1,.3,1)}
+body{margin:0;background:var(--bg)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance}
+button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--sun);color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--sun);outline-offset:3px}
+.root{min-height:100vh;box-sizing:border-box;padding:14px;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.shell{min-height:calc(100vh - 28px);box-sizing:border-box;border-radius:30px;background:var(--shell);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 0 0 1px rgba(20,26,22,.04);padding:0 28px 28px}
+.top{height:84px;display:flex;align-items:center;gap:20px}
+.brand{flex:1 1 0;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;letter-spacing:-.6px}
+.nav{display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:#E9E9E5}
+.nav a{height:40px;padding:0 16px 0 12px;border-radius:999px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink2);transition:background-color .18s ease,color .18s ease}
+.nav a:hover{background:#DFDFDA}
+.nav a[aria-current=page]{background:var(--dark);color:#fff}
+.tools{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.seg{height:44px;padding:4px;box-sizing:border-box;border-radius:22px;background:#E9E9E5;display:flex;gap:2px}
+.segb{height:36px;padding:0 16px;border:0;border-radius:18px;font-size:14px;font-weight:600;background:transparent;color:var(--muted);transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.segb.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,26,22,.14)}
+.ibtn{position:relative;width:44px;height:44px;border:0;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dot{position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:4px;background:var(--sun);box-shadow:0 0 0 2px #fff}
+.who{height:44px;padding:0 14px 0 4px;box-sizing:border-box;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;gap:10px;white-space:nowrap}
+.av{width:36px;height:36px;border-radius:18px;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.who b{display:block;font-size:14px;font-weight:600}.who small{display:block;font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;gap:18px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 4px 2px}
+.eyebrow{font-size:15px;color:var(--muted)}
+.h1{font-size:44px;line-height:1;font-weight:600;letter-spacing:-1.6px}
+.h2{font-size:16px;font-weight:600}
+.h3{font-size:22px;line-height:1.15;font-weight:600;letter-spacing:-.5px}
+.sub{font-size:14px;color:var(--muted);line-height:1.45}
+.body{font-size:14px;line-height:1.5;color:var(--ink2)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 4px}
+.tabs a{position:relative;height:44px;padding:0 14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);transition:color .18s ease}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current=page]{color:var(--ink)}
+.tabs a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2.5px;border-radius:2px;background:var(--ink);animation:tabIn .5s var(--ease) both}
+.card{position:relative;padding:18px;border-radius:var(--r-card);background:var(--card);box-shadow:0 1px 2px rgba(20,26,22,.05);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.dk{background:var(--dark);color:#fff}
+.card.tint-w{background:var(--water-tint);box-shadow:none}
+.card.tint-s{background:var(--sun-tint);box-shadow:none}
+.float{border-radius:var(--r-float);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 18px 40px -22px rgba(20,26,22,.55)}
+.hero{position:relative;border-radius:var(--r-hero);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px}
+.sp{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.col{display:flex;flex-direction:column}
+.grid{display:grid;gap:14px}
+.inset{min-height:38px;padding:8px 12px;box-sizing:border-box;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.inset span:first-child{color:var(--muted)}.inset b{font-weight:600}
+.chip{width:32px;height:32px;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chip.w{background:var(--water-tint);color:var(--water)}.chip.s{background:var(--sun-tint);color:#B4660B}.chip.g{background:var(--green-tint);color:var(--green)}.chip.r{background:var(--risk-tint);color:var(--risk)}
+.num{font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1}
+.num small,.unit{font-size:14px;font-weight:500;color:var(--faint);letter-spacing:0}
+.pill{height:22px;padding:0 9px;box-sizing:border-box;border-radius:11px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--inset);color:var(--muted)}
+.pv-sat{background:var(--green-tint);color:var(--green)}.pv-est{background:#FBEBD2;color:#7A4A0B}.pv-farm{background:#ECECE8;color:var(--ink2)}.pv-agro{background:#DDEFE3;color:#1E5B36}.pv-meas{background:var(--water-tint);color:#1D4F73}.pv-demo{background:#FFF7E3;color:#7A5A12;box-shadow:inset 0 0 0 1px #E2BE6A;border:0}
+.lv{height:24px;padding:0 10px 0 8px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.lv i{width:7px;height:7px;border-radius:4px;display:block}
+.lv-low{background:var(--green-tint);color:var(--green)}.lv-low i{background:#2E8B4A}
+.lv-med{background:var(--sun-tint);color:#8A4E06}.lv-med i{background:var(--sun)}
+.lv-high{background:var(--risk-tint);color:#8F2A17}.lv-high i{background:var(--risk)}
+.btn{height:46px;padding:0 20px;border:0;border-radius:23px;background:var(--dark);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn.sun{background:var(--sun);color:var(--ink)}
+.btn.soft{background:var(--inset);color:var(--ink)}
+.btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px #D3D5CF;color:var(--ink)}
+.btn.sm{height:38px;padding:0 14px;font-size:13px}
+.btn.cta{padding:0 6px 0 18px;justify-content:space-between}
+.ar{width:34px;height:34px;border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink)}
+.btn.sun .ar,.btn.soft .ar{background:#fff}.btn:not(.sun):not(.soft):not(.line) .ar{background:var(--sun)}
+.press{transition:transform .14s var(--ease),background-color .16s ease,box-shadow .16s ease,opacity .16s ease}
+.press:active{transform:scale(.97)}
+.ghost:hover{background:#ECECE8}
+.lift{transition:transform .22s var(--ease),box-shadow .22s ease}
+.lift:hover{transform:translateY(-2px);box-shadow:0 12px 28px -16px rgba(20,26,22,.38)}
+.ar svg{transition:transform .22s var(--ease)}
+.cta:hover .ar svg,.lift:hover .ar svg{transform:translate(2px,-2px)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:6px 4px 0;font-size:13px;color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tl{font-size:12px;color:var(--muted)}
+.ar-t{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',sans-serif}
+/* motion: entrance */
+.rise{animation:rise .7s var(--ease) both;animation-delay:calc(var(--d,0) * 70ms + 120ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes tabIn{from{transform:scaleX(.2);opacity:0}to{transform:none;opacity:1}}
+/* skeleton: shaped like the card, shimmers, then hands over */
+.sk{position:absolute;inset:0;z-index:4;border-radius:inherit;background:var(--card);pointer-events:none;overflow:hidden;animation:skOut .5s ease both;animation-delay:calc(var(--d,0) * 90ms + 900ms)}
+.sk::before{content:"";position:absolute;inset:18px;background:linear-gradient(#EDEDE9,#EDEDE9) 0 0/38% 12px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 26px/64% 26px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 68px/88% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 88px/72% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 108px/52% 10px no-repeat;border-radius:6px}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.8) 50%,rgba(255,255,255,0) 70%);background-size:220% 100%;animation:shim 1.15s linear infinite}
+.dk>.sk{background:var(--dark)}.dk>.sk::before{filter:invert(1) brightness(.35)}.dk>.sk::after{background-image:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.08) 50%,rgba(255,255,255,0) 70%)}
+.tint-w>.sk{background:var(--water-tint)}.tint-s>.sk{background:var(--sun-tint)}
+.sk.hold{animation:none}
+.sk.map{background:#D9D6C8}.sk.map::before{display:none}
+@keyframes skOut{to{opacity:0;visibility:hidden}}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+/* motion: charts */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s var(--ease) forwards;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.grow{transform-box:fill-box;transform-origin:50% 100%;animation:grow .8s var(--ease) both;animation-delay:calc(var(--i,0) * 16ms + 1000ms)}
+.growx{transform-origin:0 50%;animation:growx .9s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms + 1000ms)}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes growx{from{transform:scaleX(0)}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop .6s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms + 1100ms)}
+@keyframes pop{from{transform:scale(0);opacity:0}}
+.fade{animation:fade .8s ease both;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes fade{from{opacity:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3);opacity:0}}
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4.8s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.blink{animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.typing i{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:3px;background:var(--faint);animation:typ 1.2s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typ{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+@media (prefers-reduced-motion: reduce){.rise,.draw,.grow,.growx,.pop,.fade,.tabs a[aria-current=page]::after{animation:none!important;stroke-dashoffset:0}.sk{display:none}.sk.hold{display:block}.sk::after,.pulse,.sway,.blink,.typing i{animation:none!important}.lift,.press{transition:none}.lift:hover{transform:none}}
+</style>
+</helmet>
+<div class="root"><div class="shell"><header class="top"><a href="V11-Field.html" class="brand" aria-label="Bezra, my field"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#17251C"/><ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" stroke-width="1.8" transform="rotate(-24 17 17)"/><path d="M17 8c3.4 3.2 4.8 6.4 4.8 9.2a4.8 4.8 0 0 1-9.6 0c0-2.8 1.4-6 4.8-9.2z" fill="#FFFFFF"/></svg>bezra</a><nav aria-label="Main" class="nav"><a href="V11-Field.html" aria-current="page" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20"/></svg>My field</a><a href="V11-Sim.html" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v2M18 4v4M6 20v-2M3 7l3-3 3 3M15 7l3-3 3 3"/></svg>Simulator</a><a href="V11-Ask.html" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8.5zM9 9h6M9 12h3"/></svg>Ask Bezra</a><a href="V11-Profile.html" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0"/></svg>Profile</a></nav><div class="tools"><div role="group" aria-label="Detail level" class="seg"><button type="button" class="{{segS}}" onClick="{{pickS}}" aria-pressed="{{isS}}">Simple</button><button type="button" class="{{segD}}" onClick="{{pickD}}" aria-pressed="{{isD}}">Details</button></div><a href="V11-Alerts.html" class="ibtn press" aria-label="Alerts, 2 new"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg><span class="dot"></span></a><span class="who"><span class="av" aria-hidden="true">HF</span><span><b>Hassan Farouk</b><small>North plot, Menoufia</small></span></span></div></header><main class="main"><div class="head"><div class="col rise" style="--d:0; gap: 6px;"><span class="eyebrow">North plot. Latest clear image 10 November, HLS 30 m.</span><h1 class="h1">Field health</h1></div><div role="group" aria-label="Index" class="seg rise" style="--d:1;"><sc-for list="{{idx}}" as="x" hint-placeholder-count="3"><button type="button" class="{{x.cls}}" onClick="{{x.pick}}" aria-pressed="{{x.p}}">{{x.label}}</button></sc-for></div></div><nav aria-label="North plot sections" class="tabs rise" style="--d:0"><a href="V11-Field.html">Today</a><a href="V11-Plan.html">Season plan</a><a href="V11-Health.html" aria-current="page">Field health</a><a href="V11-Calendar.html">Calendar</a><a href="V11-Next.html">Next season</a><a href="V11-Alerts.html">Alerts</a></nav><div class="grid" style="grid-template-columns: minmax(0, 1fr) 380px; align-items: stretch;"><section aria-labelledby="hm-h" class="hero rise" style="--d:2; min-height: 540px; background: #D9D6C8;"><i class="sk map" aria-hidden="true" style="--d:2"></i><h2 id="hm-h" class="vh">Greenness map</h2>
+<svg role="img" aria-label="{{mapLabel}}" width="100%" height="100%" viewBox="0 0 1360 520" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0;">
+<defs>
+<pattern id="rows" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M2.5 0V5" stroke="#000" stroke-width="1"/></pattern>
+<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#F29B1E"/><path d="M0 0V7" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="2.5"/></pattern>
+<linearGradient id="fadeB" x1="0" y1="0" x2="0" y2="1"><stop offset=".55" stop-color="#F4F4F1" stop-opacity="0"/><stop offset="1" stop-color="#F4F4F1" stop-opacity=".55"/></linearGradient>
+<filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .5"/></feComponentTransfer></filter>
+</defs>
+<g transform="rotate(-9 680 260)">
+<g stroke="#D8D1BA" stroke-width="1.1" stroke-opacity=".8"><sc-for list="{{parcels}}" as="p" hint-placeholder-count="0"><rect x="{{p.x}}" y="{{p.y}}" width="{{p.w}}" height="{{p.h}}" fill="{{p.fill}}"/></sc-for></g>
+<g fill="url(#rows)"><sc-for list="{{rowed}}" as="p" hint-placeholder-count="0"><rect x="{{p.x}}" y="{{p.y}}" width="{{p.w}}" height="{{p.h}}" opacity="{{p.op}}"/></sc-for></g>
+<rect x="1040" y="-80" width="300" height="190" rx="40" fill="#9A9485"/>
+<sc-for list="{{houses}}" as="h" hint-placeholder-count="0"><rect x="{{h.x}}" y="{{h.y}}" width="{{h.w}}" height="{{h.h}}" fill="{{h.fill}}" stroke="#5E594F" stroke-width=".6"/></sc-for>
+<rect x="596" y="-400" width="9" height="1400" fill="#DDD6C2"/>
+</g>
+<path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#4A6A35" stroke-width="22"/>
+<path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#3B6E8F" stroke-width="10"/>
+<rect width="1360" height="520" filter="url(#grain)" opacity=".14" style="mix-blend-mode: multiply;"/>
+<sc-if value="{{dim}}" hint-placeholder-val="{{false}}"><rect width="1360" height="520" fill="#141A16" opacity=".28" class="fade"/></sc-if>
+<g transform="rotate(-9 680 260)">
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="0"><rect class="pop" style="{{c.st}}" x="{{c.x}}" y="{{c.y}}" width="{{c.w}}" height="{{c.h}}" fill="{{c.fill}}" fill-opacity="{{c.op}}" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1"/></sc-for>
+<sc-if value="{{showNum}}" hint-placeholder-val="{{false}}"><sc-for list="{{cells}}" as="c" hint-placeholder-count="0"><text x="{{c.cx}}" y="{{c.cy}}" transform="{{c.tf}}" text-anchor="middle" dominant-baseline="central" font-family="Hanken Grotesk, sans-serif" font-size="13" font-weight="700" fill="{{c.ink}}">{{c.label}}</text></sc-for></sc-if>
+<rect x="605" y="120" width="160" height="220" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-opacity=".95"/>
+<rect x="605" y="120" width="160" height="220" fill="none" stroke="#141A16" stroke-width="2"/>
+<g transform="translate(738 147) rotate(9)"><circle r="9" fill="#F29B1E" class="pulse"/><circle r="9" fill="#F29B1E" stroke="#FFFFFF" stroke-width="3"/></g>
+</g>
+<rect width="1360" height="520" fill="url(#fadeB)"/>
+</svg>
+<div style="position: absolute; left: 18px; bottom: 18px;"><sc-if value="{{dim}}" hint-placeholder-val="{{true}}"><div class="float fade" style="--d:4; padding: 10px 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px;"><span class="row" style="gap: 14px;"><sc-for list="{{legend}}" as="l" hint-placeholder-count="3"><span class="row" style="gap: 6px; font-size: 13px; font-weight: 500;"><span style="{{l.sw}}"></span>{{l.label}}</span></sc-for></span><span class="tl">{{legendNote}}</span></div></sc-if></div><span class="float" style="position: absolute; right: 18px; top: 18px; height: 34px; padding: 0 12px; border-radius: 17px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500;"><span class="pill pv-sat">Satellite</span>{{idxNote}}</span></section><div class="col" style="gap: 14px;"><section class="card rise " style="--d:3;" ><i class="sk " aria-hidden="true" style="--d:3"></i><div class="row sp"><span class="lv lv-med"><i></i>Check this spot</span><span class="tl">NE corner, ~0.25 feddan</span></div><h2 class="h3">This corner looks weaker</h2><p class="body">It has been 20% less green than the rest of your field in the last two satellite images. It is also the driest corner. The satellite can't tell why, so please go and look.</p><span class="tl" style="font-weight: 600; color: var(--ink);">What did you see there?</span><div class="grid" style="grid-template-columns: 1fr 1fr; gap: 6px;"><sc-for list="{{seen}}" as="o" hint-placeholder-count="4"><button type="button" class="{{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.p}}">{{o.label}}</button></sc-for></div><a href="V11-Diagnose.html" class="btn cta press">Take a photo<span class="ar"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span></a></section><section class="card rise " style="--d:4;" ><i class="sk " aria-hidden="true" style="--d:4"></i><div class="row sp"><h2 class="h2">This season vs a normal year</h2><span class="pill pv-sat">Satellite</span></div><svg viewBox="0 0 320 150" width="100%" role="img" aria-label="Greenness this season tracks slightly above the 5 year average for North plot."><g stroke="#EDEDE9"><path d="M0 30H320M0 70H320M0 110H320"/></g><path d="M10 135C60 132 90 110 130 80S220 30 300 26" stroke="#B9BDB6" stroke-width="2" stroke-dasharray="4 5" fill="none"/><path class="draw" pathLength="1" style="--d:4" d="M10 136C50 130 80 112 110 92S150 70 170 64" stroke="#1F4A33" stroke-width="3" fill="none" stroke-linecap="round"/><circle class="pop" style="--i:8" cx="170" cy="64" r="6" fill="#1F4A33" stroke="#fff" stroke-width="2.5"/><g font-family="Hanken Grotesk, sans-serif" font-size="10" fill="#8B918C"><text x="8" y="148">Oct</text><text x="100" y="148">Dec</text><text x="196" y="148">Feb</text><text x="284" y="148">Apr</text></g></svg><div class="row" style="gap: 14px; font-size: 12px; color: var(--ink2);"><span class="row" style="gap: 6px;"><i style="width: 14px; height: 3px; border-radius: 2px; background: var(--green);"></i>This season</span><span class="row" style="gap: 6px;"><i style="width: 14px; height: 0; border-top: 2px dashed #B9BDB6;"></i>Your 5 year normal</span></div><p class="sub">Slightly better than a normal year for mid November.</p></section></div></div><sc-if value="{{details}}" hint-placeholder-val="{{false}}"><div class="grid" style="grid-template-columns: repeat(5, minmax(0, 1fr));"><section class="card rise " style="--d:5;gap: 8px;" ><i class="sk " aria-hidden="true" style="--d:5"></i><span class="tl">NDVI, field median</span><span class="num">0.61<small></small></span><span class="row wrap" style="gap: 4px;"><span class="pill pv-sat">Satellite</span><span class="pill">HLS 30 m</span></span></section><section class="card rise " style="--d:6;gap: 8px;" ><i class="sk " aria-hidden="true" style="--d:6"></i><span class="tl">EVI</span><span class="num">0.38<small></small></span><span class="row wrap" style="gap: 4px;"><span class="pill pv-sat">Satellite</span><span class="pill">HLS 30 m</span></span></section><section class="card rise " style="--d:7;gap: 8px;" ><i class="sk " aria-hidden="true" style="--d:7"></i><span class="tl">NDMI, moisture</span><span class="num">0.22<small></small></span><span class="row wrap" style="gap: 4px;"><span class="pill pv-sat">Satellite</span><span class="pill">HLS 30 m</span></span></section><section class="card rise " style="--d:8;gap: 8px;" ><i class="sk " aria-hidden="true" style="--d:8"></i><span class="tl">Surface temperature</span><span class="num">24<small> °C</small></span><span class="row wrap" style="gap: 4px;"><span class="pill pv-sat">Satellite</span><span class="pill">ECOSTRESS 70 m, 27 Oct</span></span></section><section class="card rise " style="--d:9;gap: 8px;" ><i class="sk " aria-hidden="true" style="--d:9"></i><span class="tl">Root zone moisture</span><span class="num">0.31<small> m³/m³</small></span><span class="row wrap" style="gap: 4px;"><span class="pill pv-sat">Satellite</span><span class="pill">SMAP 9 km</span></span></section></div></sc-if><footer class="foot"><span><span lang="ar" dir="rtl" class="ar-t">الأداة دي بتساعدك تفكر، مش بتقرر بدالك.</span> Bezra helps you think. It doesn't decide for you.</span><span>All numbers on this screen are demo data.</span></footer></main></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+constructor(props) { super(props); this.state = Object.assign({ mode: null }, { ix: 'NDVI', seen: null }); }
+renderVals() {
+const S = this.state, set = (o) => this.setState(o);
+const details = (S.mode ?? (this.props.details ? 'details' : 'simple')) === 'details';
+const base = { details, simple: !details, segS: 'segb press' + (details ? '' : ' on'), segD: 'segb press' + (details ? ' on' : ''), isS: String(!details), isD: String(details), pickS: () => set({ mode: 'simple' }), pickD: () => set({ mode: 'details' }) };
+const extra = (() => { 
+const mapRnd = (seed) => { let a = seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+const buildMap = () => {
+const rnd = mapRnd(913);
+const groups = [{ w: .34, c: ['#8C9C5A', '#95A463', '#81944F', '#8FA05B'] }, { w: .30, c: ['#5A7A3C', '#628342', '#4E6E36', '#688947'] }, { w: .26, c: ['#B1A584', '#BCB192', '#A39878', '#B6AC8E'] }, { w: .10, c: ['#7D725D', '#887D64'] }];
+const pick = () => { let r = rnd(), g = groups[0]; for (const gr of groups) { if (r < gr.w) { g = gr; break; } r -= gr.w; } return g.c[Math.floor(rnd() * g.c.length)]; };
+const parcels = [], rowed = [];
+const column = (x, w, skip) => { let y = -420; while (y < 1000) { let h = 50 + rnd() * 220; if (skip && y < 120 && y + h > 120) h = 120 - y; if (skip && Math.abs(y - 120) < .01) { y = 340; continue; } const p = { x: +x.toFixed(1), y: +y.toFixed(1), w: +w.toFixed(1), h: +h.toFixed(1), fill: pick() }; parcels.push(p); if (rnd() < .45) rowed.push({ x: p.x, y: p.y, w: p.w, h: p.h, op: (.06 + rnd() * .1).toFixed(2) }); y += h; } };
+let x = 605; while (x > -500) { const w = 18 + rnd() * 46; x -= w; column(x, w, false); }
+column(605, 160, true); x = 765; while (x < 1900) { const w = 18 + rnd() * 46; column(x, w, false); x += w; }
+const houses = [], roofs = ['#BDB6A7', '#A9A293', '#D2CBBB', '#928B7E', '#C7BEAB', '#A0978A'];
+for (let i = 0; i < 150; i++) houses.push({ x: (1046 + rnd() * 288).toFixed(1), y: (-74 + rnd() * 178).toFixed(1), w: (5 + rnd() * 11).toFixed(1), h: (5 + rnd() * 11).toFixed(1), fill: roofs[Math.floor(rnd() * roofs.length)] });
+return { parcels, rowed, houses };
+};
+if (!this._map) this._map = buildMap();
+const NDVI = [[.63, .55, .48], [.65, .60, .52], [.67, .64, .61], [.68, .66, .64]];
+const CL = [{ fill: 'url(#hatch)', label: 'Less green', sw: 'background: repeating-linear-gradient(45deg,#F29B1E 0 3px,#F7C67E 3px 5px);' }, { fill: '#D9DE9C', label: 'Normal', sw: 'background: #D9DE9C;' }, { fill: '#3E7F35', label: 'Greener', sw: 'background: #3E7F35;' }];
+const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; let i = 0; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) { const v = NDVI[r][c], k = v < .55 ? 0 : (v < .64 ? 1 : 2), x = 605 + c * cw, y = 120 + r * ch, cx = x + cw / 2, cy = y + ch / 2; out.push({ x: x.toFixed(1), y, w: cw.toFixed(1), h: ch, fill: CL[k].fill, op: on ? (k === 0 ? '.95' : '.82') : '0', cx: cx.toFixed(1), cy, tf: 'rotate(9 ' + cx.toFixed(1) + ' ' + cy + ')', label: v.toFixed(2), ink: k === 2 ? '#FFFFFF' : '#141A16', st: '--i:' + (i++) }); } return out; };
+
+const ix = S.ix;
+const cells = mkCells(true);
+const idx = ['NDVI', 'EVI', 'NDMI'].map((l) => ({ label: l, p: String(ix === l), pick: () => set({ ix: l }), cls: 'segb press' + (ix === l ? ' on' : '') }));
+const seen = ['Yellow leaves', 'Dry soil', 'Insects', 'Looks fine'].map((l) => ({ label: l, p: String(S.seen === l), pick: () => set({ seen: l }), cls: 'btn sm press ' + (S.seen === l ? '' : 'soft') }));
+return { parcels: this._map.parcels, rowed: this._map.rowed, houses: this._map.houses, cells, idx, seen, dim: true, showNum: details,
+legend: CL.map((c) => ({ label: c.label, sw: 'width: 14px; height: 10px; border-radius: 3px; ' + c.sw })), legendNote: details ? ix + ', 30 m squares, compared with your field median' : 'Compared with the rest of your field',
+idxNote: ix + ' · 10 Nov', mapLabel: 'Greenness of North plot in 12 squares. The north east corner is less green.' };
+ })();
+return Object.assign(base, extra || {});
+}
+}
+</script>
+</body>
+</html>

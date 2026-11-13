@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bezra, Try your season before you plant it</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>.static .rise,.static .fade,.static .pop,.static .grow,.static .growx,.static .tabs a[aria-current=page]::after{animation:none!important}
+.static .draw{animation:none!important;stroke-dashoffset:0}
+.static .sk:not(.hold){display:none}
+x-dc{display:block}
+</style>
+<script>(function(){
+window.DCLogic = class { constructor(p){ this.props = p || {}; } setState(o){ Object.assign(this.state, o); if (this.__render) this.__render(); } };
+function get(ctx, path){ return path.split('.').reduce(function(o,k){ return o==null?undefined:o[k]; }, ctx); }
+function sub(str, ctx){ return str.replace(/\{\{([^}]+)\}\}/g, function(_,p){ var v=get(ctx,p.trim()); return v==null||typeof v==='function'?'':String(v); }); }
+function walk(node, ctx, out){
+  Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+    if (ch.nodeType===3){ out.appendChild(document.createTextNode(sub(ch.textContent, ctx))); return; }
+    if (ch.nodeType!==1) return;
+    var tag=ch.tagName.toLowerCase();
+    if (tag==='sc-for'){ var m=ch.getAttribute('list').match(/\{\{(.+)\}\}/); var list=get(ctx,m[1].trim())||[]; var as=ch.getAttribute('as');
+      list.forEach(function(item){ var c=Object.create(ctx); c[as]=item; walk(ch,c,out); }); return; }
+    if (tag==='sc-if'){ var m2=ch.getAttribute('value').match(/\{\{(.+)\}\}/); if (get(ctx,m2[1].trim())) walk(ch,ctx,out); return; }
+    var el = ch.namespaceURI==='http://www.w3.org/2000/svg' ? document.createElementNS(ch.namespaceURI, ch.tagName) : document.createElement(ch.tagName);
+    Array.prototype.slice.call(ch.attributes).forEach(function(a){
+      if (/^on/i.test(a.name)){ var mm=a.value.match(/\{\{(.+)\}\}/); var fn=mm&&get(ctx,mm[1].trim()); if (typeof fn==='function') el.addEventListener(a.name.slice(2).toLowerCase(), function(e){ fn(e); }); return; }
+      el.setAttribute(a.name, sub(a.value, ctx)); });
+    walk(ch, ctx, el); out.appendChild(el);
+  });
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var x=document.querySelector('x-dc');
+  var h=x.querySelector('helmet'); if(h){ document.head.insertAdjacentHTML('beforeend', h.innerHTML); h.remove(); }
+  var tpl=document.createElement('div'); tpl.innerHTML=x.innerHTML;
+  var js=document.querySelector('script[data-dc-script]').textContent;
+  var C=new Function(js+';return Component;')(); var c=new C({details:false}); var first=true;
+  c.__render=function(){ if(!first) document.documentElement.classList.add('static'); first=false; var v=c.renderVals(); x.innerHTML=''; walk(tpl, v, x); };
+  c.__render();
+});
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4E5E0;--shell:#F4F4F1;--card:#FFFFFF;--inset:#F4F4F1;--line:#E8E8E3;--ink:#141A16;--ink2:#3D4440;--muted:#6A716C;--faint:#8B918C;--dark:#17251C;--sun:#F29B1E;--sun-tint:#FFF4E3;--water:#2F6FA8;--water-tint:#E8F1F9;--green:#1F4A33;--green-tint:#E4EFE7;--risk:#C2412A;--risk-tint:#FBE6E1;--r-card:12px;--r-float:20px;--r-hero:24px;--ease:cubic-bezier(.16,1,.3,1)}
+body{margin:0;background:var(--bg)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance}
+button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--sun);color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--sun);outline-offset:3px}
+.root{min-height:100vh;box-sizing:border-box;padding:14px;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.shell{min-height:calc(100vh - 28px);box-sizing:border-box;border-radius:30px;background:var(--shell);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 0 0 1px rgba(20,26,22,.04);padding:0 28px 28px}
+.top{height:84px;display:flex;align-items:center;gap:20px}
+.brand{flex:1 1 0;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;letter-spacing:-.6px}
+.nav{display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:#E9E9E5}
+.nav a{height:40px;padding:0 16px 0 12px;border-radius:999px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink2);transition:background-color .18s ease,color .18s ease}
+.nav a:hover{background:#DFDFDA}
+.nav a[aria-current=page]{background:var(--dark);color:#fff}
+.tools{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.seg{height:44px;padding:4px;box-sizing:border-box;border-radius:22px;background:#E9E9E5;display:flex;gap:2px}
+.segb{height:36px;padding:0 16px;border:0;border-radius:18px;font-size:14px;font-weight:600;background:transparent;color:var(--muted);transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.segb.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,26,22,.14)}
+.ibtn{position:relative;width:44px;height:44px;border:0;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dot{position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:4px;background:var(--sun);box-shadow:0 0 0 2px #fff}
+.who{height:44px;padding:0 14px 0 4px;box-sizing:border-box;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;gap:10px;white-space:nowrap}
+.av{width:36px;height:36px;border-radius:18px;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.who b{display:block;font-size:14px;font-weight:600}.who small{display:block;font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;gap:18px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 4px 2px}
+.eyebrow{font-size:15px;color:var(--muted)}
+.h1{font-size:44px;line-height:1;font-weight:600;letter-spacing:-1.6px}
+.h2{font-size:16px;font-weight:600}
+.h3{font-size:22px;line-height:1.15;font-weight:600;letter-spacing:-.5px}
+.sub{font-size:14px;color:var(--muted);line-height:1.45}
+.body{font-size:14px;line-height:1.5;color:var(--ink2)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 4px}
+.tabs a{position:relative;height:44px;padding:0 14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);transition:color .18s ease}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current=page]{color:var(--ink)}
+.tabs a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2.5px;border-radius:2px;background:var(--ink);animation:tabIn .5s var(--ease) both}
+.card{position:relative;padding:18px;border-radius:var(--r-card);background:var(--card);box-shadow:0 1px 2px rgba(20,26,22,.05);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.dk{background:var(--dark);color:#fff}
+.card.tint-w{background:var(--water-tint);box-shadow:none}
+.card.tint-s{background:var(--sun-tint);box-shadow:none}
+.float{border-radius:var(--r-float);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 18px 40px -22px rgba(20,26,22,.55)}
+.hero{position:relative;border-radius:var(--r-hero);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px}
+.sp{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.col{display:flex;flex-direction:column}
+.grid{display:grid;gap:14px}
+.inset{min-height:38px;padding:8px 12px;box-sizing:border-box;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.inset span:first-child{color:var(--muted)}.inset b{font-weight:600}
+.chip{width:32px;height:32px;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chip.w{background:var(--water-tint);color:var(--water)}.chip.s{background:var(--sun-tint);color:#B4660B}.chip.g{background:var(--green-tint);color:var(--green)}.chip.r{background:var(--risk-tint);color:var(--risk)}
+.num{font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1}
+.num small,.unit{font-size:14px;font-weight:500;color:var(--faint);letter-spacing:0}
+.pill{height:22px;padding:0 9px;box-sizing:border-box;border-radius:11px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--inset);color:var(--muted)}
+.pv-sat{background:var(--green-tint);color:var(--green)}.pv-est{background:#FBEBD2;color:#7A4A0B}.pv-farm{background:#ECECE8;color:var(--ink2)}.pv-agro{background:#DDEFE3;color:#1E5B36}.pv-meas{background:var(--water-tint);color:#1D4F73}.pv-demo{background:#FFF7E3;color:#7A5A12;box-shadow:inset 0 0 0 1px #E2BE6A;border:0}
+.lv{height:24px;padding:0 10px 0 8px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.lv i{width:7px;height:7px;border-radius:4px;display:block}
+.lv-low{background:var(--green-tint);color:var(--green)}.lv-low i{background:#2E8B4A}
+.lv-med{background:var(--sun-tint);color:#8A4E06}.lv-med i{background:var(--sun)}
+.lv-high{background:var(--risk-tint);color:#8F2A17}.lv-high i{background:var(--risk)}
+.btn{height:46px;padding:0 20px;border:0;border-radius:23px;background:var(--dark);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn.sun{background:var(--sun);color:var(--ink)}
+.btn.soft{background:var(--inset);color:var(--ink)}
+.btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px #D3D5CF;color:var(--ink)}
+.btn.sm{height:38px;padding:0 14px;font-size:13px}
+.btn.cta{padding:0 6px 0 18px;justify-content:space-between}
+.ar{width:34px;height:34px;border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink)}
+.btn.sun .ar,.btn.soft .ar{background:#fff}.btn:not(.sun):not(.soft):not(.line) .ar{background:var(--sun)}
+.press{transition:transform .14s var(--ease),background-color .16s ease,box-shadow .16s ease,opacity .16s ease}
+.press:active{transform:scale(.97)}
+.ghost:hover{background:#ECECE8}
+.lift{transition:transform .22s var(--ease),box-shadow .22s ease}
+.lift:hover{transform:translateY(-2px);box-shadow:0 12px 28px -16px rgba(20,26,22,.38)}
+.ar svg{transition:transform .22s var(--ease)}
+.cta:hover .ar svg,.lift:hover .ar svg{transform:translate(2px,-2px)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:6px 4px 0;font-size:13px;color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tl{font-size:12px;color:var(--muted)}
+.ar-t{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',sans-serif}
+/* motion: entrance */
+.rise{animation:rise .7s var(--ease) both;animation-delay:calc(var(--d,0) * 70ms + 120ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes tabIn{from{transform:scaleX(.2);opacity:0}to{transform:none;opacity:1}}
+/* skeleton: shaped like the card, shimmers, then hands over */
+.sk{position:absolute;inset:0;z-index:4;border-radius:inherit;background:var(--card);pointer-events:none;overflow:hidden;animation:skOut .5s ease both;animation-delay:calc(var(--d,0) * 90ms + 900ms)}
+.sk::before{content:"";position:absolute;inset:18px;background:linear-gradient(#EDEDE9,#EDEDE9) 0 0/38% 12px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 26px/64% 26px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 68px/88% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 88px/72% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 108px/52% 10px no-repeat;border-radius:6px}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.8) 50%,rgba(255,255,255,0) 70%);background-size:220% 100%;animation:shim 1.15s linear infinite}
+.dk>.sk{background:var(--dark)}.dk>.sk::before{filter:invert(1) brightness(.35)}.dk>.sk::after{background-image:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.08) 50%,rgba(255,255,255,0) 70%)}
+.tint-w>.sk{background:var(--water-tint)}.tint-s>.sk{background:var(--sun-tint)}
+.sk.hold{animation:none}
+.sk.map{background:#D9D6C8}.sk.map::before{display:none}
+@keyframes skOut{to{opacity:0;visibility:hidden}}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+/* motion: charts */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s var(--ease) forwards;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.grow{transform-box:fill-box;transform-origin:50% 100%;animation:grow .8s var(--ease) both;animation-delay:calc(var(--i,0) * 16ms + 1000ms)}
+.growx{transform-origin:0 50%;animation:growx .9s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms + 1000ms)}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes growx{from{transform:scaleX(0)}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop .6s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms + 1100ms)}
+@keyframes pop{from{transform:scale(0);opacity:0}}
+.fade{animation:fade .8s ease both;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes fade{from{opacity:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3);opacity:0}}
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4.8s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.blink{animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.typing i{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:3px;background:var(--faint);animation:typ 1.2s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typ{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+@media (prefers-reduced-motion: reduce){.rise,.draw,.grow,.growx,.pop,.fade,.tabs a[aria-current=page]::after{animation:none!important;stroke-dashoffset:0}.sk{display:none}.sk.hold{display:block}.sk::after,.pulse,.sway,.blink,.typing i{animation:none!important}.lift,.press{transition:none}.lift:hover{transform:none}}
+</style>
+</helmet>
+<div class="root"><div class="shell"><header class="top"><span class="brand"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#17251C"/><ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" stroke-width="1.8" transform="rotate(-24 17 17)"/><path d="M17 8c3.4 3.2 4.8 6.4 4.8 9.2a4.8 4.8 0 0 1-9.6 0c0-2.8 1.4-6 4.8-9.2z" fill="#FFFFFF"/></svg>bezra</span><div class="tools"><div role="group" aria-label="Language" class="seg"><button type="button" class="segb on">English</button><button type="button" class="segb ar-t">العربية</button></div><a href="V11-Field.html" class="btn soft press">Sign in</a></div></header><main class="main" style="gap: 22px;"><div class="grid" style="grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: stretch; gap: 18px;"><div class="col" style="gap: 22px; justify-content: center; padding: 10px 20px 10px 8px;"><span class="row rise" style="--d:0; gap: 8px; font-size: 14px; color: var(--muted);"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>For farmers in Egypt. Built on NASA satellite data.</span><h1 class="rise" style="--d:1; font-size: 68px; line-height: 1; font-weight: 600; letter-spacing: -2.6px;">Try your season before you plant it.</h1><p class="ar-t rise" lang="ar" dir="rtl" style="--d:2; align-self: flex-start; font-size: 26px; font-weight: 600; color: var(--ink2);">جرّب موسمك قبل ما تزرعه</p><p class="rise" style="--d:3; font-size: 18px; line-height: 1.55; color: var(--ink2); max-width: 520px;">Bezra shows your real field from space. Then you test sowing dates, water and varieties, and watch the result grow month by month, before you spend a pound.</p><div class="row rise" style="--d:4; gap: 10px;"><a href="V11-Onboarding.html" class="btn cta press" style="height: 54px; border-radius: 27px; font-size: 16px; padding: 0 7px 0 22px; gap: 14px;">Add my field<span class="ar"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span></a><a href="V11-Engineer.html" class="btn line press" style="height: 54px; border-radius: 27px; font-size: 16px;">I'm an agricultural engineer</a></div></div><section class="hero rise" style="--d:2; height: 620px; background: #CFC9B6;" aria-label="A field in the simulator">
+<svg role="img" aria-label="{{sceneLabel}}" viewBox="0 0 1000 640" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0;">
+<defs><radialGradient id="haze" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#F29B1E" stop-opacity=".38"/><stop offset="1" stop-color="#F29B1E" stop-opacity="0"/></radialGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F4F1" stop-opacity=".9"/><stop offset=".35" stop-color="#F4F4F1" stop-opacity="0"/></linearGradient>
+<filter id="gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .45"/></feComponentTransfer></filter></defs>
+<rect width="1000" height="640" fill="#CFC9B6"/>
+<g stroke="#D9D2BC" stroke-width=".8"><sc-for list="{{sc.ground}}" as="g" hint-placeholder-count="0"><polygon points="{{g.pts}}" fill="{{g.fill}}"/></sc-for></g>
+<polygon points="{{sc.road}}" fill="#DDD6C2"/><polygon points="{{sc.canal}}" fill="#3B6E8F"/>
+<rect width="1000" height="640" filter="url(#gr)" opacity=".16" style="mix-blend-mode: multiply;"/>
+<polygon points="{{sc.edgeR}}" fill="#5B4632"/><polygon points="{{sc.edgeF}}" fill="#4A3828"/><polygon points="{{sc.soil}}" fill="#8A6E4E"/>
+<sc-if value="{{wetOn}}" hint-placeholder-val="{{false}}"><polygon points="{{sc.wet}}" fill="#5FA6D6" opacity=".55" class="fade"/></sc-if>
+<g class="fade" style="--d:2"><sc-for list="{{sc.prisms}}" as="p" hint-placeholder-count="0"><polygon points="{{p.r}}" fill="{{p.cr}}"/><polygon points="{{p.f}}" fill="{{p.cf}}"/><polygon points="{{p.top}}" fill="{{p.c}}" stroke="rgba(255,255,255,.18)" stroke-width=".6"/><path d="{{p.rows}}" stroke="#1A2414" stroke-opacity=".22" stroke-width="1"/></sc-for></g>
+<sc-if value="{{rustOn}}" hint-placeholder-val="{{false}}"><sc-for list="{{rustDots}}" as="r" hint-placeholder-count="0"><circle cx="{{r.rx}}" cy="{{r.ry}}" r="5" fill="#D9762B" stroke="#fff" stroke-width="1.5" class="pop"/></sc-for></sc-if>
+<sc-if value="{{hazeOn}}" hint-placeholder-val="{{false}}"><rect width="1000" height="640" fill="url(#haze)" class="fade"/></sc-if>
+<rect width="1000" height="640" fill="url(#sky)"/>
+</svg>
+<span class="float pop" style="--i:6; position: absolute; left: 22px; top: 22px; height: 40px; padding: 0 14px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></svg>Sown 25 Oct, now 3 months later</span><div class="float pop" style="--i:9; position: absolute; right: 22px; top: 22px; padding: 14px 16px; display: flex; gap: 12px; align-items: center;"><svg aria-hidden="true" width="46" height="46" viewBox="0 0 60 60"><g class="sway"><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="col"><span class="tl">Expected harvest</span><b style="font-size: 26px; font-weight: 600; letter-spacing: -.8px;">97%</b></span></div><div class="float pop" style="--i:12; position: absolute; right: 22px; bottom: 22px; padding: 12px 16px; display: flex; gap: 18px;"><span class="col"><span class="tl">Water per feddan</span><b style="font-size: 18px; font-weight: 600;">3,150 m³</b></span><span class="col"><span class="tl">Hot days at grain fill</span><b style="font-size: 18px; font-weight: 600;">0</b></span></div><span class="pill pv-demo" style="position: absolute; left: 22px; bottom: 22px;">Demo field</span></section></div><div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));"><section class="card rise " style="--d:5;gap: 10px; padding: 22px;" ><i class="sk " aria-hidden="true" style="--d:5"></i><span class="chip g" style="width: 40px; height: 40px; border-radius: 12px;"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 7.5l9 4.5 9-4.5zM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5"/></svg></span><h3 style="font-size: 19px; font-weight: 600; letter-spacing: -.3px;">See your field from space</h3><p class="sub">NASA satellites show how green, how dry and how hot your field is, square by square.</p></section><section class="card rise " style="--d:6;gap: 10px; padding: 22px;" ><i class="sk " aria-hidden="true" style="--d:6"></i><span class="chip w" style="width: 40px; height: 40px; border-radius: 12px;"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5s6 6.4 6 10.7A6 6 0 0 1 6 14.2C6 9.9 12 3.5 12 3.5z"/></svg></span><h3 style="font-size: 19px; font-weight: 600; letter-spacing: -.3px;">Know what to do this week</h3><p class="sub">One clear action a day: when to water, when to check for rust, when the heat comes.</p></section><section class="card rise " style="--d:7;gap: 10px; padding: 22px;" ><i class="sk " aria-hidden="true" style="--d:7"></i><span class="chip s" style="width: 40px; height: 40px; border-radius: 12px;"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v2M18 4v4M6 20v-2M3 7l3-3 3 3M15 7l3-3 3 3"/></svg></span><h3 style="font-size: 19px; font-weight: 600; letter-spacing: -.3px;">Test before you decide</h3><p class="sub">Change the sowing date, the water or the variety and watch your field grow to harvest.</p></section></div><footer class="foot"><span><span lang="ar" dir="rtl" class="ar-t">الأداة دي بتساعدك تفكر، مش بتقرر بدالك.</span> Bezra helps you think. It doesn't decide for you.</span><span>All numbers on this screen are demo data.</span></footer></main></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+constructor(props) { super(props); this.state = Object.assign({ mode: null }, {}); }
+renderVals() {
+const S = this.state, set = (o) => this.setState(o);
+const details = (S.mode ?? (this.props.details ? 'details' : 'simple')) === 'details';
+const base = { details, simple: !details, segS: 'segb press' + (details ? '' : ' on'), segD: 'segb press' + (details ? ' on' : ''), isS: String(!details), isD: String(details), pickS: () => set({ mode: 'simple' }), pickD: () => set({ mode: 'details' }) };
+const extra = (() => { 
+const scene = (o) => {
+const s = o.scale || 4.2, ox = o.ox || 500, oy = o.oy || 170, C = .866, Sn = .5;
+const P = (x, y, z) => (ox + (x - y) * C * s).toFixed(1) + ',' + (oy + (x + y) * Sn * s - z * s).toFixed(1);
+const poly = (pts) => pts.join(' ');
+let a = 4242; const rnd = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const pal = ['#8C9C5A', '#95A463', '#5A7A3C', '#628342', '#B1A584', '#BCB192', '#A39878', '#7D725D', '#688947', '#4E6E36'];
+const ground = [];
+let x = -90;
+while (x < 150) { const w = 7 + rnd() * 14; let y = -80; while (y < 170) { const h = 14 + rnd() * 40; const inField = x + w > -1 && x < 61 && y + h > -1 && y < 81; const inCanal = y < 100 && y + h > 92; if (!inField) { const y0 = inCanal && y < 92 ? y : y, y1 = Math.min(y + h, inCanal ? 92 : y + h); if (y1 > y0 && !(y0 >= 92 && y0 < 100)) ground.push({ pts: poly([P(x, y0, 0), P(x + w, y0, 0), P(x + w, y1, 0), P(x, y1, 0)]), fill: pal[Math.floor(rnd() * pal.length)] }); } y += h; } x += w; }
+const canal = poly([P(-90, 92, 0), P(150, 92, 0), P(150, 100, 0), P(-90, 100, 0)]);
+const road = poly([P(-6, -80, .05), P(-2, -80, .05), P(-2, 92, .05), P(-6, 92, .05)]);
+const STG = [[.5, '#9DB36A'], [2.2, '#6FA04A'], [3.6, '#5E9842'], [6, '#4E8A3A'], [8.5, '#3F7D33'], [9, '#93A644'], [8.6, '#D8BE6A']];
+const mix = (c1, c2, t) => { const p = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const A = p(c1), B = p(c2); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+const m = o.month, st = STG[m];
+const cells = [];
+for (let i = 0; i < 6; i++) for (let j = 0; j < 8; j++) cells.push({ i, j });
+cells.sort((p, q) => (p.i + p.j) - (q.i + q.j));
+const prisms = [];
+cells.forEach(({ i, j }) => {
+const dry = (i >= 4 && j <= 2) ? .55 : ((i + j * 7) % 5) * .04;
+let stress = m >= 2 ? Math.min(1, dry * o.water + (m >= 5 ? o.heat : 0) + (m >= 3 && o.rust && (i * 3 + j) % 7 === 0 ? .35 : 0)) : 0;
+const jit = ((i * 7 + j * 13) % 9) / 9;
+const z = Math.max(.35, st[0] * (1 - stress * .32) * (.9 + jit * .16));
+const top = mix(mix(st[1], '#2E6B2A', jit * .18), m >= 6 ? '#B89A4A' : '#CDBB6E', Math.min(.75, stress * .7));
+const x0 = i * 10, x1 = x0 + 10, y0 = j * 10, y1 = y0 + 10;
+const rows = [2.5, 5, 7.5].map((d) => P(x0 + d, y0 + .6, z) + ' ' + P(x0 + d, y1 - .6, z)).join(' M');
+prisms.push({ top: poly([P(x0, y0, z), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)]), r: poly([P(x1, y0, 0), P(x1, y1, 0), P(x1, y1, z), P(x1, y0, z)]), f: poly([P(x0, y1, 0), P(x1, y1, 0), P(x1, y1, z), P(x0, y1, z)]),
+c: top, cr: mix(top, '#1A2414', .28), cf: mix(top, '#1A2414', .42), rows: 'M' + rows, rust: o.rust && m >= 3 && m <= 4 && (i * 3 + j) % 7 === 0, rx: P(x0 + 5, y0 + 5, z).split(',')[0], ry: P(x0 + 5, y0 + 5, z).split(',')[1] });
+});
+const soil = poly([P(0, 0, 0), P(60, 0, 0), P(60, 80, 0), P(0, 80, 0)]);
+const edgeR = poly([P(60, 0, 0), P(60, 80, 0), P(60, 80, -1.2), P(60, 0, -1.2)]), edgeF = poly([P(0, 80, 0), P(60, 80, 0), P(60, 80, -1.2), P(0, 80, -1.2)]);
+const wet = o.wet ? poly([P(.5, .5, .1), P(59.5, .5, .1), P(59.5, 79.5, .1), P(.5, 79.5, .1)]) : '';
+const tag = P(60, 0, 12).split(',');
+return { ground, canal, road, prisms, soil, edgeR, edgeF, wet, tagX: tag[0], tagY: tag[1] };
+};
+
+const sc = scene({ month: 3, water: .35, heat: 0, rust: false, wet: false });
+return { sc, wetOn: false, rustOn: false, rustDots: [], hazeOn: false, sceneLabel: 'A wheat field in 3D, three months after sowing, healthy and green.' };
+ })();
+return Object.assign(base, extra || {});
+}
+}
+</script>
+</body>
+</html>

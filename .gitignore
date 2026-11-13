@@ -1,0 +1,17 @@
+# secrets (Earthdata login, API keys)
+.env
+.env.*
+!.env.example
+
+# Python backend
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# local Claude Code settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db

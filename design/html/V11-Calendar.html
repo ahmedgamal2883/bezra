@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bezra, Planting calendar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>.static .rise,.static .fade,.static .pop,.static .grow,.static .growx,.static .tabs a[aria-current=page]::after{animation:none!important}
+.static .draw{animation:none!important;stroke-dashoffset:0}
+.static .sk:not(.hold){display:none}
+x-dc{display:block}
+</style>
+<script>(function(){
+window.DCLogic = class { constructor(p){ this.props = p || {}; } setState(o){ Object.assign(this.state, o); if (this.__render) this.__render(); } };
+function get(ctx, path){ return path.split('.').reduce(function(o,k){ return o==null?undefined:o[k]; }, ctx); }
+function sub(str, ctx){ return str.replace(/\{\{([^}]+)\}\}/g, function(_,p){ var v=get(ctx,p.trim()); return v==null||typeof v==='function'?'':String(v); }); }
+function walk(node, ctx, out){
+  Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+    if (ch.nodeType===3){ out.appendChild(document.createTextNode(sub(ch.textContent, ctx))); return; }
+    if (ch.nodeType!==1) return;
+    var tag=ch.tagName.toLowerCase();
+    if (tag==='sc-for'){ var m=ch.getAttribute('list').match(/\{\{(.+)\}\}/); var list=get(ctx,m[1].trim())||[]; var as=ch.getAttribute('as');
+      list.forEach(function(item){ var c=Object.create(ctx); c[as]=item; walk(ch,c,out); }); return; }
+    if (tag==='sc-if'){ var m2=ch.getAttribute('value').match(/\{\{(.+)\}\}/); if (get(ctx,m2[1].trim())) walk(ch,ctx,out); return; }
+    var el = ch.namespaceURI==='http://www.w3.org/2000/svg' ? document.createElementNS(ch.namespaceURI, ch.tagName) : document.createElement(ch.tagName);
+    Array.prototype.slice.call(ch.attributes).forEach(function(a){
+      if (/^on/i.test(a.name)){ var mm=a.value.match(/\{\{(.+)\}\}/); var fn=mm&&get(ctx,mm[1].trim()); if (typeof fn==='function') el.addEventListener(a.name.slice(2).toLowerCase(), function(e){ fn(e); }); return; }
+      el.setAttribute(a.name, sub(a.value, ctx)); });
+    walk(ch, ctx, el); out.appendChild(el);
+  });
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var x=document.querySelector('x-dc');
+  var h=x.querySelector('helmet'); if(h){ document.head.insertAdjacentHTML('beforeend', h.innerHTML); h.remove(); }
+  var tpl=document.createElement('div'); tpl.innerHTML=x.innerHTML;
+  var js=document.querySelector('script[data-dc-script]').textContent;
+  var C=new Function(js+';return Component;')(); var c=new C({details:false}); var first=true;
+  c.__render=function(){ if(!first) document.documentElement.classList.add('static'); first=false; var v=c.renderVals(); x.innerHTML=''; walk(tpl, v, x); };
+  c.__render();
+});
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4E5E0;--shell:#F4F4F1;--card:#FFFFFF;--inset:#F4F4F1;--line:#E8E8E3;--ink:#141A16;--ink2:#3D4440;--muted:#6A716C;--faint:#8B918C;--dark:#17251C;--sun:#F29B1E;--sun-tint:#FFF4E3;--water:#2F6FA8;--water-tint:#E8F1F9;--green:#1F4A33;--green-tint:#E4EFE7;--risk:#C2412A;--risk-tint:#FBE6E1;--r-card:12px;--r-float:20px;--r-hero:24px;--ease:cubic-bezier(.16,1,.3,1)}
+body{margin:0;background:var(--bg)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance}
+button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--sun);color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--sun);outline-offset:3px}
+.root{min-height:100vh;box-sizing:border-box;padding:14px;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.shell{min-height:calc(100vh - 28px);box-sizing:border-box;border-radius:30px;background:var(--shell);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 0 0 1px rgba(20,26,22,.04);padding:0 28px 28px}
+.top{height:84px;display:flex;align-items:center;gap:20px}
+.brand{flex:1 1 0;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;letter-spacing:-.6px}
+.nav{display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:#E9E9E5}
+.nav a{height:40px;padding:0 16px 0 12px;border-radius:999px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink2);transition:background-color .18s ease,color .18s ease}
+.nav a:hover{background:#DFDFDA}
+.nav a[aria-current=page]{background:var(--dark);color:#fff}
+.tools{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.seg{height:44px;padding:4px;box-sizing:border-box;border-radius:22px;background:#E9E9E5;display:flex;gap:2px}
+.segb{height:36px;padding:0 16px;border:0;border-radius:18px;font-size:14px;font-weight:600;background:transparent;color:var(--muted);transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.segb.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,26,22,.14)}
+.ibtn{position:relative;width:44px;height:44px;border:0;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dot{position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:4px;background:var(--sun);box-shadow:0 0 0 2px #fff}
+.who{height:44px;padding:0 14px 0 4px;box-sizing:border-box;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;gap:10px;white-space:nowrap}
+.av{width:36px;height:36px;border-radius:18px;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.who b{display:block;font-size:14px;font-weight:600}.who small{display:block;font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;gap:18px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 4px 2px}
+.eyebrow{font-size:15px;color:var(--muted)}
+.h1{font-size:44px;line-height:1;font-weight:600;letter-spacing:-1.6px}
+.h2{font-size:16px;font-weight:600}
+.h3{font-size:22px;line-height:1.15;font-weight:600;letter-spacing:-.5px}
+.sub{font-size:14px;color:var(--muted);line-height:1.45}
+.body{font-size:14px;line-height:1.5;color:var(--ink2)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 4px}
+.tabs a{position:relative;height:44px;padding:0 14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);transition:color .18s ease}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current=page]{color:var(--ink)}
+.tabs a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2.5px;border-radius:2px;background:var(--ink);animation:tabIn .5s var(--ease) both}
+.card{position:relative;padding:18px;border-radius:var(--r-card);background:var(--card);box-shadow:0 1px 2px rgba(20,26,22,.05);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.dk{background:var(--dark);color:#fff}
+.card.tint-w{background:var(--water-tint);box-shadow:none}
+.card.tint-s{background:var(--sun-tint);box-shadow:none}
+.float{border-radius:var(--r-float);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 18px 40px -22px rgba(20,26,22,.55)}
+.hero{position:relative;border-radius:var(--r-hero);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px}
+.sp{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.col{display:flex;flex-direction:column}
+.grid{display:grid;gap:14px}
+.inset{min-height:38px;padding:8px 12px;box-sizing:border-box;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.inset span:first-child{color:var(--muted)}.inset b{font-weight:600}
+.chip{width:32px;height:32px;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chip.w{background:var(--water-tint);color:var(--water)}.chip.s{background:var(--sun-tint);color:#B4660B}.chip.g{background:var(--green-tint);color:var(--green)}.chip.r{background:var(--risk-tint);color:var(--risk)}
+.num{font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1}
+.num small,.unit{font-size:14px;font-weight:500;color:var(--faint);letter-spacing:0}
+.pill{height:22px;padding:0 9px;box-sizing:border-box;border-radius:11px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--inset);color:var(--muted)}
+.pv-sat{background:var(--green-tint);color:var(--green)}.pv-est{background:#FBEBD2;color:#7A4A0B}.pv-farm{background:#ECECE8;color:var(--ink2)}.pv-agro{background:#DDEFE3;color:#1E5B36}.pv-meas{background:var(--water-tint);color:#1D4F73}.pv-demo{background:#FFF7E3;color:#7A5A12;box-shadow:inset 0 0 0 1px #E2BE6A;border:0}
+.lv{height:24px;padding:0 10px 0 8px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.lv i{width:7px;height:7px;border-radius:4px;display:block}
+.lv-low{background:var(--green-tint);color:var(--green)}.lv-low i{background:#2E8B4A}
+.lv-med{background:var(--sun-tint);color:#8A4E06}.lv-med i{background:var(--sun)}
+.lv-high{background:var(--risk-tint);color:#8F2A17}.lv-high i{background:var(--risk)}
+.btn{height:46px;padding:0 20px;border:0;border-radius:23px;background:var(--dark);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn.sun{background:var(--sun);color:var(--ink)}
+.btn.soft{background:var(--inset);color:var(--ink)}
+.btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px #D3D5CF;color:var(--ink)}
+.btn.sm{height:38px;padding:0 14px;font-size:13px}
+.btn.cta{padding:0 6px 0 18px;justify-content:space-between}
+.ar{width:34px;height:34px;border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink)}
+.btn.sun .ar,.btn.soft .ar{background:#fff}.btn:not(.sun):not(.soft):not(.line) .ar{background:var(--sun)}
+.press{transition:transform .14s var(--ease),background-color .16s ease,box-shadow .16s ease,opacity .16s ease}
+.press:active{transform:scale(.97)}
+.ghost:hover{background:#ECECE8}
+.lift{transition:transform .22s var(--ease),box-shadow .22s ease}
+.lift:hover{transform:translateY(-2px);box-shadow:0 12px 28px -16px rgba(20,26,22,.38)}
+.ar svg{transition:transform .22s var(--ease)}
+.cta:hover .ar svg,.lift:hover .ar svg{transform:translate(2px,-2px)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:6px 4px 0;font-size:13px;color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tl{font-size:12px;color:var(--muted)}
+.ar-t{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',sans-serif}
+/* motion: entrance */
+.rise{animation:rise .7s var(--ease) both;animation-delay:calc(var(--d,0) * 70ms + 120ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes tabIn{from{transform:scaleX(.2);opacity:0}to{transform:none;opacity:1}}
+/* skeleton: shaped like the card, shimmers, then hands over */
+.sk{position:absolute;inset:0;z-index:4;border-radius:inherit;background:var(--card);pointer-events:none;overflow:hidden;animation:skOut .5s ease both;animation-delay:calc(var(--d,0) * 90ms + 900ms)}
+.sk::before{content:"";position:absolute;inset:18px;background:linear-gradient(#EDEDE9,#EDEDE9) 0 0/38% 12px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 26px/64% 26px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 68px/88% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 88px/72% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 108px/52% 10px no-repeat;border-radius:6px}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.8) 50%,rgba(255,255,255,0) 70%);background-size:220% 100%;animation:shim 1.15s linear infinite}
+.dk>.sk{background:var(--dark)}.dk>.sk::before{filter:invert(1) brightness(.35)}.dk>.sk::after{background-image:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.08) 50%,rgba(255,255,255,0) 70%)}
+.tint-w>.sk{background:var(--water-tint)}.tint-s>.sk{background:var(--sun-tint)}
+.sk.hold{animation:none}
+.sk.map{background:#D9D6C8}.sk.map::before{display:none}
+@keyframes skOut{to{opacity:0;visibility:hidden}}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+/* motion: charts */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s var(--ease) forwards;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.grow{transform-box:fill-box;transform-origin:50% 100%;animation:grow .8s var(--ease) both;animation-delay:calc(var(--i,0) * 16ms + 1000ms)}
+.growx{transform-origin:0 50%;animation:growx .9s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms + 1000ms)}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes growx{from{transform:scaleX(0)}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop .6s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms + 1100ms)}
+@keyframes pop{from{transform:scale(0);opacity:0}}
+.fade{animation:fade .8s ease both;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes fade{from{opacity:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3);opacity:0}}
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4.8s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.blink{animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.typing i{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:3px;background:var(--faint);animation:typ 1.2s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typ{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+@media (prefers-reduced-motion: reduce){.rise,.draw,.grow,.growx,.pop,.fade,.tabs a[aria-current=page]::after{animation:none!important;stroke-dashoffset:0}.sk{display:none}.sk.hold{display:block}.sk::after,.pulse,.sway,.blink,.typing i{animation:none!important}.lift,.press{transition:none}.lift:hover{transform:none}}
+</style>
+</helmet>
+<div class="root"><div class="shell"><header class="top"><a href="V11-Field.html" class="brand" aria-label="Bezra, my field"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#17251C"/><ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" stroke-width="1.8" transform="rotate(-24 17 17)"/><path d="M17 8c3.4 3.2 4.8 6.4 4.8 9.2a4.8 4.8 0 0 1-9.6 0c0-2.8 1.4-6 4.8-9.2z" fill="#FFFFFF"/></svg>bezra</a><nav aria-label="Main" class="nav"><a href="V11-Field.html" aria-current="page" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20"/></svg>My field</a><a href="V11-Sim.html" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v2M18 4v4M6 20v-2M3 7l3-3 3 3M15 7l3-3 3 3"/></svg>Simulator</a><a href="V11-Ask.html" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8.5zM9 9h6M9 12h3"/></svg>Ask Bezra</a><a href="V11-Profile.html" class="press"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0"/></svg>Profile</a></nav><div class="tools"><div role="group" aria-label="Detail level" class="seg"><button type="button" class="{{segS}}" onClick="{{pickS}}" aria-pressed="{{isS}}">Simple</button><button type="button" class="{{segD}}" onClick="{{pickD}}" aria-pressed="{{isD}}">Details</button></div><a href="V11-Alerts.html" class="ibtn press" aria-label="Alerts, 2 new"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg><span class="dot"></span></a><span class="who"><span class="av" aria-hidden="true">HF</span><span><b>Hassan Farouk</b><small>North plot, Menoufia</small></span></span></div></header><main class="main"><div class="head"><div class="col rise" style="--d:0; gap: 6px;"><span class="eyebrow">When to sow, crop by crop, for North plot</span><h1 class="h1">Planting calendar</h1></div><div class="row rise" style="--d:1; gap: 10px;"><span class="tl">Climate of</span><div role="group" aria-label="Climate period" class="seg"><sc-for list="{{eras}}" as="e" hint-placeholder-count="3"><button type="button" class="{{e.cls}}" onClick="{{e.pick}}" aria-pressed="{{e.p}}">{{e.label}}</button></sc-for></div></div></div><nav aria-label="North plot sections" class="tabs rise" style="--d:0"><a href="V11-Field.html">Today</a><a href="V11-Plan.html">Season plan</a><a href="V11-Health.html">Field health</a><a href="V11-Calendar.html" aria-current="page">Calendar</a><a href="V11-Next.html">Next season</a><a href="V11-Alerts.html">Alerts</a></nav><section class="card rise " style="--d:2;gap: 18px;" ><i class="sk " aria-hidden="true" style="--d:2"></i><div class="row sp wrap" style="gap: 12px;"><h2 class="h2">Sowing windows, {{eraLabel}}</h2><span class="row" style="gap: 14px; font-size: 12px; color: var(--ink2);"><span class="row" style="gap: 6px;"><i style="width: 18px; height: 10px; border-radius: 3px; background: #3E8F4E;"></i>Best</span><span class="row" style="gap: 6px;"><i style="width: 18px; height: 10px; border-radius: 3px; background: #E9C25A;"></i>OK</span><span class="row" style="gap: 6px;"><i style="width: 18px; height: 10px; border-radius: 3px; background: repeating-linear-gradient(45deg,#D9644B 0 3px,#EBA290 3px 6px);"></i>High risk</span><span class="row" style="gap: 6px;"><i style="width: 10px; height: 10px; border-radius: 5px; background: #fff; box-shadow: 0 0 0 2px #141A16;"></i>Stage</span></span></div><div style="display: grid; grid-template-columns: 150px repeat(24, minmax(0, 1fr)); row-gap: 14px; column-gap: 0; align-items: center;"><span></span><div style="grid-column: span 24; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));"><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Nov</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Dec</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Jan</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Feb</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Mar</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Apr</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">May</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Jun</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Jul</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Aug</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Sep</span><span style="font-size: 12px; font-weight: 600; color: var(--muted); text-align: center;">Oct</span></div><sc-for list="{{crops}}" as="c" hint-placeholder-count="5"><span class="row" style="gap: 8px; font-size: 14px; font-weight: 600;"><span style="{{c.sw}}"></span>{{c.name}}</span><div style="grid-column: span 24; position: relative; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; height: 34px;"><sc-for list="{{c.cells}}" as="h" hint-placeholder-count="24"><button type="button" class="growx" aria-label="{{h.aria}}" onClick="{{h.pick}}" style="{{h.style}}"></button></sc-for></div></sc-for></div><div class="row wrap" style="gap: 8px; padding-left: 150px;"><span class="tl">Wheat stages if sown {{pickLabel}}:</span><sc-for list="{{stages}}" as="s" hint-placeholder-count="5"><span class="pill">{{s}}</span></sc-for></div></section><div class="grid" style="grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);"><section class="card rise " style="--d:3;" ><i class="sk " aria-hidden="true" style="--d:3"></i><div class="row" style="gap: 12px; align-items: flex-start;"><svg aria-hidden="true" width="52" height="52" viewBox="0 0 60 60"><g class="sway"><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M26 38h8" stroke="#3A2A10" stroke-width="2.2" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><div class="col" style="gap: 6px; flex: 1;"><span class="tl">If you sow wheat on</span><h2 class="h3">{{pickLabel}}</h2></div></div><div class="grid" style="grid-template-columns: 1fr 1fr; gap: 6px;"><div class="inset" style="flex-direction: column; align-items: flex-start;"><span>Heat at grain fill</span><b style="font-size: 22px;">{{heat}}%<small class="unit"> chance</small></b></div><div class="inset" style="flex-direction: column; align-items: flex-start;"><span>Yield vs best date</span><b style="font-size: 22px;">{{loss}}</b></div></div><span class="row" style="gap: 4px;"><span class="pill pv-est">Estimated</span><span class="pill">Your area</span><span class="pill">30 years of NASA POWER</span></span></section><section class="card rise tint-s" style="--d:4;" ><i class="sk " aria-hidden="true" style="--d:4"></i><div class="row" style="gap: 10px;"><span class="chip s"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20h19zM12 10v4M12 17h.01"/></svg></span><h2 class="h2">Your maize harvest is late</h2></div><p class="body">Your maize is harvested around <b>10 December</b>, so wheat goes in late. That costs about <b>6% of the harvest</b>.</p><a href="V11-Sim.html" class="btn soft cta press">Try it in the simulator<span class="ar"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span></a></section><section class="card rise " style="--d:5;" ><i class="sk " aria-hidden="true" style="--d:5"></i><h2 class="h2">The best time is earlier now</h2><p class="body">In the 1990s the best time to sow wheat started about <b>12 days later</b>. By 2040 it will be about <b>9 days earlier</b> than today.</p><span class="row" style="gap: 4px;"><span class="pill pv-est">Estimated</span><span class="pill pv-demo">Demo</span></span><a href="V11-Next.html" class="btn line cta press">See next season<span class="ar"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span></a></section></div><footer class="foot"><span><span lang="ar" dir="rtl" class="ar-t">الأداة دي بتساعدك تفكر، مش بتقرر بدالك.</span> Bezra helps you think. It doesn't decide for you.</span><span>All numbers on this screen are demo data.</span></footer></main></div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"details":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+constructor(props) { super(props); this.state = Object.assign({ mode: null }, { era: 'Today', pick: 3 }); }
+renderVals() {
+const S = this.state, set = (o) => this.setState(o);
+const details = (S.mode ?? (this.props.details ? 'details' : 'simple')) === 'details';
+const base = { details, simple: !details, segS: 'segb press' + (details ? '' : ' on'), segD: 'segb press' + (details ? ' on' : ''), isS: String(!details), isD: String(details), pickS: () => set({ mode: 'simple' }), pickD: () => set({ mode: 'details' }) };
+const extra = (() => { 
+const era = S.era, shift = era === '1990s' ? 1 : (era === '2040' ? -1 : 0);
+const eras = ['1990s', 'Today', '2040'].map((l) => ({ label: l, p: String(era === l), pick: () => set({ era: l }), cls: 'segb press' + (era === l ? ' on' : '') }));
+const MON = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+const half = (i) => (i % 2 ? '16 ' : '1 ') + MON[Math.floor(i / 2)];
+const C = { g: 'background: #3E8F4E;', y: 'background: #E9C25A;', r: 'background: repeating-linear-gradient(45deg,#D9644B 0 3px,#EBA290 3px 6px);', n: 'background: #F1F1EE;' };
+const row = (s) => s.split('');
+const RAW = [
+['Wheat', '#C9B26A', 'yyggyyrrnnnnnnnnnnnnnnyy'],
+['Berseem', '#4C9A58', 'ggyyrnnnnnnnnnnnnnnnnygg'],
+['Sugar beet', '#B0566B', 'ggyyrrnnnnnnnnnnnnnnnnyg'],
+['Maize', '#6E9A4A', 'nnnnnnnnnnrryggyyrrnnnnn'],
+['Cotton', '#D9D3C2', 'nnnnnnnnryggyrrnnnnnnnnn']];
+const crops = RAW.map(([name, col, pat], ci) => {
+let p = row(pat); if (ci === 0 && shift) { p = shift > 0 ? ['y'].concat(p.slice(0, 23)) : p.slice(1).concat(['y']); }
+return { name, sw: 'width: 10px; height: 10px; border-radius: 3px; background: ' + col + ';', cells: p.map((k, i) => {
+const sel = ci === 0 && S.pick === i;
+return { aria: name + ', sow ' + half(i) + ', ' + ({ g: 'best', y: 'acceptable', r: 'high risk', n: 'not a season' })[k], pick: ci === 0 && k !== 'n' ? () => set({ pick: i }) : null,
+style: '--i:' + (i + ci * 3) + '; height: 100%; padding: 0; border: 0; border-radius: ' + (i === 0 ? '8px 2px 2px 8px' : (i === 23 ? '2px 8px 8px 2px' : '2px')) + '; ' + C[k] + (sel ? ' box-shadow: inset 0 0 0 3px #141A16;' : '') + (ci === 0 && k !== 'n' ? ' cursor: pointer;' : ' cursor: default;') }; }) };
+});
+const p = S.pick, wheat = crops[0].cells, best = 3 - shift;
+const off = Math.abs(p - best);
+const heat = Math.min(80, 12 + off * 9), loss = off === 0 ? 'Best date' : '-' + (off * 3 + (off > 2 ? 4 : 0)) + '%';
+const stg = ['Tillering', 'Jointing', 'Heading', 'Grain fill', 'Harvest'];
+const add = [3, 6, 9, 10, 12];
+const stages = stg.map((s, i) => s + ' ' + half(Math.min(23, p + add[i] * 2 - 2)));
+return { eras, crops, eraLabel: era === 'Today' ? 'today\'s climate' : (era === '2040' ? '2040 climate (SSP2-4.5)' : 'the 1990s climate'), pickLabel: half(p), heat, loss, stages };
+ })();
+return Object.assign(base, extra || {});
+}
+}
+</script>
+</body>
+</html>
