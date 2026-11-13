@@ -16,7 +16,7 @@ from .cache import fetch_cached
 SOURCE = "Open-Meteo forecast"
 VARS = {"temperature_2m_max": "tmax", "temperature_2m_min": "tmin", "temperature_2m_mean": "tmean",
         "relative_humidity_2m_mean": "rh", "dew_point_2m_mean": "dew", "precipitation_sum": "rain",
-        "et0_fao_evapotranspiration": "et0"}
+        "et0_fao_evapotranspiration": "et0", "wind_speed_10m_max": "wind"}
 
 
 def weather(lat: float, lon: float) -> tuple[dict, dict]:
@@ -29,7 +29,7 @@ def weather(lat: float, lon: float) -> tuple[dict, dict]:
         days = {}
         for i, t in enumerate(d["time"]):
             row = {short: d[k][i] for k, short in VARS.items()}
-            if all(v is not None for v in row.values()):
+            if all(v is not None for k, v in row.items() if k != "wind"):
                 days[t] = row
         return {"generated": datetime.now().isoformat(timespec="minutes"), "days": days}
 

@@ -102,7 +102,9 @@ const mkCells = (on, showNum) => { const out = []; const cw = 160 / 3, ch = 55; 
 
 const ix = S.ix;
 const cells = mkCells(true);
-const idx = ['NDVI', 'EVI', 'NDMI'].map((l) => ({ label: l, p: String(ix === l), pick: () => set({ ix: l }), cls: 'segb press' + (ix === l ? ' on' : '') }));
+// U6: plain words in Simple mode, index names only in Details
+const PLAIN = { NDVI: 'Greenness', EVI: 'Leaf cover', NDMI: 'Moisture' };
+const idx = ['NDVI', 'EVI', 'NDMI'].map((l) => ({ label: details ? l : PLAIN[l], p: String(ix === l), pick: () => set({ ix: l }), cls: 'segb press' + (ix === l ? ' on' : '') }));
 const seen = ['Yellow leaves', 'Dry soil', 'Insects', 'Looks fine'].map((l) => ({ label: l, p: String(S.seen === l), pick: () => set({ seen: l }), cls: 'btn sm press ' + (S.seen === l ? '' : 'soft') }));
 return { parcels: this._map.parcels, rowed: this._map.rowed, houses: this._map.houses, cells, idx, seen, dim: true, showNum: details,
 legend: CL.map((c) => ({ label: c.label, sw: 'width: 14px; height: 10px; border-radius: 3px; ' + c.sw })), legendNote: details ? ix + ', 30 m squares, compared with your field median' : 'Compared with the rest of your field',

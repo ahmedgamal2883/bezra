@@ -9,12 +9,16 @@ import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Plan.logic';
+import PlanTracker, { progressOf } from '@/components/PlanTracker';
+import { usePlan } from '@/components/PlanToday';
 
 export default function PlanScreen() {
   const { fp, id } = useField();
   const __v = useDC(Logic);
   // Engineer review status (step 6): GET /plans/{id}, set by the engineer's "Approve plan".
   const pl = useApi(`/plans/${id}`, undefined, true).data;
+  const { plan } = usePlan(id); // U4: real plan + tracker
+  const prog = progressOf(plan);
   const planOk = pl?.status === 'approved';
   const planDate = pl?.approved_at ? new Date(pl.approved_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
   return (
@@ -156,8 +160,11 @@ export default function PlanScreen() {
                       </g>
                     </svg>
                     <div className="col" style={{"gap":"8px","flex":"1"} as any}>
-                      <span style={{"fontSize":"13px","color":"rgba(255,255,255,.7)"} as any}>
-                        {"This season on North plot"}
+                      <span className="row wrap" style={{"gap":"10px","alignItems":"center"} as any}>
+                        <span style={{"fontSize":"13px","color":"rgba(255,255,255,.7)"} as any}>
+                          {"This season on " + (plan?.field_name || "your field")}
+                        </span>
+                        {plan ? <span className={plan.tracker.on_plan === plan.tracker.due ? "lv lv-low" : "lv lv-med"}><i />{plan.tracker.text}</span> : null}
                       </span>
                       <h2 style={{"fontSize":"26px","lineHeight":"1.2","fontWeight":"600","letterSpacing":"-.6px"} as any}>
                         {"3 risks this season: late heat "}
@@ -181,452 +188,11 @@ export default function PlanScreen() {
                         </b>
                         {" of your harvest from these risks."}
                       </p>
+                      <span className="pill pv-demo" style={{"alignSelf":"flex-start"} as any}>{"Demo"}</span>
                     </div>
                   </div>
                 </section>
-                <ol style={{"position":"relative","margin":"0","padding":"0","display":"flex","flexDirection":"column","gap":"10px"} as any}>
-                  <span aria-hidden="true" className="grow" style={{"position":"absolute","left":"12px","top":"20px","bottom":"40px","width":"2px","background":"#DADBD5","transformOrigin":"50% 0","--i":"0"} as any} />
-                  <li className="rise" style={{"--d":"3","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","borderRadius":"13px","background":"var(--green)","color":"#fff","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
-                        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12.5 4.5 4.5L19 7.5" />
-                        </svg>
-                      </span>
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px","opacity":".72"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"3"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="lv lv-low">
-                            <i />
-                            {"Done"}
-                          </span>
-                          <span className="tl">
-                            {"Chosen in September"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Variety: Sakha 95"}
-                        </h3>
-                        <p className="sub">
-                          {"Heat tolerant and rust resistant for the Delta."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"5 to 9%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-agro">
-                          {"Agronomist"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: ARC list, Demo, to verify"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"4","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","borderRadius":"13px","background":"var(--green)","color":"#fff","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
-                        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12.5 4.5 4.5L19 7.5" />
-                        </svg>
-                      </span>
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px","opacity":".72"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"4"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="lv lv-low">
-                            <i />
-                            {"Done"}
-                          </span>
-                          <span className="tl">
-                            {"Sown 15 Oct"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Sow by 15 October"}
-                        </h3>
-                        <p className="sub">
-                          {"Early sowing moves grain fill before the April heat."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"10 to 15%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-est">
-                          {"Estimated"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: Qalyubia sowing date trial"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"5","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","borderRadius":"13px","background":"var(--green)","color":"#fff","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
-                        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12.5 4.5 4.5L19 7.5" />
-                        </svg>
-                      </span>
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px","opacity":".72"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"5"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="lv lv-low">
-                            <i />
-                            {"Done"}
-                          </span>
-                          <span className="tl">
-                            {"3 Nov"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"First water after sowing"}
-                        </h3>
-                        <p className="sub">
-                          {"Even germination across the field."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"2 to 4%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-farm">
-                          {"Farmer"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: FAO-56"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"6","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"position":"relative","width":"26px","height":"26px","borderRadius":"13px","background":"var(--sun)","boxShadow":"0 0 0 5px rgba(242,155,30,.22)"} as any} />
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px","boxShadow":"0 0 0 1.5px var(--sun), 0 10px 24px -16px rgba(242,155,30,.6)"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"6"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="lv lv-med">
-                            <i />
-                            {"Now"}
-                          </span>
-                          <span className="tl">
-                            {"Thursday 19 Nov"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Water turn, do not skip"}
-                        </h3>
-                        <p className="sub">
-                          {"Tillering is the stage most hurt by thirst."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"8 to 12%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-est">
-                          {"Estimated"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: North Delta irrigation study"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"7","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"position":"relative","width":"26px","height":"26px","borderRadius":"13px","background":"var(--sun)","boxShadow":"0 0 0 5px rgba(242,155,30,.22)"} as any} />
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px","boxShadow":"0 0 0 1.5px var(--sun), 0 10px 24px -16px rgba(242,155,30,.6)"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"7"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="lv lv-med">
-                            <i />
-                            {"Now"}
-                          </span>
-                          <span className="tl">
-                            {"14 Nov to 10 Dec"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Keep the field free of weeds"}
-                        </h3>
-                        <p className="sub">
-                          {"Critical weed free period. Weed before fertilizing."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"4 to 8%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-est">
-                          {"Estimated"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: Crop GDD table"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"8","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","boxSizing":"border-box","borderRadius":"13px","background":"#fff","border":"2px solid #CFCFC9"} as any} />
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"8"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="pill">
-                            {"Coming"}
-                          </span>
-                          <span className="tl">
-                            {"Around 5 Dec"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Split nitrogen, second dose"}
-                        </h3>
-                        <p className="sub">
-                          {"Timing only. Your engineer sets the amount."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"3 to 6%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-agro">
-                          {"Agronomist"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: Engineer decides the dose"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"9","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","boxSizing":"border-box","borderRadius":"13px","background":"#fff","border":"2px solid #CFCFC9"} as any} />
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"9"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="pill">
-                            {"Coming"}
-                          </span>
-                          <span className="tl">
-                            {"10 Jan to 28 Feb"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Scout for yellow rust"}
-                        </h3>
-                        <p className="sub">
-                          {"Cool, foggy weeks favour rust. Check leaves weekly."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"5 to 15%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-est">
-                          {"Estimated"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: Rust weather index"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"10","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","boxSizing":"border-box","borderRadius":"13px","background":"#fff","border":"2px solid #CFCFC9"} as any} />
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"10"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="pill">
-                            {"Coming"}
-                          </span>
-                          <span className="tl">
-                            {"If heat is forecast in April"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Water before the heat"}
-                        </h3>
-                        <p className="sub">
-                          {"A light turn 2 days before a heat wave cools the crop."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"6 to 10%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-est">
-                          {"Estimated"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: Heat stress trial"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                  <li className="rise" style={{"--d":"11","display":"grid","gridTemplateColumns":"26px minmax(0, 1fr)","gap":"16px","listStyle":"none"} as any}>
-                    <span style={{"position":"relative","zIndex":"1","paddingTop":"18px"} as any}>
-                      <span style={{"width":"26px","height":"26px","boxSizing":"border-box","borderRadius":"13px","background":"#fff","border":"2px solid #CFCFC9"} as any} />
-                    </span>
-                    <article className="card lift" style={{"flexDirection":"row","flexWrap":"wrap","alignItems":"center","gap":"12px 20px"} as any}>
-                      <i className="sk " aria-hidden="true" style={{"--d":"11"} as any} />
-                      <div className="col" style={{"flex":"2 1 260px","gap":"4px"} as any}>
-                        <span className="row" style={{"gap":"8px"} as any}>
-                          <span className="pill">
-                            {"Coming"}
-                          </span>
-                          <span className="tl">
-                            {"10 to 25 April"}
-                          </span>
-                        </span>
-                        <h3 style={{"fontSize":"18px","fontWeight":"600","letterSpacing":"-.3px"} as any}>
-                          {"Harvest window"}
-                        </h3>
-                        <p className="sub">
-                          {"Harvest before the khamaseen winds."}
-                        </p>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 140px","gap":"2px"} as any}>
-                        <span className="tl">
-                          {"Protects"}
-                        </span>
-                        <b style={{"fontSize":"20px","fontWeight":"600"} as any}>
-                          {"1 to 3%"}
-                          <small className="unit">
-                            {" of harvest"}
-                          </small>
-                        </b>
-                      </div>
-                      <div className="col" style={{"flex":"1 1 170px","gap":"6px"} as any}>
-                        <span className="pill pv-est">
-                          {"Estimated"}
-                        </span>
-                        {__v?.details ? (
-                          <>
-                            <span className="tl">
-                              {"Source: Crop calendar"}
-                            </span>
-                          </>
-                        ) : null}
-                      </div>
-                    </article>
-                  </li>
-                </ol>
+                <PlanTracker plan={plan} details={!!__v?.details} />
               </div>
               <aside className="col" style={{"gap":"14px","position":"sticky","top":"14px"} as any}>
                 <section className="card rise " style={{"--d":"3"} as any}>
@@ -637,9 +203,9 @@ export default function PlanScreen() {
                   <div className="row" style={{"gap":"16px"} as any}>
                     <svg viewBox="0 0 120 120" width="112" height="112" role="img" aria-label="3 of 9 actions done">
                       <circle cx="60" cy="60" r="50" stroke="#EDEDE9" strokeWidth="12" fill="none" />
-                      <circle className="draw" pathLength="1" cx="60" cy="60" r="50" stroke="#1F4A33" strokeWidth="12" fill="none" strokeLinecap="round" transform="rotate(-90 60 60)" style={{"strokeDasharray":".333 1","strokeDashoffset":".333","--d":"3"} as any} />
+                      <circle className="draw" pathLength="1" cx="60" cy="60" r="50" stroke="#1F4A33" strokeWidth="12" fill="none" strokeLinecap="round" transform="rotate(-90 60 60)" style={{"strokeDasharray":`${prog.share} 1`,"strokeDashoffset":String(prog.share),"--d":"3"} as any} />
                       <text x="60" y="66" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="26" fontWeight="600" fill="#141A16">
-                        {"3/9"}
+                        {prog.total ? `${prog.done}/${prog.total}` : "…"}
                       </text>
                     </svg>
                     <div className="col" style={{"gap":"6px","flex":"1"} as any}>
@@ -648,7 +214,7 @@ export default function PlanScreen() {
                           {"Done"}
                         </span>
                         <b>
-                          {"3"}
+                          {prog.done}
                         </b>
                       </div>
                       <div className="inset">
@@ -656,7 +222,7 @@ export default function PlanScreen() {
                           {"Now"}
                         </span>
                         <b>
-                          {"2"}
+                          {prog.now}
                         </b>
                       </div>
                       <div className="inset">
@@ -664,7 +230,7 @@ export default function PlanScreen() {
                           {"Coming"}
                         </span>
                         <b>
-                          {"4"}
+                          {prog.coming}
                         </b>
                       </div>
                     </div>

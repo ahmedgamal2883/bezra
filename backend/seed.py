@@ -22,12 +22,13 @@ ENGINEER = ("ahmed@bezra.app", "Ahmed Gamal", "engineer")
 DEMO_EMAIL = "hassan@demo.bezra.app"
 
 
-def field(fid, num, name, gov, village, lat, lon, area, crop, variety, sow, mesqa, turn, next_turn, waterings, prev="maize"):
+def field(fid, num, name, gov, village, lat, lon, area, crop, variety, sow, mesqa, turn, next_turn, waterings, prev="maize", log=()):
     return {"id": fid, "num": num, "name": name, "governorate": gov, "village": village, "lat": lat, "lon": lon,
             "area_feddan": area, "crop": crop, "variety": variety, "sow_date": sow, "prev_crop": prev,
             "prev_crop_harvest": None, "water_source": f"Mesqa, {mesqa} end" if mesqa != "middle" else "Mesqa, middle",
             "mesqa_position": mesqa, "turn_days": turn, "next_turn": next_turn,
-            "waterings": [{"date": d, "m3": m} for d, m in waterings], "tenure": "owner", "soil": "clay"}
+            "waterings": [{"date": d, "m3": m} for d, m in waterings], "tenure": "owner", "soil": "clay",
+            "log": [{"kind": k, "date": d, "source": "You"} for k, d in log]}
 
 
 # Farmers and their fields. Coordinates are on cropland (checked against Sentinel-2 greenness in checkpoint 5).
@@ -53,7 +54,8 @@ FARMERS = [
         "2026-11-12", "middle", 21, "2026-12-03", [("2026-11-12", 900)], prev="rice")]),
     ("wanjiku@demo.bezra.app", "Wanjiku Mwangi", [field(
         "wanjiku-kenya", "01", "Shamba", "Uasin Gishu, Kenya", "Eldoret", 0.5500, 35.3000, 1.0, "maize", None,
-        "2026-09-15", "head", 14, "2026-11-20", [("2026-09-15", 250)], prev="beans")]),
+        "2026-09-15", "head", 14, "2026-11-20", [("2026-09-15", 250), ("2026-09-25", 200), ("2026-10-09", 220), ("2026-10-24", 260), ("2026-11-06", 300)],
+        prev="beans", log=[("weeding", "2026-10-10")])]),
 ]
 
 

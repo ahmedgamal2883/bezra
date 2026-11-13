@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from . import config  # noqa: F401  (loads backend/.env)
 from . import db, fields
 from .chat import bezra
-from .services import alerts, apistatus, calendar, cases, engineer, nextseason, satellite, sim, summary
+from .services import alerts, apistatus, plan, calendar, cases, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 COOKIE = "bezra_session"
@@ -41,6 +41,7 @@ def _daily_alerts_job():
                         alerts.build(c)
                 except Exception as e:  # a failed source must not stop the job
                     print("daily alerts failed for", fid, e)
+            plan.daily(ctx)  # Phase 2 §C2: re-score every plan, what changed
             now = datetime.now()
             nxt = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
             _t.sleep(max(60, (nxt - now).total_seconds()))
@@ -222,6 +223,28 @@ def get_ndvi(field_id: str, user: dict = Depends(current_user)):
 @app.get("/fields/{field_id}/alerts")
 def get_alerts(field_id: str, user: dict = Depends(current_user)):
     return alerts.build(_ctx(field_id, user))
+
+
+@app.get("/fields/{field_id}/plan")
+def get_plan(field_id: str, user: dict = Depends(current_user)):
+    return plan.build(_ctx(field_id, user))
+
+
+class LogReq(BaseModel):
+    kind: str
+    date: str
+    amount: float | None = None
+    unit: str | None = None   # "m3" or "hours" for watering; free for others
+
+
+@app.post("/fields/{field_id}/log")
+def post_log(field_id: str, req: LogReq, user: dict = Depends(current_user)):
+    c = _ctx(field_id, user)
+    try:
+        entry = plan.add_log(c, req.kind, req.date, req.amount, req.unit)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return entry
 
 
 @app.get("/fields/{field_id}/health")

@@ -397,7 +397,7 @@ export default function DiagnoseScreen() {
                       {"Patch greenness since treatment"}
                     </span>
                     <b style={{"color":"var(--green)"} as any}>
-                      {C ? (C.follow_up.change != null ? (C.follow_up.change >= 0 ? "+" : "") + C.follow_up.change.toFixed(2) + " NDVI" : "After " + due) : "+0.06 NDVI"}
+                      {C ? (C.follow_up.change != null ? (C.follow_up.change >= 0 ? "Greener by " : "Less green by ") + Math.round(Math.abs(C.follow_up.change) * 100) + " points" : "After " + due) : "Greener by 6 points"}
                     </b>
                   </div>
                   <div className="inset" style={{"background":"var(--sun-tint)"} as any}>

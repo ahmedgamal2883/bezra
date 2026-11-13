@@ -16,7 +16,8 @@ FIELDS: dict[str, dict] = {
         "water_source": "Mesqa, tail end", "mesqa_position": "tail", "turn_days": 10,
         "next_turn": "2026-11-19",
         # watering log (date, m3 applied). The farmer types this in; 600 + 550 = 1,150 m3 as in the design.
-        "waterings": [{"date": "2026-10-15", "m3": 600}, {"date": "2026-11-03", "m3": 550}],
+        "waterings": [{"date": "2026-10-15", "m3": 600}, {"date": "2026-10-31", "m3": 520}, {"date": "2026-11-12", "m3": 540}],
+        "log": [{"kind": "fertilizer", "date": "2026-10-29", "source": "You"}],
         "tenure": "tenant", "soil": "clay",
     },
     "south-plot": {
@@ -27,7 +28,7 @@ FIELDS: dict[str, dict] = {
         "sow_date": "2026-10-20", "prev_crop": "maize", "prev_crop_harvest": None,
         "water_source": "Mesqa, head end", "mesqa_position": "head", "turn_days": 10,
         "next_turn": "2026-11-17",
-        "waterings": [{"date": "2026-10-20", "m3": 150}, {"date": "2026-11-07", "m3": 130}],
+        "waterings": [{"date": "2026-10-20", "m3": 150}, {"date": "2026-10-28", "m3": 120}, {"date": "2026-11-07", "m3": 130}],
         "tenure": "owner", "soil": "clay",
     },
 }

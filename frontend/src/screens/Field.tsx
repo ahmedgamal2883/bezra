@@ -9,6 +9,8 @@ import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Field.logic';
+import { useState as useStateP } from 'react';
+import { usePlan, StatusLine, MoreTasks, Changed, LogSheet, logAction } from '@/components/PlanToday';
 
 export default function FieldScreen() {
   const { fp, id } = useField();
@@ -19,6 +21,11 @@ export default function FieldScreen() {
   const summary = useApi(`/fields/${id}/summary`);
   const ndvi = useApi(`/fields/${id}/ndvi`);
   const health = useApi(`/fields/${id}/health`);
+  const { plan, reload } = usePlan(id);
+  const [sheet, setSheet] = useStateP(false);
+  // U2: when the water turn is due today (or late), the big button logs the watering in one tap
+  const waterNow = (plan?.checklist || []).find((x: any) => x.task_id?.startsWith('turn-') && x.buttons?.[0]?.log === 'water');
+  const [logged, setLogged] = useStateP(false);
   const __v = useDC(Logic, { data: summary.data, loading: summary.loading, fieldId: id, ndvi: ndvi.data, health: health.data });
   return (
     <>
@@ -353,7 +360,7 @@ export default function FieldScreen() {
                   </div>
                 </div>
               </article>
-              <article aria-labelledby="act-h" className="float rise" style={{"--d":"6","position":"absolute","right":"18px","top":"18px","width":"348px","padding":"18px","boxSizing":"border-box","display":"flex","flexDirection":"column","gap":"14px"} as any}>
+              <article aria-labelledby="act-h" className="float rise" style={{"--d":"6","position":"absolute","right":"18px","top":"18px","width":"348px","maxHeight":"calc(100% - 84px)","overflowY":"auto","padding":"18px","boxSizing":"border-box","display":"flex","flexDirection":"column","gap":"14px"} as any}>
                 <div className="row" style={{"gap":"10px","alignItems":"flex-start"} as any}>
                   <svg aria-hidden="true" width="48" height="48" viewBox="0 0 60 60">
                     <g className="sway">
@@ -382,8 +389,9 @@ export default function FieldScreen() {
                         {__v.T.conf}
                       </span>
                     </span>
+                    <StatusLine plan={plan} />
                     <h2 id="act-h" style={{"fontSize":"23px","lineHeight":"1.15","fontWeight":"600","letterSpacing":"-.6px"} as any}>
-                      {__v.T.title}
+                      {waterNow ? waterNow.title + '.' : __v.T.title}
                     </h2>
                   </div>
                 </div>
@@ -427,9 +435,16 @@ export default function FieldScreen() {
                   ) : null}
                 </div>
                 <div className="row" style={{"gap":"8px"} as any}>
+                  {waterNow ? (
+                    <button type="button" className={'btn press' + (logged ? ' soft' : '')} aria-pressed={logged} style={{"flex":"1"} as any}
+                      onClick={async () => { if (logged) return; try { await logAction(id, 'water', new Date().toISOString().slice(0, 10)); setLogged(true); reload(); } catch {} }}>
+                      {logged ? 'Saved, thanks' : 'I watered'}
+                    </button>
+                  ) : (
                   <button type="button" className={__s(__v?.doneCls) as any} onClick={__v?.toggleDone} aria-pressed={__s(__v?.doneP) as any} style={{"flex":"1"} as any}>
                     {__s(__v?.doneLabel)}
                   </button>
+                  )}
                   <button type="button" className="btn soft press sm" aria-label="Listen in Arabic" style={{"height":"46px","width":"46px","padding":"0"} as any}>
                     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" />
@@ -444,7 +459,11 @@ export default function FieldScreen() {
                     </span>
                   </Link>
                 </div>
+                <MoreTasks plan={plan} fieldId={id} skipWater onDone={reload} />
+                <Changed plan={plan} details={!!__v?.details} />
+                <button type="button" className="btn soft sm press" onClick={() => setSheet(true)}>{'+ Log what you did'}</button>
               </article>
+              <LogSheet fieldId={id} open={sheet} onClose={() => setSheet(false)} onSaved={() => { reload(); }} />
               <div style={{"position":"absolute","left":"18px","bottom":"18px","display":"flex","alignItems":"flex-end","gap":"10px"} as any}>
                 <div className="float" style={{"display":"flex","flexDirection":"column","borderRadius":"999px","overflow":"hidden"} as any}>
                   <button type="button" aria-label="Zoom in" className="ghost" style={{"width":"40px","height":"40px","border":"0","background":"transparent","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
