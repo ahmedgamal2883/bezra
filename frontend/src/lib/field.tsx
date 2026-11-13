@@ -16,7 +16,9 @@ export function FieldProvider({ children }: { children: ReactNode }) {
 
 export function SetField({ id }: { id: string }) {
   const { setId } = useContext(Ctx);
-  useEffect(() => setId(id), [id, setId]);
+  useEffect(() => {
+    setId(id);
+  }, [id, setId]);
   return null;
 }
 

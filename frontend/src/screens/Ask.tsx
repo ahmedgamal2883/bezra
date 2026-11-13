@@ -2,7 +2,9 @@
 /* eslint-disable */
 // Generated from design/html/V11-Ask.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Ask.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
+import { useApi } from '@/lib/api';
+import { LiveMessages, useAskChat, useMic } from '@/components/AskLive';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -10,8 +12,17 @@ import AboutLink from '@/components/AboutLink';
 import Logic from './Ask.logic';
 
 export default function AskScreen() {
-  const { fp } = useField();
+  const { fp, id } = useField();
   const __v = useDC(Logic);
+  // Ask Bezra: POST /chat (step 3). Without a Claude API key the design's sample conversation stays as Demo.
+  const status = useApi('/chat/status');
+  const ready = !!status.data?.ready;
+  const S = useApi(`/fields/${id}/summary`).data;
+  const chat = useAskChat(id, ready);
+  const [draft, setDraft] = useState('');
+  const mic = useMic((t) => setDraft(t));
+  const sendDraft = () => { if (draft.trim()) { chat.send(draft); setDraft(''); } };
+  const showDemo = !ready && chat.msgs.length === 0;
   return (
     <>
       <div className="root">
@@ -118,6 +129,8 @@ export default function AskScreen() {
                     {" Egyptian Arabic"}
                   </span>
                 </div>
+                {showDemo ? (
+                <>
                 <div className="col" style={{"gap":"14px","flex":"1"} as any}>
                   <div className="row rise" style={{"--d":"2","gap":"10px","alignItems":"flex-end","maxWidth":"640px"} as any}>
                     <svg aria-hidden="true" width="40" height="40" viewBox="0 0 60 60">
@@ -301,11 +314,13 @@ export default function AskScreen() {
                     </span>
                   </div>
                 </div>
+                </>
+                ) : <LiveMessages msgs={chat.msgs} busy={chat.busy} greeting />}
                 <div className="row wrap rise" style={{"--d":"10","gap":"6px","justifyContent":"flex-end"} as any}>
-                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl">
+                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl" onClick={() => chat.send("ليه لازم أزرع بدري؟")} disabled={chat.busy}>
                     {"ليه لازم أزرع بدري؟"}
                   </button>
-                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl">
+                  <button type="button" className="btn line sm press ar-t" lang="ar" dir="rtl" onClick={() => chat.send("يعني إيه NDVI؟")} disabled={chat.busy}>
                     {"يعني إيه NDVI؟"}
                   </button>
                   <Link href="/sim" className="btn line sm press ar-t" lang="ar" dir="rtl">
@@ -316,7 +331,7 @@ export default function AskScreen() {
                   </Link>
                 </div>
                 <div className="row rise" style={{"--d":"11","gap":"8px","padding":"6px","borderRadius":"999px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.06)"} as any}>
-                  <button type="button" className="ibtn press" aria-label="Speak" style={{"background":"var(--sun)"} as any}>
+                  <button type="button" className="ibtn press" aria-label={mic.on ? "Stop listening" : "Speak"} aria-pressed={mic.on} onClick={mic.toggle} title={mic.supported ? "Speak in Arabic" : "Voice needs Chrome or Edge"} style={{"background": mic.on ? "var(--risk)" : "var(--sun)", "color": mic.on ? "#fff" : undefined} as any}>
                     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM6 11a6 6 0 0 0 12 0M12 17v4" />
                     </svg>
@@ -324,8 +339,8 @@ export default function AskScreen() {
                   <label className="vh" htmlFor="askq">
                     {"Your question"}
                   </label>
-                  <input id="askq" className="ar-t" dir="rtl" placeholder="اكتب سؤالك أو دوس على المايك" style={{"flex":"1","height":"44px","border":"0","outline":"0","fontSize":"16px","background":"transparent","fontFamily":"inherit"} as any} />
-                  <button type="button" className="ibtn press" aria-label="Send" style={{"background":"var(--dark)","color":"#fff"} as any}>
+                  <input id="askq" className="ar-t" dir="auto" placeholder="اكتب سؤالك أو دوس على المايك" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") sendDraft(); }} style={{"flex":"1","height":"44px","border":"0","outline":"0","fontSize":"16px","background":"transparent","fontFamily":"inherit"} as any} />
+                  <button type="button" className="ibtn press" aria-label="Send" onClick={sendDraft} disabled={chat.busy} style={{"background":"var(--dark)","color":"#fff"} as any}>
                     <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12 20 5l-4 15-4-6zM12 14l8-9" />
                     </svg>
@@ -344,7 +359,7 @@ export default function AskScreen() {
                         {"Field"}
                       </span>
                       <b>
-                        {"North plot, wheat"}
+                        {S ? `${S.field.name}, ${S.field.crop.toLowerCase()}` : "North plot, wheat"}
                       </b>
                     </div>
                     <div className="inset">
@@ -352,7 +367,7 @@ export default function AskScreen() {
                         {"Stage"}
                       </span>
                       <b>
-                        {"Tillering, day 30"}
+                        {S ? `${S.stage}, day ${S.day_n}` : "Tillering, day 30"}
                       </b>
                     </div>
                     <div className="inset">
@@ -360,7 +375,7 @@ export default function AskScreen() {
                         {"Open alerts"}
                       </span>
                       <b>
-                        {"2"}
+                        {S ? String(Object.values(S.risks).filter((r: any) => r.level !== "Low").length) : "2"}
                       </b>
                     </div>
                     <div className="inset">
@@ -496,7 +511,7 @@ export default function AskScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {ready ? "Answers by Claude from your field's NASA data. Check them with your engineer." : "All numbers on this screen are demo data."}
                 <AboutLink />
               </span>
             </footer>

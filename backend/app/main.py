@@ -10,7 +10,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+import anthropic
+
+from . import config  # noqa: F401  (loads backend/.env)
 from . import fields
+from .chat import bezra
 from .services import calendar, nextseason, sim, summary
 from .services.context import ctx
 
@@ -77,6 +81,36 @@ def post_sim(req: SimReq):
         return sim.build(c, req.model_dump())
     except ValueError as e:
         raise HTTPException(422, str(e))
+
+
+class ChatReq(BaseModel):
+    field_id: str = "north-plot"
+    message: str
+    history: list[dict] = []
+
+
+@app.get("/chat/status")
+def chat_status():
+    return {"ready": bezra.available(), "model": bezra.MODEL}
+
+
+@app.post("/chat")
+def post_chat(req: ChatReq):
+    c = _ctx(req.field_id)
+    if not bezra.available():
+        raise HTTPException(503, "Ask Bezra needs ANTHROPIC_API_KEY in backend/.env")
+    if not req.message.strip() or len(req.message) > 2000:
+        raise HTTPException(422, "Empty or too long message")
+    try:
+        return bezra.chat(c, req.history, req.message.strip())
+    except anthropic.AuthenticationError:
+        raise HTTPException(503, "The Claude API key in backend/.env is not valid")
+    except anthropic.RateLimitError:
+        raise HTTPException(429, "Too many questions at once. Try again in a minute.")
+    except anthropic.APIConnectionError:
+        raise HTTPException(503, "Can't reach the Claude API. Check the internet connection.")
+    except anthropic.APIStatusError as e:
+        raise HTTPException(502, f"Claude API error {e.status_code}")
 
 
 @app.get("/sources")
