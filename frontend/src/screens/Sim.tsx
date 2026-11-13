@@ -4,7 +4,7 @@
 // Logic lives in ./Sim.logic.js (verbatim from the design).
 import { Fragment, useEffect, useState } from 'react';
 import { useApi } from '@/lib/api';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -56,6 +56,7 @@ export default function SimScreen() {
                 </svg>
                 {"Profile"}
               </Link>
+              <EngineerTab />
             </nav>
             <div className="tools">
               <div role="group" aria-label="Detail level" className="seg">
@@ -74,11 +75,11 @@ export default function SimScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    <UserName />
                   </b>
                   <small>
                     <FieldWho />

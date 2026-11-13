@@ -3,7 +3,7 @@
 // Generated from design/html/V11-About.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./About.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Logic from './About.logic';
@@ -49,6 +49,7 @@ export default function AboutScreen() {
                 </svg>
                 {"Profile"}
               </Link>
+              <EngineerTab />
             </nav>
             <div className="tools">
               <div role="group" aria-label="Detail level" className="seg">
@@ -67,11 +68,11 @@ export default function AboutScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    <UserName />
                   </b>
                   <small>
                     <FieldWho />

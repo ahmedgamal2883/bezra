@@ -5,7 +5,7 @@
 import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { sendCase } from '@/lib/photos';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -74,6 +74,7 @@ export default function HealthScreen() {
                 </svg>
                 {"Profile"}
               </Link>
+              <EngineerTab />
             </nav>
             <div className="tools">
               <div role="group" aria-label="Detail level" className="seg">
@@ -92,11 +93,11 @@ export default function HealthScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    <UserName />
                   </b>
                   <small>
                     <FieldWho />

@@ -3,7 +3,7 @@
 // Generated from design/html/V11-Field.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Field.logic.js (verbatim from the design).
 import { Fragment } from 'react';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, useUser } from '@/lib/field';
 import Link from 'next/link';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -12,6 +12,10 @@ import Logic from './Field.logic';
 
 export default function FieldScreen() {
   const { fp, id } = useField();
+  // the farmer's own fields as chips (#01, #02, ...): the current field's owner
+  const { fields: allFields } = useUser();
+  const owner = allFields.find((f) => f.id === id)?.farmer;
+  const chipFields = owner ? allFields.filter((f) => f.farmer === owner).slice(0, 3) : [{ id: "north-plot", num: "01", name: "North plot", area_feddan: 2.4, crop: "Wheat" }, { id: "south-plot", num: "02", name: "South plot", area_feddan: 0.6, crop: "Berseem" }] as any[];
   const summary = useApi(`/fields/${id}/summary`);
   const ndvi = useApi(`/fields/${id}/ndvi`);
   const health = useApi(`/fields/${id}/health`);
@@ -54,6 +58,7 @@ export default function FieldScreen() {
                 </svg>
                 {"Profile"}
               </Link>
+              <EngineerTab />
             </nav>
             <div className="tools">
               <div role="group" aria-label="Detail level" className="seg">
@@ -72,11 +77,11 @@ export default function FieldScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    <UserName />
                   </b>
                   <small>
                     <FieldWho />
@@ -96,16 +101,17 @@ export default function FieldScreen() {
                 </h1>
               </div>
               <div role="list" aria-label="Your fields" className="row rise" style={{"--d":"1","gap":"8px"} as any}>
-                <Link href="/field/north-plot" className="press lift" aria-current={id === "north-plot"} style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === "north-plot" ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
+                {chipFields.map((ff, k) => (
+                <Link key={ff.id} href={`/field/${ff.id}`} className="press lift" aria-current={id === ff.id} style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === ff.id ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
                   <span className="col" style={{"gap":"1px"} as any}>
                     <span className="tl" style={{"fontWeight":"600"} as any}>
-                      {"#01"}
+                      {"#" + (ff.num || String(k + 1).padStart(2, "0"))}
                     </span>
                     <span style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"North plot"}
+                      {ff.name}
                     </span>
                     <span className="tl">
-                      {"2.4 feddan, wheat"}
+                      {`${ff.area_feddan} feddan, ${ff.crop.toLowerCase()}`}
                     </span>
                   </span>
                   <svg aria-hidden="true" width="56" height="44" viewBox="0 0 64 48" style={{"borderRadius":"8px"} as any}>
@@ -115,25 +121,7 @@ export default function FieldScreen() {
                     <rect x="21" y="9" width="24" height="30" fill="#fff" fillOpacity=".2" stroke="#fff" strokeWidth="2" />
                   </svg>
                 </Link>
-                <Link href="/field/south-plot" className="press lift" aria-current={id === "south-plot"} style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === "south-plot" ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
-                  <span className="col" style={{"gap":"1px"} as any}>
-                    <span className="tl" style={{"fontWeight":"600"} as any}>
-                      {"#02"}
-                    </span>
-                    <span style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"South plot"}
-                    </span>
-                    <span className="tl">
-                      {"0.6 feddan, berseem"}
-                    </span>
-                  </span>
-                  <svg aria-hidden="true" width="56" height="44" viewBox="0 0 64 48" style={{"borderRadius":"8px"} as any}>
-                    <rect width="64" height="48" fill="#628342" />
-                    <rect width="18" height="48" fill="#8FA05B" />
-                    <rect x="48" width="16" height="48" fill="#A39878" />
-                    <rect x="21" y="9" width="24" height="30" fill="#fff" fillOpacity=".2" stroke="#fff" strokeWidth="2" />
-                  </svg>
-                </Link>
+                ))}
                 <Link href="/onboarding" className="press ghost" aria-label="Add a field" style={{"width":"64px","height":"64px","boxSizing":"border-box","borderRadius":"12px","border":"1.5px dashed #C3C6BF","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 5v14M5 12h14" />

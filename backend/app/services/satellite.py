@@ -26,11 +26,37 @@ def grid(c: Ctx) -> Grid:
     return Grid(c.f["lat"], c.f["lon"])
 
 
+_building: set[str] = set()
+
+
 def _scenes(c: Ctx) -> tuple[str, list[dict]]:
-    """All clear images of the field since 15 days before sowing: [(source, cells-record)], oldest first."""
+    """All clear images of the field since 15 days before sowing: [(source, cells-record)], oldest first.
+    A field seen for the first time is read in a background thread (it can take many minutes on a slow
+    connection); until then this returns no images and the screens say so."""
     key = f"{c.f['id']}:{c.today}"
     if key in _mem:
         return _mem[key]
+    from ..connectors.cache import CACHE_DIR
+    g = grid(c)
+    warm = any(g.key in p.name for p in CACHE_DIR.glob("*_cells_*.json"))
+    if not warm:
+        if key not in _building:
+            _building.add(key)
+            import threading
+
+            def work():
+                try:
+                    _scenes_now(c, key)
+                except Exception as e:
+                    print("satellite warm-up failed for", c.f["id"], e)
+                finally:
+                    _building.discard(key)
+            threading.Thread(target=work, daemon=True).start()
+        return sentinel2.SOURCE, []
+    return _scenes_now(c, key)
+
+
+def _scenes_now(c: Ctx, key: str) -> tuple[str, list[dict]]:
     g = grid(c)
     start = date.fromisoformat(c.f["sow_date"]) - timedelta(days=15)
     out, source = [], sentinel2.SOURCE

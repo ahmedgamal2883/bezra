@@ -3,7 +3,7 @@
 // Generated from design/html/V11-Profile.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Profile.logic.js (verbatim from the design).
 import { Fragment, useState } from 'react';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab, signOut } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -52,6 +52,7 @@ export default function ProfileScreen() {
                 </svg>
                 {"Profile"}
               </Link>
+              <EngineerTab />
             </nav>
             <div className="tools">
               <div role="group" aria-label="Detail level" className="seg">
@@ -70,11 +71,11 @@ export default function ProfileScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    <UserName />
                   </b>
                   <small>
                     <FieldWho />
@@ -105,6 +106,12 @@ export default function ProfileScreen() {
                   </svg>
                   {"Season report, PDF"}
                 </Link>
+                <button type="button" className="btn line press" onClick={signOut}>
+                  <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9" />
+                  </svg>
+                  {"Sign out"}
+                </button>
               </div>
             </div>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 380px","alignItems":"start"} as any}>

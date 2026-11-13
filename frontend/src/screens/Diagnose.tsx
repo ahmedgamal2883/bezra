@@ -4,7 +4,7 @@
 // Logic lives in ./Diagnose.logic.js (verbatim from the design).
 import { Fragment, useEffect, useState } from 'react';
 import { useApi, API } from '@/lib/api';
-import { FIELD_NAMES } from '@/lib/field';
+import { FIELD_NAMES, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -67,6 +67,7 @@ export default function DiagnoseScreen() {
                 </svg>
                 {"Profile"}
               </Link>
+              <EngineerTab />
             </nav>
             <div className="tools">
               <div role="group" aria-label="Detail level" className="seg">
@@ -85,11 +86,11 @@ export default function DiagnoseScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    <UserName />
                   </b>
                   <small>
                     <FieldWho />

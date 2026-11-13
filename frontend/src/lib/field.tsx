@@ -1,37 +1,105 @@
 'use client';
-// Which field the farmer is looking at. Field pages (/field/[id]/...) set it; every screen builds
-// its links with fp() so tabs and buttons stay on the same field.
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { useParams } from 'next/navigation';
-import { DEMO_FIELD_ID } from './routes';
+// Who is signed in, which fields they may see, and which field they are looking at.
+// Field pages (/field/[id]/...) set the current field; every screen builds its links with fp().
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useParams, usePathname } from 'next/navigation';
+import { API } from './api';
 
-export const FIELD_NAMES: Record<string, string> = { 'north-plot': 'North plot', 'south-plot': 'South plot' };
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type FieldCard = { id: string; num?: string; name: string; crop: string; area_feddan: number; farmer: string; village?: string; governorate?: string; lat: number; lon: number };
+export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin' };
 
-const Ctx = createContext<{ id: string; setId: (id: string) => void }>({ id: DEMO_FIELD_ID, setId: () => {} });
+type Ctx = { user: User | null; fields: FieldCard[]; loaded: boolean; id: string; setId: (id: string) => void; reload: () => void };
+const C = createContext<Ctx>({ user: null, fields: [], loaded: false, id: '', setId: () => {}, reload: () => {} });
+
+// Kept for older imports: names of known fields by id (filled once fields load).
+export const FIELD_NAMES: Record<string, string> = {};
 
 export function FieldProvider({ children }: { children: ReactNode }) {
-  const [id, setId] = useState(DEMO_FIELD_ID);
-  return <Ctx.Provider value={{ id, setId }}>{children}</Ctx.Provider>;
+  const [user, setUser] = useState<User | null>(null);
+  const [fields, setFields] = useState<FieldCard[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [id, setId] = useState('');
+  const path = usePathname();
+  const load = useCallback(async () => {
+    try {
+      const me = await fetch(API + '/auth/me');
+      if (!me.ok) { setUser(null); setFields([]); return; }
+      setUser(await me.json());
+      const fl: FieldCard[] = await (await fetch(API + '/fields')).json();
+      fl.forEach((f) => { FIELD_NAMES[f.id] = f.name; });
+      setFields(fl);
+    } catch {
+      /* backend down: screens show their Demo values */
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+  // reload after signing in / out (the page changes)
+  useEffect(() => { load(); }, [load, path === '/sign-in']); // eslint-disable-line react-hooks/exhaustive-deps
+  return <C.Provider value={{ user, fields, loaded, id, setId, reload: load }}>{children}</C.Provider>;
 }
 
 export function SetField({ id }: { id: string }) {
-  const { setId } = useContext(Ctx);
+  const { setId } = useContext(C);
   useEffect(() => {
     setId(id);
   }, [id, setId]);
   return null;
 }
 
-export function useField() {
-  const ctx = useContext(Ctx);
-  const params = useParams();
-  const id = (typeof params?.id === 'string' && FIELD_NAMES[params.id] ? params.id : null) || ctx.id;
-  const fp = (tab = '') => `/field/${id}${tab}`;
-  return { id, name: FIELD_NAMES[id] || id, fp };
+export function useUser() {
+  const { user, fields, loaded, reload } = useContext(C);
+  return { user, fields, loaded, reload };
 }
 
-// "North plot, Menoufia" under the farmer's name in the header.
+export function useField() {
+  const ctx = useContext(C);
+  const params = useParams();
+  // the field in the address, else the last one opened, else the user's own first field
+  const own = ctx.fields.find((f) => ctx.user && f.farmer === ctx.user.name) || ctx.fields[0];
+  const id = (typeof params?.id === 'string' ? params.id : '') || ctx.id || own?.id || 'north-plot';
+  const field = ctx.fields.find((f) => f.id === id);
+  const fp = (tab = '') => `/field/${id}${tab}`;
+  return { id, name: field?.name || FIELD_NAMES[id] || id, field, fp };
+}
+
+// "North plot, Menoufia" under the person's name in the header.
 export function FieldWho() {
-  const { name } = useField();
-  return <>{`${name}, Menoufia`}</>;
+  const { user } = useUser();
+  const { field } = useField();
+  if (user?.role === 'engineer') return <>{field ? `Engineer · ${field.farmer}` : 'Engineer'}</>;
+  return <>{field ? `${field.name}, ${field.governorate || ''}`.replace(/, $/, '') : 'Your fields'}</>;
+}
+
+export function UserName() {
+  const { user } = useUser();
+  return <>{user?.name || 'Hassan Farouk'}</>;
+}
+
+export function UserInitials() {
+  const { user } = useUser();
+  const n = user?.name || 'Hassan Farouk';
+  return <>{n.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase()}</>;
+}
+
+export async function signOut() {
+  await fetch(API + '/auth/signout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+// The fifth menu item, only for engineer accounts (Design Decisions §3). Same markup as the V11 Engineer header.
+export function EngineerTab() {
+  const { user } = useUser();
+  const path = usePathname();
+  if (!user || user.role === 'farmer') return null;
+  const on = path === '/engineer';
+  return (
+    <a href="/engineer" className="press" aria-current={on ? 'page' : undefined}>
+      <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6" />
+      </svg>
+      {'Engineer'}
+    </a>
+  );
 }

@@ -3,7 +3,14 @@
 // and show the Demo pill (brief Rule #2).
 import { useEffect, useState } from 'react';
 
-export const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Same-origin: next.config.ts forwards /api/... to the Python backend (keeps the sign-in cookie on this site).
+export const API = '/api';
+
+// Not signed in (session expired): go to Sign in and come back here after.
+export function toSignIn() {
+  if (typeof window === 'undefined' || window.location.pathname.startsWith('/sign-in')) return;
+  window.location.href = '/sign-in?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Loadable<T = any> = { data: T | null; loading: boolean; error: string | null };
@@ -27,6 +34,7 @@ export function useApi<T = any>(path: string | null, body?: unknown, fresh = fal
     const attempt = (n: number) =>
       fetch(API + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : undefined)
         .then(async (r) => {
+          if (r.status === 401) { toSignIn(); throw new Error('401'); }
           if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
           return r.json();
         })

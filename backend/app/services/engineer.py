@@ -33,10 +33,10 @@ def plan_status(field_id: str) -> dict:
             "by": a["by"] if a else None}
 
 
-def approve(field_id: str, note: str, approved: bool = True) -> dict:
+def approve(field_id: str, note: str, approved: bool = True, by: str = "Eng. Mona Adel") -> dict:
     d = _load()
     if approved:
-        d[field_id] = {"at": datetime.now().isoformat(timespec="minutes"), "by": "Eng. Mona Adel", "note": note[:2000]}
+        d[field_id] = {"at": datetime.now().isoformat(timespec="minutes"), "by": by, "note": note[:2000]}
     else:
         d.pop(field_id, None)
     DATA.mkdir(exist_ok=True)
@@ -70,16 +70,16 @@ def score(field_id: str) -> dict:
             "subscores": {k: v for v, k, _ in subs}, "plan": plan_status(field_id)}
 
 
-def workspace() -> dict:
+def workspace(field_ids: list[str]) -> dict:
     rows = []
-    for fid in fields.FIELDS:
+    for fid in field_ids:
         try:
             rows.append(score(fid))
         except Exception as e:
             rows.append({"field_id": fid, "error": str(e)})
     hot = None
     try:
-        bars = {b["label"]: b["value"] for b in nextseason.build(ctx("north-plot"))["hot_days"]["bars"]}
+        bars = {b["label"]: b["value"] for b in nextseason.build(ctx(field_ids[0]))["hot_days"]["bars"]}
         if bars.get("1990s"):
             hot = round((bars["2020s"] - bars["1990s"]) / bars["1990s"] * 100)
     except Exception:

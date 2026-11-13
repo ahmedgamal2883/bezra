@@ -5,6 +5,7 @@ Values match what the V11 design shows for Hassan's two plots.
 """
 from __future__ import annotations
 
+# Hassan's two demo plots (seed data; the database is the source of truth, see seed.py)
 FIELDS: dict[str, dict] = {
     "north-plot": {
         "id": "north-plot", "num": "01", "name": "North plot", "farmer": "Hassan Farouk",
@@ -37,9 +38,16 @@ VARIETIES = {
     "giza171": {"label": "Giza 171", "gdd_offset": 0, "rust": "susceptible"},
 }
 
-CROP_LABEL = {"wheat": "Wheat", "berseem": "Berseem", "maize": "Maize"}
+CROP_LABEL = {"wheat": "Wheat", "berseem": "Berseem", "maize": "Maize", "rice": "Rice", "cotton": "Cotton", "sugar beet": "Sugar beet"}
 SOIL_LABEL = {"clay": "Heavy clay"}
 
 
 def get(field_id: str) -> dict | None:
-    return FIELDS.get(field_id)
+    from . import db
+    return db.get_field(field_id)
+
+
+def all_ids() -> list[str]:
+    from . import db
+    with db.conn() as c:
+        return [r["id"] for r in c.execute("SELECT id FROM fields")]

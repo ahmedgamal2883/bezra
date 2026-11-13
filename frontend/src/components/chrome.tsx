@@ -2,7 +2,7 @@
 // Shared page chrome copied 1:1 from the V11 screens (header, footer, mascot), for the screens
 // that were added later (sign in, messages, report). Uses the same classes as the design.
 import Link from 'next/link';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import type { ReactNode } from 'react';
 import { useMode } from '@/lib/dc';
 import AboutLink from './AboutLink';
@@ -77,6 +77,7 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
         {item('sim', '/sim', 'Simulator')}
         {item('ask', '/ask', 'Ask Bezra')}
         {item('profile', '/profile', 'Profile')}
+        <EngineerTab />
       </nav>
       <div className="tools">
         <div role="group" aria-label="Detail level" className="seg">
@@ -90,9 +91,9 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
           <span className="dot" />
         </Link>
         <span className="who">
-          <span className="av" aria-hidden="true">{'HF'}</span>
+          <span className="av" aria-hidden="true"><UserInitials /></span>
           <span>
-            <b>{'Hassan Farouk'}</b>
+            <b><UserName /></b>
             <small><FieldWho /></small>
           </span>
         </span>

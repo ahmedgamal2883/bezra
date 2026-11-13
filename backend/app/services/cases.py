@@ -134,6 +134,10 @@ def get(c: Ctx, cid: str) -> dict:
     return meta | {"follow_up": follow}
 
 
+def field_of(cid: str) -> str:
+    return json.loads((_path(cid) / "meta.json").read_text(encoding="utf-8"))["field_id"]
+
+
 def photo_path(cid: str, n: int) -> Path | None:
     d = _path(cid)
     for ext in ("jpg", "png", "webp"):

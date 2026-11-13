@@ -2,9 +2,9 @@
 /* eslint-disable */
 // Generated from design/html/V11-Engineer.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Engineer.logic.js (verbatim from the design).
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useApi, API } from '@/lib/api';
-import { useField, FieldWho } from '@/lib/field';
+import { useField, FieldWho, UserName, UserInitials, useUser } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -13,6 +13,11 @@ import Logic from './Engineer.logic';
 export default function EngineerScreen() {
   const { fp } = useField();
   // Engineer workspace (step 6): real risk scores and plan approval from the backend.
+  // Engineers only: a farmer who opens this address goes to their own field.
+  const { user, fields: myFields, loaded } = useUser();
+  useEffect(() => {
+    if (loaded && user && user.role === 'farmer') window.location.replace(myFields[0] ? `/field/${myFields[0].id}` : '/onboarding');
+  }, [loaded, user, myFields]);
   const ws = useApi('/engineer/fields', undefined, true);
   const [plan, setPlan] = useState<any>(null);
   const [note, setNote] = useState('');
@@ -83,14 +88,14 @@ export default function EngineerScreen() {
               </Link>
               <span className="who">
                 <span className="av" aria-hidden="true">
-                  {"MA"}
+                  <UserInitials />
                 </span>
                 <span>
                   <b>
-                    {"Eng. Mona Adel"}
+                    <UserName />
                   </b>
                   <small>
-                    {"212 farmers, 4 villages"}
+                    <FieldWho />
                   </small>
                 </span>
               </span>

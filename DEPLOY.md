@@ -14,7 +14,9 @@ Do them in this order (the website needs the backend's address). About 20 minute
 1. Go to https://render.com and sign up with your GitHub account.
 2. Click **New** → **Blueprint**, pick the `bezra` repository, click **Connect**.
    Render reads `render.yaml` and proposes a service called **bezra-api**.
-3. It asks for four values. Paste them (same as in `backend/.env`):
+3. It asks for some values. Paste them (same as in `backend/.env`):
+   - `ENGINEER_PASSWORD`: the password for your engineer account (ahmed@bezra.app)
+   - `DEMO_FARMER_PASSWORD`: the demo farmer's password (shown on the Landing page in demo mode)
    - `ANTHROPIC_API_KEY`: your Claude key (leave empty to skip Ask Bezra for now)
    - `EARTHDATA_USERNAME` / `EARTHDATA_PASSWORD`: your NASA Earthdata login (or leave empty)
    - `BEZRA_ORIGINS`: leave empty for now, fill it in step 3
@@ -31,14 +33,13 @@ takes about a minute. Open `/health` a minute before a demo.
 2. Click **Add New** → **Project**, pick `bezra`, click **Import**.
 3. Set **Root Directory** to `frontend` (click **Edit** next to it).
 4. Open **Environment Variables**, add:
-   - Name `NEXT_PUBLIC_API_URL`, Value: the Render address from step 1 (no `/` at the end)
+   - Name `BACKEND_URL`, Value: the Render address from step 1 (no `/` at the end)
 5. Click **Deploy**. When done, copy the site address, e.g. `https://bezra.vercel.app`.
 
-## 3. Connect the two
+## 3. Check it
 
-1. In Render, open **bezra-api** → **Environment**, set `BEZRA_ORIGINS` to the Vercel address
-   (e.g. `https://bezra.vercel.app`), click **Save changes**. Render restarts the backend.
-2. Open the Vercel address. The screens should show real data (Satellite / Estimated pills, not Demo).
+The website talks to the backend through its own `/api/...` address, so there is nothing else to connect.
+1. Open the Vercel address. The screens should show real data (Satellite / Estimated pills, not Demo).
 
 ## What is kept where
 

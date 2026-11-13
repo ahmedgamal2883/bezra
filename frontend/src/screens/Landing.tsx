@@ -2,7 +2,8 @@
 /* eslint-disable */
 // Generated from design/html/V11-Landing.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Landing.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { API } from '@/lib/api';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -10,6 +11,9 @@ import Logic from './Landing.logic';
 
 export default function LandingScreen() {
   const __v = useDC(Logic);
+  // Demo mode only (backend DEMO_MODE=1): the judges' farmer login (Phase 2 §D).
+  const [demo, setDemo] = useState<{ email: string; password: string } | null>(null);
+  useEffect(() => { fetch(API + '/demo').then((r) => r.json()).then((d) => d.enabled && setDemo(d)).catch(() => {}); }, []);
   return (
     <>
       <div className="root">
@@ -68,6 +72,12 @@ export default function LandingScreen() {
                     {"I'm an agricultural engineer"}
                   </Link>
                 </div>
+                {demo ? (
+                  <span className="row wrap" style={{ gap: "8px", fontSize: "14px", color: "var(--ink2)" }}>
+                    <span className="pill pv-demo">{"Demo mode"}</span>
+                    {"Try it as a farmer: "}<b>{demo.email}</b>{" · password "}<b>{demo.password}</b>
+                  </span>
+                ) : null}
               </div>
               <section className="hero rise" style={{"--d":"2","height":"620px","background":"#CFC9B6"} as any} aria-label="A field in the simulator">
                 {" "}
