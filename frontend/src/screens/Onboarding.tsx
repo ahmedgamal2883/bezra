@@ -225,10 +225,10 @@ export default function OnboardingScreen() {
                   {"You are"}
                 </span>
                 <div className="seg" style={{"alignSelf":"flex-start"} as any}>
-                  <button type="button" className="segb">
+                  <button type="button" className={__v.tenure.owner.cls} onClick={__v.tenure.owner.pick} aria-pressed={__v.tenure.owner.p}>
                     {"Owner"}
                   </button>
-                  <button type="button" className="segb on">
+                  <button type="button" className={__v.tenure.tenant.cls} onClick={__v.tenure.tenant.pick} aria-pressed={__v.tenure.tenant.p}>
                     {"Tenant"}
                   </button>
                 </div>

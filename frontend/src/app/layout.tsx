@@ -11,6 +11,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* The design has its own colours: stop the Dark Reader extension from repainting the page
+            (it changes SVG attributes before React loads, which causes hydration errors). */}
+        <meta name="darkreader-lock" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
