@@ -4,6 +4,7 @@ Endpoints (brief §6) built so far: /fields, /fields/{id}, /summary, /calendar, 
 """
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from datetime import date
 
 from fastapi import FastAPI, HTTPException
@@ -15,10 +16,37 @@ import anthropic
 from . import config  # noqa: F401  (loads backend/.env)
 from . import fields
 from .chat import bezra
-from .services import calendar, nextseason, satellite, sim, summary
+from .services import alerts, calendar, nextseason, satellite, sim, summary
 from .services.context import ctx
 
-app = FastAPI(title="Bezra API", version="0.2")
+def _daily_alerts_job():
+    """Brief §5: alerts are generated daily by a job. Runs at start-up, then every day at 06:00."""
+    import threading
+    import time as _t
+    from datetime import datetime, timedelta
+
+    def loop():
+        while True:
+            for fid in fields.FIELDS:
+                try:
+                    c = ctx(fid)
+                    if c:
+                        alerts.build(c)
+                except Exception as e:  # a failed source must not stop the job
+                    print("daily alerts failed for", fid, e)
+            now = datetime.now()
+            nxt = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+            _t.sleep(max(60, (nxt - now).total_seconds()))
+    threading.Thread(target=loop, daemon=True, name="daily-alerts").start()
+
+
+@asynccontextmanager
+async def lifespan(_app):
+    _daily_alerts_job()
+    yield
+
+
+app = FastAPI(title="Bezra API", version="0.3", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
                    allow_methods=["*"], allow_headers=["*"])
 
@@ -67,6 +95,11 @@ def get_next(field_id: str):
 @app.get("/fields/{field_id}/ndvi")
 def get_ndvi(field_id: str):
     return satellite.ndvi(_ctx(field_id))
+
+
+@app.get("/fields/{field_id}/alerts")
+def get_alerts(field_id: str):
+    return alerts.build(_ctx(field_id))
 
 
 @app.get("/fields/{field_id}/health")

@@ -5,13 +5,15 @@
 import { Fragment } from 'react';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Alerts.logic';
 
 export default function AlertsScreen() {
-  const { fp } = useField();
-  const __v = useDC(Logic);
+  const { fp, id } = useField();
+  const al = useApi(`/fields/${id}/alerts`);
+  const __v = useDC(Logic, { data: al.data, loading: al.loading, fieldId: id });
   return (
     <>
       <div className="root">
@@ -85,7 +87,7 @@ export default function AlertsScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"2 new. Sent in the app, on WhatsApp and as a voice note."}
+                  {__v.headline}
                 </span>
                 <h1 className="h1">
                   {"Alerts"}
@@ -133,15 +135,15 @@ export default function AlertsScreen() {
                   </span>
                   <span className="col" style={{"flex":"1","gap":"3px","textAlign":"left"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"Water turn Thursday, don't skip it"}
+                      {__v.L[0].title}
                     </b>
                     <span className="tl">
-                      {"Thu 19 Nov"}
+                      {__v.L[0].when}
                     </span>
                   </span>
-                  <span className="lv lv-high">
+                  <span className={__v.L[0].lv}>
                     <i />
-                    {"High"}
+                    {__v.L[0].lvL}
                   </span>
                 </button>
                 <button type="button" onClick={__v?.a1?.pick} aria-pressed={__s(__v?.a1?.p) as any} className="press rise" style={__css(`--d:3; ${__s(__v?.a1?.style)}`)}>
@@ -152,15 +154,15 @@ export default function AlertsScreen() {
                   </span>
                   <span className="col" style={{"flex":"1","gap":"3px","textAlign":"left"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"Rust weather this week: check the leaves"}
+                      {__v.L[1].title}
                     </b>
                     <span className="tl">
-                      {"16 to 22 Nov"}
+                      {__v.L[1].when}
                     </span>
                   </span>
-                  <span className="lv lv-med">
+                  <span className={__v.L[1].lv}>
                     <i />
-                    {"Medium"}
+                    {__v.L[1].lvL}
                   </span>
                 </button>
                 <button type="button" onClick={__v?.a2?.pick} aria-pressed={__s(__v?.a2?.p) as any} className="press rise" style={__css(`--d:4; ${__s(__v?.a2?.style)}`)}>
@@ -171,15 +173,15 @@ export default function AlertsScreen() {
                   </span>
                   <span className="col" style={{"flex":"1","gap":"3px","textAlign":"left"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"New satellite image: one corner looks weaker"}
+                      {__v.L[2].title}
                     </b>
                     <span className="tl">
-                      {"10 Nov image"}
+                      {__v.L[2].when}
                     </span>
                   </span>
-                  <span className="lv lv-med">
+                  <span className={__v.L[2].lv}>
                     <i />
-                    {"Look"}
+                    {__v.L[2].lvL}
                   </span>
                 </button>
                 <button type="button" onClick={__v?.a3?.pick} aria-pressed={__s(__v?.a3?.p) as any} className="press rise" style={__css(`--d:5; ${__s(__v?.a3?.style)}`)}>
@@ -190,15 +192,15 @@ export default function AlertsScreen() {
                   </span>
                   <span className="col" style={{"flex":"1","gap":"3px","textAlign":"left"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"Keep weeds out until 10 December"}
+                      {__v.L[3].title}
                     </b>
                     <span className="tl">
-                      {"14 Nov to 10 Dec"}
+                      {__v.L[3].when}
                     </span>
                   </span>
-                  <span className="lv lv-low">
+                  <span className={__v.L[3].lv}>
                     <i />
-                    {"Plan"}
+                    {__v.L[3].lvL}
                   </span>
                 </button>
                 <button type="button" onClick={__v?.a4?.pick} aria-pressed={__s(__v?.a4?.p) as any} className="press rise" style={__css(`--d:6; ${__s(__v?.a4?.style)}`)}>
@@ -209,15 +211,15 @@ export default function AlertsScreen() {
                   </span>
                   <span className="col" style={{"flex":"1","gap":"3px","textAlign":"left"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"No heat risk this week"}
+                      {__v.L[4].title}
                     </b>
                     <span className="tl">
-                      {"Next 7 days"}
+                      {__v.L[4].when}
                     </span>
                   </span>
-                  <span className="lv lv-low">
+                  <span className={__v.L[4].lv}>
                     <i />
-                    {"Low"}
+                    {__v.L[4].lvL}
                   </span>
                 </button>
               </div>
@@ -233,12 +235,12 @@ export default function AlertsScreen() {
                           </svg>
                         </span>
                         <span className="tl">
-                          {"Thu 19 Nov"}
+                          {__v.L[0].when}
                         </span>
                       </span>
-                      <span className="lv lv-high">
+                      <span className={__v.L[0].lv}>
                         <i />
-                        {"High"}
+                        {__v.L[0].lvL}
                       </span>
                     </div>
                   </>
@@ -253,12 +255,12 @@ export default function AlertsScreen() {
                           </svg>
                         </span>
                         <span className="tl">
-                          {"16 to 22 Nov"}
+                          {__v.L[1].when}
                         </span>
                       </span>
-                      <span className="lv lv-med">
+                      <span className={__v.L[1].lv}>
                         <i />
-                        {"Medium"}
+                        {__v.L[1].lvL}
                       </span>
                     </div>
                   </>
@@ -273,12 +275,12 @@ export default function AlertsScreen() {
                           </svg>
                         </span>
                         <span className="tl">
-                          {"10 Nov image"}
+                          {__v.L[2].when}
                         </span>
                       </span>
-                      <span className="lv lv-med">
+                      <span className={__v.L[2].lv}>
                         <i />
-                        {"Look"}
+                        {__v.L[2].lvL}
                       </span>
                     </div>
                   </>
@@ -293,12 +295,12 @@ export default function AlertsScreen() {
                           </svg>
                         </span>
                         <span className="tl">
-                          {"14 Nov to 10 Dec"}
+                          {__v.L[3].when}
                         </span>
                       </span>
-                      <span className="lv lv-low">
+                      <span className={__v.L[3].lv}>
                         <i />
-                        {"Plan"}
+                        {__v.L[3].lvL}
                       </span>
                     </div>
                   </>
@@ -313,12 +315,12 @@ export default function AlertsScreen() {
                           </svg>
                         </span>
                         <span className="tl">
-                          {"Next 7 days"}
+                          {__v.L[4].when}
                         </span>
                       </span>
-                      <span className="lv lv-low">
+                      <span className={__v.L[4].lv}>
                         <i />
-                        {"Low"}
+                        {__v.L[4].lvL}
                       </span>
                     </div>
                   </>
@@ -358,7 +360,7 @@ export default function AlertsScreen() {
                       {"رسالة صوتية من بذرة"}
                     </span>
                     <span style={{"fontSize":"12px","color":"rgba(255,255,255,.65)"} as any}>
-                      {"Egyptian Arabic, 0:18"}
+                      {__v.voiceLen}
                     </span>
                   </span>
                 </div>
@@ -382,36 +384,36 @@ export default function AlertsScreen() {
                 <div className="row wrap" style={{"gap":"6px"} as any}>
                   {__v?.is0 ? (
                     <>
-                      <span className="pill pv-est">
-                        {"Estimated"}
+                      <span className={__v.pvCls}>
+                        {__v.pvL}
                       </span>
                     </>
                   ) : null}
                   {__v?.is1 ? (
                     <>
-                      <span className="pill pv-est">
-                        {"Estimated"}
+                      <span className={__v.pvCls}>
+                        {__v.pvL}
                       </span>
                     </>
                   ) : null}
                   {__v?.is2 ? (
                     <>
-                      <span className="pill pv-sat">
-                        {"Satellite"}
+                      <span className={__v.pvCls}>
+                        {__v.pvL}
                       </span>
                     </>
                   ) : null}
                   {__v?.is3 ? (
                     <>
-                      <span className="pill pv-est">
-                        {"Estimated"}
+                      <span className={__v.pvCls}>
+                        {__v.pvL}
                       </span>
                     </>
                   ) : null}
                   {__v?.is4 ? (
                     <>
-                      <span className="pill pv-est">
-                        {"Estimated"}
+                      <span className={__v.pvCls}>
+                        {__v.pvL}
                       </span>
                     </>
                   ) : null}
@@ -447,7 +449,7 @@ export default function AlertsScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.foot}
                 <AboutLink />
               </span>
             </footer>

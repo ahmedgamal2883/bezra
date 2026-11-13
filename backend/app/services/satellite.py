@@ -78,7 +78,14 @@ def _where(cells: list[dict], rows: int, cols: int) -> str:
         return f"{ns}{we} corner"
     if ns or we:
         return {"N": "North edge", "S": "South edge", "W": "West side", "E": "East side"}[ns or we]
-    return "Middle"
+    # spread out: name the side its centre leans to
+    dx = sum(cs) / len(cs) - (cols - 1) / 2
+    dy = sum(rs) / len(rs) - (rows - 1) / 2
+    if max(abs(dx), abs(dy)) < 0.4:
+        return "Middle"
+    if abs(dx) >= abs(dy):
+        return "East side" if dx > 0 else "West side"
+    return "South side" if dy > 0 else "North side"
 
 
 def ndvi(c: Ctx) -> dict:
