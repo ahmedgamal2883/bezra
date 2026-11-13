@@ -4,10 +4,12 @@ Endpoints (brief §6) built so far: /fields, /fields/{id}, /summary, /calendar, 
 """
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from datetime import date
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -16,7 +18,7 @@ import anthropic
 from . import config  # noqa: F401  (loads backend/.env)
 from . import fields
 from .chat import bezra
-from .services import alerts, calendar, engineer, nextseason, satellite, sim, summary
+from .services import alerts, calendar, cases, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 def _daily_alerts_job():
@@ -47,7 +49,7 @@ async def lifespan(_app):
 
 
 app = FastAPI(title="Bezra API", version="0.3", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("BEZRA_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(","),
                    allow_methods=["*"], allow_headers=["*"])
 
 
@@ -127,6 +129,40 @@ def get_plan_status(field_id: str):
 def post_approve(field_id: str, req: ApproveReq):
     _ctx(field_id)
     return engineer.approve(field_id, req.note, req.approved)
+
+
+class CaseReq(BaseModel):
+    field_id: str
+    photos: list[str]
+    seen: str = ""
+
+
+@app.post("/cases")
+def post_case(req: CaseReq):
+    c = _ctx(req.field_id)
+    try:
+        return cases.create(c, req.photos, req.seen)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.get("/cases/{case_id}")
+def get_case(case_id: str, field_id: str = "north-plot"):
+    try:
+        return cases.get(_ctx(field_id), case_id)
+    except (ValueError, FileNotFoundError):
+        raise HTTPException(404, "Unknown case")
+
+
+@app.get("/cases/{case_id}/photo/{n}")
+def get_case_photo(case_id: str, n: int):
+    try:
+        p = cases.photo_path(case_id, n)
+    except ValueError:
+        p = None
+    if not p:
+        raise HTTPException(404, "No photo")
+    return FileResponse(p)
 
 
 class SimReq(BaseModel):

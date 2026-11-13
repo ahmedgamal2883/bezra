@@ -2,7 +2,9 @@
 /* eslint-disable */
 // Generated from design/html/V11-Health.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Health.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { sendCase } from '@/lib/photos';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useApi } from '@/lib/api';
@@ -14,6 +16,26 @@ export default function HealthScreen() {
   const { fp, id } = useField();
   const health = useApi(`/fields/${id}/health`);
   const __v = useDC(Logic, { data: health.data, ndvi: health.data?.ndvi, loading: health.loading, fieldId: id });
+  // "Take a photo" -> POST /cases -> open the case on Diagnose (step 6).
+  const router = useRouter();
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoErr, setPhotoErr] = useState(false);
+  const onPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !files.length) return;
+    setPhotoBusy(true);
+    setPhotoErr(false);
+    try {
+      const seen = ((__v.seen as any[]) || []).find((o) => o.p === 'true')?.label || '';
+      const cid = await sendCase(id, files, seen);
+      router.push(fp('/diagnose') + '?case=' + cid);
+    } catch {
+      setPhotoErr(true);
+    } finally {
+      setPhotoBusy(false);
+      e.target.value = '';
+    }
+  };
   return (
     <>
       <div className="root">
@@ -295,14 +317,15 @@ export default function HealthScreen() {
                       </Fragment>
                     ))}
                   </div>
-                  <Link href={fp("/diagnose")} className="btn cta press">
-                    {"Take a photo"}
+                  <label className="btn cta press" style={{ cursor: "pointer" }} aria-busy={photoBusy}>
+                    <input type="file" accept="image/*" capture="environment" multiple hidden disabled={photoBusy} onChange={onPhotos} />
+                    {photoBusy ? "Sending…" : photoErr ? "Couldn't send. Try again" : "Take a photo"}
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M7 17 17 7M9 7h8v8" />
                       </svg>
                     </span>
-                  </Link>
+                  </label>
                 </section>
                 <section className="card rise " style={{"--d":"4"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"4"} as any} />

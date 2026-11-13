@@ -2,16 +2,33 @@
 /* eslint-disable */
 // Generated from design/html/V11-Diagnose.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Diagnose.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { useApi, API } from '@/lib/api';
+import { FIELD_NAMES } from '@/lib/field';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Diagnose.logic';
 
+// Safe steps when Bezra could not diagnose the photo (no doses, the engineer decides).
+const GENERAL = [
+  { title: 'Look closely', text: 'Check 20 plants in 5 spots: top and bottom of the leaves, stems and roots.' },
+  { title: 'Mildest option first', text: 'Ask Eng. Mona about a hand, water or soil fix before anything else.' },
+  { title: 'Check the threshold', text: 'Your engineer tells you how many plants must be hit before you act.' },
+  { title: 'Only from the official list', text: 'If a product is needed, your engineer picks it and sets the dose.' },
+];
+
 export default function DiagnoseScreen() {
-  const { fp } = useField();
+  const { fp, id } = useField();
   const __v = useDC(Logic);
+  // The farmer's own case (?case=ID from "Take a photo"); without it the design's example stays (step 6).
+  const [cid, setCid] = useState<string | null>(null);
+  useEffect(() => { setCid(new URLSearchParams(window.location.search).get('case')); }, []);
+  const C: any = useApi(cid ? `/cases/${cid}?field_id=${id}` : null, undefined, true).data;
+  const fmt = (d: string) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const cdate = C ? fmt(C.created) : '';
+  const due = C ? fmt(C.follow_up.due) : '';
   return (
     <>
       <div className="root">
@@ -85,7 +102,7 @@ export default function DiagnoseScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"Example case: South plot maize, July. Demo."}
+                  {C ? `Your case: ${FIELD_NAMES[C.field_id] || C.field_id}, ${cdate}.` : "Example case: South plot maize, July. Demo."}
                 </span>
                 <h1 className="h1">
                   {"Check a problem"}
@@ -126,10 +143,14 @@ export default function DiagnoseScreen() {
                     {"Your photos"}
                   </h2>
                   <span className="tl">
-                    {"Maize whorl, from above, as Bezra asked"}
+                    {C ? `${C.photos} photo${C.photos > 1 ? "s" : ""}, ${C.where.toLowerCase()}${C.seen ? ", you saw: " + C.seen.toLowerCase() : ""}` : "Maize whorl, from above, as Bezra asked"}
                   </span>
                 </div>
                 <div className="grid" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))","gap":"8px"} as any}>
+                  {C ? Array.from({ length: C.photos }).map((_, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={i} src={`${API}/cases/${C.id}/photo/${i}`} alt={`Your photo ${i + 1}`} style={{ display: "block", width: "100%", aspectRatio: "260 / 180", objectFit: "cover", borderRadius: "10px" }} />
+                  )) : (<>
                   <svg viewBox="0 0 260 180" width="100%" style={{"display":"block","borderRadius":"10px"} as any} aria-hidden="true">
                     <rect width="260" height="180" fill="#C9D6A8" />
                     <path d="M-10 160C60 120 120 60 270 20L270 60C140 90 80 140 20 190Z" fill="#7FA650" />
@@ -166,18 +187,32 @@ export default function DiagnoseScreen() {
                     <ellipse cx="119" cy="123" rx="7" ry="6" fill="#3A5A2A" opacity=".55" />
                     <path d="M30 120C90 110 160 80 230 40" stroke="#5D8238" strokeWidth="2" fill="none" opacity=".5" />
                   </svg>
+                </>)}
                 </div>
                 <div className="inset" style={{"justifyContent":"flex-start","gap":"10px"} as any}>
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
                   </svg>
                   <span>
-                    {"Tip: photograph the whorl of a plant from the weak patch, in daylight."}
+                    {C?.photo_tip || "Tip: photograph the whorl of a plant from the weak patch, in daylight."}
                   </span>
                 </div>
                 <h2 className="h2" style={{"marginTop":"6px"} as any}>
                   {"What it might be"}
                 </h2>
+                {C ? (C.candidates.length ? C.candidates.map((x: any, i: number) => (
+                <div key={i} className="col" style={{"gap":"6px"} as any}>
+                  <div className="row sp">
+                    <b style={{"fontSize":"15px","fontWeight":"600"} as any}>{x.name}</b>
+                    <span style={{"fontSize":"14px","fontWeight":"600"} as any}>{x.pct + "%"}</span>
+                  </div>
+                  <span style={{"height":"8px","borderRadius":"4px","background":"var(--inset)"} as any}>
+                    <span className="growx" style={{"--i":String(i),"display":"block","height":"100%","width":x.pct + "%","borderRadius":"4px","background":["var(--risk)","#9EA39C","#C9CCC5"][i] || "#C9CCC5"} as any} />
+                  </span>
+                </div>
+                )) : (
+                <p className="body">{"Bezra could not check this photo itself. It went to Eng. Mona, who will look and reply."}</p>
+                )) : (<>
                 <div className="col" style={{"gap":"6px"} as any}>
                   <div className="row sp">
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
@@ -217,16 +252,17 @@ export default function DiagnoseScreen() {
                     <span className="growx" style={{"--i":"2","display":"block","height":"100%","width":"4%","borderRadius":"4px","background":"#C9CCC5"} as any} />
                   </span>
                 </div>
+                </>)}
                 <div className="row" style={{"gap":"6px"} as any}>
                   <span className="pill pv-est">
                     {"Estimated"}
                   </span>
                   <span className="pill">
-                    {"Image model, top 3"}
+                    {C ? (C.candidates.length ? "Claude vision, top 3" : "Not checked by Bezra") : "Image model, top 3"}
                   </span>
-                  <span className="lv lv-low">
+                  <span className={C ? "lv lv-med" : "lv lv-low"}>
                     <i />
-                    {"Confirmed by Eng. Mona"}
+                    {C ? "Waiting for Eng. Mona" : "Confirmed by Eng. Mona"}
                   </span>
                 </div>
               </section>
@@ -241,7 +277,7 @@ export default function DiagnoseScreen() {
                         </svg>
                       </span>
                       <h2 className="h3">
-                        {"Fall armyworm"}
+                        {C ? (C.status === "predicted" ? C.candidates[0].name : "Waiting for your engineer") : "Fall armyworm"}
                       </h2>
                     </span>
                     <span className="row" style={{"gap":"6px"} as any}>
@@ -249,7 +285,7 @@ export default function DiagnoseScreen() {
                         <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M9 4h6l-1 7h4v4H6v-4h4zM5 19h14" />
                         </svg>
-                        {" Eng. Mona Adel, 14 Jul"}
+                        {C ? ` Sent to Eng. Mona, ${cdate}` : " Eng. Mona Adel, 14 Jul"}
                       </span>
                     </span>
                   </div>
@@ -263,10 +299,10 @@ export default function DiagnoseScreen() {
                       </span>
                       <span className="col" style={{"gap":"2px"} as any}>
                         <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                          {"Hand pick and crush"}
+                          {C ? (C.ladder?.[0]?.title || GENERAL[0].title) : "Hand pick and crush"}
                         </b>
                         <span className="sub">
-                          {"If few plants show fresh damage. Remove egg masses."}
+                          {C ? (C.ladder?.[0]?.text || GENERAL[0].text) : "If few plants show fresh damage. Remove egg masses."}
                         </span>
                       </span>
                     </li>
@@ -276,10 +312,10 @@ export default function DiagnoseScreen() {
                       </span>
                       <span className="col" style={{"gap":"2px"} as any}>
                         <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                          {"Biological option"}
+                          {C ? (C.ladder?.[1]?.title || GENERAL[1].title) : "Biological option"}
                         </b>
                         <span className="sub">
-                          {"Bt based product where available. Ask your cooperative."}
+                          {C ? (C.ladder?.[1]?.text || GENERAL[1].text) : "Bt based product where available. Ask your cooperative."}
                         </span>
                       </span>
                     </li>
@@ -289,10 +325,10 @@ export default function DiagnoseScreen() {
                       </span>
                       <span className="col" style={{"gap":"2px"} as any}>
                         <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                          {"Check the threshold"}
+                          {C ? (C.ladder?.[2]?.title || GENERAL[2].title) : "Check the threshold"}
                         </b>
                         <span className="sub">
-                          {"Act if more than 20% of plants are infested. Count 20 plants in 5 spots."}
+                          {C ? (C.ladder?.[2]?.text || GENERAL[2].text) : "Act if more than 20% of plants are infested. Count 20 plants in 5 spots."}
                         </span>
                       </span>
                     </li>
@@ -302,10 +338,10 @@ export default function DiagnoseScreen() {
                       </span>
                       <span className="col" style={{"gap":"2px"} as any}>
                         <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                          {"Pesticide, from the official list"}
+                          {C ? (C.ladder?.[3]?.title || GENERAL[3].title) : "Pesticide, from the official list"}
                         </b>
                         <span className="sub">
-                          {"Active ingredient from the Ministry list. Your engineer sets the dose. Keep the pre harvest interval."}
+                          {C ? (C.ladder?.[3]?.text || GENERAL[3].text) : "Active ingredient from the Ministry list. Your engineer sets the dose. Keep the pre harvest interval."}
                         </span>
                       </span>
                     </li>
@@ -343,7 +379,7 @@ export default function DiagnoseScreen() {
                       {"Follow up in 7 days"}
                     </h2>
                     <span className="tl">
-                      {"21 Jul"}
+                      {C ? due : "21 Jul"}
                     </span>
                   </div>
                   <div className="grid" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))","gap":"6px"} as any}>
@@ -360,7 +396,7 @@ export default function DiagnoseScreen() {
                       {"Patch greenness since treatment"}
                     </span>
                     <b style={{"color":"var(--green)"} as any}>
-                      {"+0.06 NDVI"}
+                      {C ? (C.follow_up.change != null ? (C.follow_up.change >= 0 ? "+" : "") + C.follow_up.change.toFixed(2) + " NDVI" : "After " + due) : "+0.06 NDVI"}
                     </b>
                   </div>
                   <div className="inset" style={{"background":"var(--sun-tint)"} as any}>
@@ -382,7 +418,7 @@ export default function DiagnoseScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {C ? "Your photos stay with Bezra and your engineer. Follow-up greenness from the satellite." : "All numbers on this screen are demo data."}
                 <AboutLink />
               </span>
             </footer>
