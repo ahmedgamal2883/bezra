@@ -26,6 +26,16 @@ export default function FieldScreen() {
   // U2: when the water turn is due today (or late), the big button logs the watering in one tap
   const waterNow = (plan?.checklist || []).find((x: any) => x.task_id?.startsWith('turn-') && x.buttons?.[0]?.log === 'water');
   const [logged, setLogged] = useStateP(false);
+  // Real satellite photo under the squares (Esri World Imagery, exported in the field's UTM zone so the
+  // 30 m squares sit on the ground they measure). The grid box is drawn at x 605..765, y 120..340.
+  const frame = useApi(`/fields/${id}/mapframe`).data;
+  let photo: string | null = null, outline: string | null = null;
+  if (frame) {
+    const g = frame.grid, sx = 160 / (g.right - g.left), sy = 220 / (g.top - g.bottom);
+    const L = g.left - 605 / sx, T = g.top + 120 / sy, R = L + 1360 / sx, B = T - 520 / sy;
+    photo = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${L},${B},${R},${T}&bboxSR=${frame.wkid}&imageSR=${frame.wkid}&size=2040,780&format=jpg&f=image`;
+    if (frame.outline) outline = frame.outline.map(([x, y]: number[]) => `${(605 + (x - g.left) * sx).toFixed(1)},${(120 + (g.top - y) * sy).toFixed(1)}`).join(' ');
+  }
   const __v = useDC(Logic, { data: summary.data, loading: summary.loading, fieldId: id, ndvi: ndvi.data, health: health.data });
   return (
     <>
@@ -190,7 +200,7 @@ export default function FieldScreen() {
                   {" "}
                 </defs>
                 {" "}
-                <g transform="rotate(-9 680 260)">
+                {photo ? <image href={photo} x="0" y="0" width="1360" height="520" preserveAspectRatio="none" /> : (<><g transform={photo ? undefined : "rotate(-9 680 260)"}>
                   {" "}
                   <g stroke="#D8D1BA" strokeWidth="1.1" strokeOpacity=".8">
                     {((__v?.parcels) || []).map((p: any, i0: number) => (
@@ -223,7 +233,7 @@ export default function FieldScreen() {
                 <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#4A6A35" strokeWidth="22" />
                 {" "}
                 <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#3B6E8F" strokeWidth="10" />
-                {" "}
+                {" "}</>)}
                 <rect width="1360" height="520" filter="url(#grain)" opacity=".14" style={{"mixBlendMode":"multiply"} as any} />
                 {" "}
                 {__v?.dim ? (
@@ -232,7 +242,7 @@ export default function FieldScreen() {
                   </>
                 ) : null}
                 {" "}
-                <g transform="rotate(-9 680 260)">
+                <g transform={photo ? undefined : "rotate(-9 680 260)"}>
                   {" "}
                   {((__v?.cells) || []).map((c: any, i3: number) => (
                     <Fragment key={i3}>
@@ -255,6 +265,7 @@ export default function FieldScreen() {
                   <rect x="605" y="120" width="160" height="220" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeOpacity=".95" />
                   {" "}
                   <rect x="605" y="120" width="160" height="220" fill="none" stroke="#141A16" strokeWidth="2" />
+                  {outline ? <polygon points={outline} fill="none" stroke="#F29B1E" strokeWidth="3" strokeLinejoin="round" strokeDasharray="8 6" /> : null}
                   {" "}
                   {__v.pin ? (
                   <g transform={__v.pin}>
@@ -360,7 +371,7 @@ export default function FieldScreen() {
                   </div>
                 </div>
               </article>
-              <article aria-labelledby="act-h" className="float rise" style={{"--d":"6","position":"absolute","right":"18px","top":"18px","width":"348px","maxHeight":"calc(100% - 84px)","overflowY":"auto","padding":"18px","boxSizing":"border-box","display":"flex","flexDirection":"column","gap":"14px"} as any}>
+              <article aria-labelledby="act-h" className="float rise" style={{"--d":"6","position":"absolute","right":"18px","top":"18px","width":"348px","maxHeight":"calc(100% - 84px)","overflowY":"auto","overflowX":"hidden","padding":"18px","boxSizing":"border-box","display":"flex","flexDirection":"column","gap":"14px"} as any}>
                 <div className="row" style={{"gap":"10px","alignItems":"flex-start"} as any}>
                   <svg aria-hidden="true" width="48" height="48" viewBox="0 0 60 60">
                     <g className="sway">

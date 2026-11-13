@@ -247,6 +247,25 @@ def post_log(field_id: str, req: LogReq, user: dict = Depends(current_user)):
     return entry
 
 
+@app.get("/fields/{field_id}/mapframe")
+def get_mapframe(field_id: str, user: dict = Depends(current_user)):
+    """Today map: the field's 30 m grid in its UTM zone (+ the drawn outline), so the real satellite photo
+    (Esri World Imagery, exported in the same UTM zone) lines up with the squares."""
+    from rasterio.warp import transform as _tr
+    from .connectors.grid import utm_crs
+    c = _ctx(field_id, user)
+    g = satellite.grid(c)
+    crs = utm_crs(g.lon)
+    left, bottom, right, top = g.bounds_utm(crs)
+    out = {"wkid": int(crs.split(":")[1]), "grid": {"left": left, "bottom": bottom, "right": right, "top": top,
+           "cols": g.cols, "rows": g.rows}, "outline": None}
+    if c.f.get("polygon"):
+        lats, lons = zip(*c.f["polygon"])
+        xs, ys = _tr("EPSG:4326", crs, list(lons), list(lats))
+        out["outline"] = [[round(x, 1), round(y, 1)] for x, y in zip(xs, ys)]
+    return out
+
+
 @app.get("/fields/{field_id}/irrigation")
 def get_irrigation(field_id: str, user: dict = Depends(current_user)):
     """Beta: waterings seen from space (NDMI jump, radar, surface temperature) waiting for the farmer's yes / no."""
