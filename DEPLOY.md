@@ -41,6 +41,15 @@ takes about a minute. Open `/health` a minute before a demo.
 The website talks to the backend through its own `/api/...` address, so there is nothing else to connect.
 1. Open the Vercel address. The screens should show real data (Satellite / Estimated pills, not Demo).
 
+## Before a demo
+
+- Open the backend's `/health` a minute before (free plan sleeps).
+- Open **About the data** → **Live API status**: it should say "Working now: 11" (12 with the Claude key).
+- Demo farmer: the Landing page shows the login (only while `DEMO_MODE=1`).
+- Engineer: ahmed@bezra.app with the password you set as `ENGINEER_PASSWORD`.
+- South plot (Hassan) shows the Beta question "watered between 3 and 8 Nov?": that watering is real,
+  seen by Sentinel-2. Answer it live in the demo.
+
 ## What is kept where
 
 - `cache/` (in the repository): NASA and ESA answers, so the demo works even if an API is slow.

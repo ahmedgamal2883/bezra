@@ -107,7 +107,7 @@ APIS = [
     ("NASA ECOSTRESS (AppEEARS)", "Crop surface temperature (Details)", _appeears_layer("ecostress"), ""),
     ("Copernicus DEM GLO-30", "Slope and low spots", _dem, ""),
     ("Claude API", "Ask Bezra, photo check", _claude, ""),
-    ("Esri World Imagery", "Real satellite photo map (onboarding)", _esri, ""),
+    ("Esri World Imagery", "Satellite photo maps: onboarding, Today, Engineer", _esri, ""),
     ("Sentinel-1 RTC (ESA, extra)", "Irrigation detection (Beta)", _s1, ""),
     ("NASA GPM IMERG", "Rain that fell", None, "Rain comes from NASA POWER for now"),
     ("NASA SRTM (AppEEARS)", "Slope and low spots", None, "Copernicus DEM used instead (same 30 m)"),

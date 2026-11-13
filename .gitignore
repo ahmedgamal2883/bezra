@@ -21,3 +21,6 @@ Thumbs.db
 
 # engineer approvals (runtime data)
 data/
+
+frontend/.next-build/
+cache/s1_sas_token.json
