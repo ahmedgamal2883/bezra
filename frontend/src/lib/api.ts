@@ -10,8 +10,9 @@ export type Loadable<T = any> = { data: T | null; loading: boolean; error: strin
 
 const memo = new Map<string, any>();
 
-export function useApi<T = any>(path: string | null, body?: unknown): Loadable<T> {
+export function useApi<T = any>(path: string | null, body?: unknown, fresh = false): Loadable<T> {
   const key = path ? path + (body ? JSON.stringify(body) : '') : '';
+  if (fresh) memo.delete(key); // e.g. plan approval status: always ask again
   const [state, setState] = useState<Loadable<T>>(() => ({ data: memo.get(key) ?? null, loading: !!path && !memo.has(key), error: null }));
   useEffect(() => {
     if (!path) return;

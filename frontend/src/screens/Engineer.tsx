@@ -2,7 +2,8 @@
 /* eslint-disable */
 // Generated from design/html/V11-Engineer.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Engineer.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
+import { useApi, API } from '@/lib/api';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -11,7 +12,15 @@ import Logic from './Engineer.logic';
 
 export default function EngineerScreen() {
   const { fp } = useField();
-  const __v = useDC(Logic);
+  // Engineer workspace (step 6): real risk scores and plan approval from the backend.
+  const ws = useApi('/engineer/fields', undefined, true);
+  const [plan, setPlan] = useState<any>(null);
+  const [note, setNote] = useState('');
+  const approveOn = async (on: boolean, fid: string) => {
+    const r = await fetch(API + '/plans/' + fid + '/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ note, approved: on }) });
+    if (r.ok) setPlan(await r.json());
+  };
+  const __v = useDC(Logic, { data: ws.data, plan, approveOn, note, setNote });
   return (
     <>
       <div className="root">
@@ -165,13 +174,13 @@ export default function EngineerScreen() {
                   {"Hot spring days"}
                 </span>
                 <span className="num">
-                  {"+40%"}
+                  {__v.hotPct}
                   <small>
                     {" more"}
                   </small>
                 </span>
                 <span className="sub" style={{"fontSize":"13px"} as any}>
-                  {"Than in the 1990s, Demo"}
+                  {__v.hotNote}
                 </span>
               </section>
             </div>
@@ -285,156 +294,59 @@ export default function EngineerScreen() {
                     {"Visit queue"}
                   </h2>
                   <span className="tl">
-                    {"Ranked by risk and reach"}
+                    {__v.rankNote}
                   </span>
                 </div>
                 <ol style={{"margin":"0","padding":"0","display":"flex","flexDirection":"column","gap":"8px"} as any}>
-                  <li className="rise lift" style={{"--d":"3","listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
+                  {(__v.queue as any[]).map((q, k) => (
+                  <li key={q.name} className="rise lift" style={{"--d":String(3 + k),"listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
                     <b style={{"fontSize":"15px","color":"var(--muted)"} as any}>
-                      {"1"}
+                      {String(k + 1)}
                     </b>
                     <span className="col" style={{"gap":"2px"} as any}>
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Hassan Farouk"}
+                        {q.name}
+                        {q.demo ? null : <>{" "}<span className="pill pv-est" style={{ verticalAlign: "middle" }}>Estimated</span></>}
                       </b>
                       <span className="tl">
-                        {"Shibin El Kom, Wheat, Giza 171"}
+                        {q.place}
                       </span>
                       <span className="sub" style={{"fontSize":"13px"} as any}>
-                        {"Rust weather, weak variety, not checked yet"}
+                        {q.reason}
                       </span>
                     </span>
                     <span className="col" style={{"alignItems":"flex-end","gap":"4px"} as any}>
                       <b style={{"fontSize":"22px","fontWeight":"600"} as any}>
-                        {"86"}
+                        {String(q.score)}
                       </b>
-                      <span className="lv lv-high">
+                      <span className={q.lv}>
                         <i />
-                        {"Visit first"}
+                        {q.status}
                       </span>
                     </span>
                   </li>
-                  <li className="rise lift" style={{"--d":"4","listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                    <b style={{"fontSize":"15px","color":"var(--muted)"} as any}>
-                      {"2"}
-                    </b>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Samia Ibrahim"}
-                      </b>
-                      <span className="tl">
-                        {"Batanoun, Wheat, Sakha 95"}
-                      </span>
-                      <span className="sub" style={{"fontSize":"13px"} as any}>
-                        {"Tail of mesqa, turn skipped last week"}
-                      </span>
-                    </span>
-                    <span className="col" style={{"alignItems":"flex-end","gap":"4px"} as any}>
-                      <b style={{"fontSize":"22px","fontWeight":"600"} as any}>
-                        {"71"}
-                      </b>
-                      <span className="lv lv-high">
-                        <i />
-                        {"Visit first"}
-                      </span>
-                    </span>
-                  </li>
-                  <li className="rise lift" style={{"--d":"5","listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                    <b style={{"fontSize":"15px","color":"var(--muted)"} as any}>
-                      {"3"}
-                    </b>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Ahmed Salah"}
-                      </b>
-                      <span className="tl">
-                        {"Shibin El Kom, Berseem"}
-                      </span>
-                      <span className="sub" style={{"fontSize":"13px"} as any}>
-                        {"Weak patch 2 images in a row"}
-                      </span>
-                    </span>
-                    <span className="col" style={{"alignItems":"flex-end","gap":"4px"} as any}>
-                      <b style={{"fontSize":"22px","fontWeight":"600"} as any}>
-                        {"58"}
-                      </b>
-                      <span className="lv lv-med">
-                        <i />
-                        {"This week"}
-                      </span>
-                    </span>
-                  </li>
-                  <li className="rise lift" style={{"--d":"6","listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                    <b style={{"fontSize":"15px","color":"var(--muted)"} as any}>
-                      {"4"}
-                    </b>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Fathy Nour"}
-                      </b>
-                      <span className="tl">
-                        {"Meet Khalaf, Wheat, Misr 3"}
-                      </span>
-                      <span className="sub" style={{"fontSize":"13px"} as any}>
-                        {"Plan waiting for your approval"}
-                      </span>
-                    </span>
-                    <span className="col" style={{"alignItems":"flex-end","gap":"4px"} as any}>
-                      <b style={{"fontSize":"22px","fontWeight":"600"} as any}>
-                        {"44"}
-                      </b>
-                      <span className="lv lv-med">
-                        <i />
-                        {"This week"}
-                      </span>
-                    </span>
-                  </li>
-                  <li className="rise lift" style={{"--d":"7","listStyle":"none","display":"grid","gridTemplateColumns":"28px 1fr auto","gap":"12px","alignItems":"center","padding":"12px","borderRadius":"12px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
-                    <b style={{"fontSize":"15px","color":"var(--muted)"} as any}>
-                      {"5"}
-                    </b>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"Om Karim"}
-                      </b>
-                      <span className="tl">
-                        {"Batanoun, Sugar beet"}
-                      </span>
-                      <span className="sub" style={{"fontSize":"13px"} as any}>
-                        {"All on track"}
-                      </span>
-                    </span>
-                    <span className="col" style={{"alignItems":"flex-end","gap":"4px"} as any}>
-                      <b style={{"fontSize":"22px","fontWeight":"600"} as any}>
-                        {"22"}
-                      </b>
-                      <span className="lv lv-low">
-                        <i />
-                        {"OK"}
-                      </span>
-                    </span>
-                  </li>
+                  ))}
                 </ol>
                 <section className="card rise " style={{"--d":"9"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"9"} as any} />
                   <div className="row sp">
                     <span className="col">
                       <span className="tl">
-                        {"Hassan Farouk, North plot"}
+                        {__v.planField}
                       </span>
                       <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
                         {"Season plan, 9 actions"}
                       </b>
                     </span>
-                    <span className="lv lv-med">
+                    <span className={__v.planLv}>
                       <i />
-                      {"Pending"}
+                      {__v.planStatus}
                     </span>
                   </div>
                   <label className="vh" htmlFor="note">
                     {"Note to farmer"}
                   </label>
-                  <textarea id="note" placeholder="Nitrogen second dose: write the amount here" style={{"minHeight":"64px","padding":"10px 12px","border":"0","borderRadius":"10px","background":"var(--inset)","fontFamily":"inherit","fontSize":"14px","resize":"none"} as any} />
+                  <textarea id="note" value={__v.note} onChange={(e) => __v.setNote(e.target.value)} placeholder="Nitrogen second dose: write the amount here" style={{"minHeight":"64px","padding":"10px 12px","border":"0","borderRadius":"10px","background":"var(--inset)","fontFamily":"inherit","fontSize":"14px","resize":"none"} as any} />
                   <button type="button" className={__s(__v?.apCls) as any} onClick={__v?.approve} aria-pressed={__s(__v?.apP) as any}>
                     {__s(__v?.apL)}
                   </button>
@@ -449,7 +361,7 @@ export default function EngineerScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.foot}
                 <AboutLink />
               </span>
             </footer>

@@ -16,7 +16,7 @@ import anthropic
 from . import config  # noqa: F401  (loads backend/.env)
 from . import fields
 from .chat import bezra
-from .services import alerts, calendar, nextseason, satellite, sim, summary
+from .services import alerts, calendar, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 def _daily_alerts_job():
@@ -105,6 +105,28 @@ def get_alerts(field_id: str):
 @app.get("/fields/{field_id}/health")
 def get_health(field_id: str):
     return satellite.health(_ctx(field_id))
+
+
+@app.get("/engineer/fields")
+def get_engineer_fields():
+    return engineer.workspace()
+
+
+class ApproveReq(BaseModel):
+    note: str = ""
+    approved: bool = True
+
+
+@app.get("/plans/{field_id}")
+def get_plan_status(field_id: str):
+    _ctx(field_id)
+    return engineer.plan_status(field_id)
+
+
+@app.post("/plans/{field_id}/approve")
+def post_approve(field_id: str, req: ApproveReq):
+    _ctx(field_id)
+    return engineer.approve(field_id, req.note, req.approved)
 
 
 class SimReq(BaseModel):

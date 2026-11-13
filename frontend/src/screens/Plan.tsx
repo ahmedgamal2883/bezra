@@ -5,13 +5,18 @@
 import { Fragment } from 'react';
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Plan.logic';
 
 export default function PlanScreen() {
-  const { fp } = useField();
+  const { fp, id } = useField();
   const __v = useDC(Logic);
+  // Engineer review status (step 6): GET /plans/{id}, set by the engineer's "Approve plan".
+  const pl = useApi(`/plans/${id}`, undefined, true).data;
+  const planOk = pl?.status === 'approved';
+  const planDate = pl?.approved_at ? new Date(pl.approved_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
   return (
     <>
       <div className="root">
@@ -670,9 +675,9 @@ export default function PlanScreen() {
                     <h2 className="h2">
                       {"Engineer review"}
                     </h2>
-                    <span className="lv lv-med">
+                    <span className={planOk ? "lv lv-low" : "lv lv-med"}>
                       <i />
-                      {"Pending"}
+                      {planOk ? "Approved" : "Pending"}
                     </span>
                   </div>
                   <div style={{"position":"relative","padding":"16px","borderRadius":"10px","border":"1.5px dashed #C9CCC5","display":"flex","alignItems":"center","gap":"12px"} as any}>
@@ -684,7 +689,7 @@ export default function PlanScreen() {
                         {"Eng. Mona Adel"}
                       </b>
                       <span className="tl">
-                        {"Will review doses and approve the plan"}
+                        {planOk ? `Approved your plan on ${planDate}` : "Will review doses and approve the plan"}
                       </span>
                     </span>
                   </div>
