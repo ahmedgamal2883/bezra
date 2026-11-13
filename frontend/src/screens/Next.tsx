@@ -3,19 +3,23 @@
 // Generated from design/html/V11-Next.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Next.logic.js (verbatim from the design).
 import { Fragment } from 'react';
+import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Next.logic';
 
 export default function NextScreen() {
-  const __v = useDC(Logic);
+  const { fp, id } = useField();
+  const nx = useApi(`/fields/${id}/next`);
+  const __v = useDC(Logic, { data: nx.data, loading: nx.loading, fieldId: id });
   return (
     <>
       <div className="root">
         <div className="shell">
           <header className="top">
-            <Link href="/field/north-plot" className="brand" aria-label="Bezra, my field">
+            <Link href={fp("")} className="brand" aria-label="Bezra, my field">
               <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
                 <rect width="34" height="34" rx="11" fill="#17251C" />
                 <ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" strokeWidth="1.8" transform="rotate(-24 17 17)" />
@@ -24,7 +28,7 @@ export default function NextScreen() {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
-              <Link href="/field/north-plot" aria-current="page" className="press">
+              <Link href={fp("")} aria-current="page" className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
                 </svg>
@@ -58,7 +62,7 @@ export default function NextScreen() {
                   {"Details"}
                 </button>
               </div>
-              <Link href="/field/north-plot/alerts" className="ibtn press" aria-label="Alerts, 2 new">
+              <Link href={fp("/alerts")} className="ibtn press" aria-label="Alerts, 2 new">
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                 </svg>
@@ -73,7 +77,7 @@ export default function NextScreen() {
                     {"Hassan Farouk"}
                   </b>
                   <small>
-                    {"North plot, Menoufia"}
+                    <FieldWho />
                   </small>
                 </span>
               </span>
@@ -99,38 +103,38 @@ export default function NextScreen() {
               </Link>
             </div>
             <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
-              <Link href="/field/north-plot">
+              <Link href={fp("")}>
                 {"Today"}
               </Link>
-              <Link href="/field/north-plot/plan">
+              <Link href={fp("/plan")}>
                 {"Season plan"}
               </Link>
-              <Link href="/field/north-plot/health">
+              <Link href={fp("/health")}>
                 {"Field health"}
               </Link>
-              <Link href="/field/north-plot/calendar">
+              <Link href={fp("/calendar")}>
                 {"Calendar"}
               </Link>
-              <Link href="/field/north-plot/next" aria-current="page">
+              <Link href={fp("/next")} aria-current="page">
                 {"Next season"}
               </Link>
-              <Link href="/field/north-plot/alerts">
+              <Link href={fp("/alerts")}>
                 {"Alerts"}
               </Link>
             </nav>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1.3fr) minmax(0, 1fr)","alignItems":"stretch"} as any}>
               <section className="card rise " style={{"--d":"2","padding":"24px","gap":"16px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"2"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"2"} as any} />
                 <div className="row sp">
                   <span className="tl">
                     {"Hot days (over 32 °C) in March and April at your field"}
                   </span>
                   <span className="row" style={{"gap":"4px"} as any}>
-                    <span className="pill pv-sat">
-                      {"NASA POWER"}
+                    <span className={__v.N.srcSat}>
+                      {__v.N.srcSatL}
                     </span>
                     <span className="pill pv-est">
-                      {"2040: CMIP6"}
+                      {__v.N.src40L}
                     </span>
                   </span>
                 </div>
@@ -140,47 +144,47 @@ export default function NextScreen() {
                 <div className="row" style={{"alignItems":"flex-end","gap":"16px","height":"200px","paddingTop":"10px"} as any}>
                   <div className="col" style={{"flex":"1","alignItems":"center","gap":"6px"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"2"}
+                      {__v.N.bars[0].v}
                     </b>
-                    <span className="grow" style={{"--i":"0","width":"100%","maxWidth":"64px","height":"28px","borderRadius":"8px","background":"#E3D3B4"} as any} />
+                    <span className="grow" style={{"--i":"0","width":"100%","maxWidth":"64px","height":__v.N.barH[0],"borderRadius":"8px","background":"#E3D3B4"} as any} />
                     <span className="tl">
-                      {"1990s"}
+                      {__v.N.bars[0].l}
                     </span>
                   </div>
                   <div className="col" style={{"flex":"1","alignItems":"center","gap":"6px"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"3"}
+                      {__v.N.bars[1].v}
                     </b>
-                    <span className="grow" style={{"--i":"4","width":"100%","maxWidth":"64px","height":"42px","borderRadius":"8px","background":"#E3D3B4"} as any} />
+                    <span className="grow" style={{"--i":"4","width":"100%","maxWidth":"64px","height":__v.N.barH[1],"borderRadius":"8px","background":"#E3D3B4"} as any} />
                     <span className="tl">
-                      {"2000s"}
+                      {__v.N.bars[1].l}
                     </span>
                   </div>
                   <div className="col" style={{"flex":"1","alignItems":"center","gap":"6px"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"5"}
+                      {__v.N.bars[2].v}
                     </b>
-                    <span className="grow" style={{"--i":"8","width":"100%","maxWidth":"64px","height":"70px","borderRadius":"8px","background":"#E3D3B4"} as any} />
+                    <span className="grow" style={{"--i":"8","width":"100%","maxWidth":"64px","height":__v.N.barH[2],"borderRadius":"8px","background":"#E3D3B4"} as any} />
                     <span className="tl">
-                      {"2010s"}
+                      {__v.N.bars[2].l}
                     </span>
                   </div>
                   <div className="col" style={{"flex":"1","alignItems":"center","gap":"6px"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"7"}
+                      {__v.N.bars[3].v}
                     </b>
-                    <span className="grow" style={{"--i":"12","width":"100%","maxWidth":"64px","height":"98px","borderRadius":"8px","background":"#F29B1E"} as any} />
+                    <span className="grow" style={{"--i":"12","width":"100%","maxWidth":"64px","height":__v.N.barH[3],"borderRadius":"8px","background":"#F29B1E"} as any} />
                     <span className="tl">
-                      {"2020s"}
+                      {__v.N.bars[3].l}
                     </span>
                   </div>
                   <div className="col" style={{"flex":"1","alignItems":"center","gap":"6px"} as any}>
                     <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"11"}
+                      {__v.N.bars[4].v}
                     </b>
-                    <span className="grow" style={{"--i":"16","width":"100%","maxWidth":"64px","height":"154px","borderRadius":"8px","background":"repeating-linear-gradient(180deg,#F29B1E 0 6px,#FBD9A6 6px 10px)"} as any} />
+                    <span className="grow" style={{"--i":"16","width":"100%","maxWidth":"64px","height":__v.N.barH[4],"borderRadius":"8px","background":"repeating-linear-gradient(180deg,#F29B1E 0 6px,#FBD9A6 6px 10px)"} as any} />
                     <span className="tl">
-                      {"2040"}
+                      {__v.N.bars[4].l}
                     </span>
                   </div>
                 </div>
@@ -189,7 +193,7 @@ export default function NextScreen() {
                 </p>
               </section>
               <section className="card rise " style={{"--d":"3","padding":"24px","gap":"16px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"3"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"3"} as any} />
                 <div className="row" style={{"gap":"12px"} as any}>
                   <svg aria-hidden="true" width="56" height="56" viewBox="0 0 60 60">
                     <g className="sway">
@@ -212,7 +216,7 @@ export default function NextScreen() {
                       {"So for wheat next season"}
                     </span>
                     <h2 className="h3">
-                      {"Sow between 1 and 15 November"}
+                      {__v.N.headline}
                     </h2>
                   </div>
                 </div>
@@ -223,11 +227,11 @@ export default function NextScreen() {
                         {"Best time in the 1990s"}
                       </span>
                       <b style={{"color":"var(--ink)"} as any}>
-                        {"10 to 25 Nov"}
+                        {__v.N.w90}
                       </b>
                     </div>
                     <div style={{"position":"relative","height":"12px","borderRadius":"6px","background":"var(--inset)"} as any}>
-                      <span className="growx" style={{"--i":"0","position":"absolute","top":"0","bottom":"0","left":"33%","width":"25%","borderRadius":"6px","background":"#C9CCC5"} as any} />
+                      <span className="growx" style={{"--i":"0","position":"absolute","top":"0","bottom":"0","left":__v.N.pos90[0],"width":__v.N.pos90[1],"borderRadius":"6px","background":"#C9CCC5"} as any} />
                     </div>
                   </div>
                   <div className="col" style={{"gap":"4px"} as any}>
@@ -236,11 +240,11 @@ export default function NextScreen() {
                         {"Best time today"}
                       </span>
                       <b style={{"color":"var(--ink)"} as any}>
-                        {"1 to 15 Nov"}
+                        {__v.N.wToday}
                       </b>
                     </div>
                     <div style={{"position":"relative","height":"12px","borderRadius":"6px","background":"var(--inset)"} as any}>
-                      <span className="growx" style={{"--i":"1","position":"absolute","top":"0","bottom":"0","left":"18%","width":"25%","borderRadius":"6px","background":"#3E8F4E"} as any} />
+                      <span className="growx" style={{"--i":"1","position":"absolute","top":"0","bottom":"0","left":__v.N.posToday[0],"width":__v.N.posToday[1],"borderRadius":"6px","background":"#3E8F4E"} as any} />
                     </div>
                   </div>
                   <div className="col" style={{"gap":"4px"} as any}>
@@ -249,11 +253,11 @@ export default function NextScreen() {
                         {"Best time around 2040"}
                       </span>
                       <b style={{"color":"var(--ink)"} as any}>
-                        {"20 Oct to 5 Nov"}
+                        {__v.N.w40}
                       </b>
                     </div>
                     <div style={{"position":"relative","height":"12px","borderRadius":"6px","background":"var(--inset)"} as any}>
-                      <span className="growx" style={{"--i":"2","position":"absolute","top":"0","bottom":"0","left":"2%","width":"25%","borderRadius":"6px","background":"#E9C25A"} as any} />
+                      <span className="growx" style={{"--i":"2","position":"absolute","top":"0","bottom":"0","left":__v.N.pos40[0],"width":__v.N.pos40[1],"borderRadius":"6px","background":"#E9C25A"} as any} />
                     </div>
                   </div>
                   <div className="row tl sp" style={{"paddingTop":"2px"} as any}>
@@ -272,9 +276,9 @@ export default function NextScreen() {
                   <span className="pill pv-est">
                     {"Estimated"}
                   </span>
-                  <span className="pill pv-demo">
+                  {__v.N.live ? null : <span className="pill pv-demo">
                     {"Demo"}
-                  </span>
+                  </span>}
                 </span>
               </section>
             </div>
@@ -288,20 +292,20 @@ export default function NextScreen() {
             </div>
             <div className="grid" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))"} as any}>
               <section className="card rise lift" style={{"--d":"6","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"6"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"6"} as any} />
                 <div className="row sp">
                   <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
-                    {"Asyut, Egypt"}
+                    {__v.N.twins[0]?.[0]}
                   </b>
                   <span className="pill">
-                    {"91% same weather"}
+                    {__v.N.twins[0]?.[1]}
                   </span>
                 </div>
                 <p className="body">
                   <b style={{"color":"var(--ink)"} as any}>
                     {"What they do:"}
                   </b>
-                  {" Sow wheat 1 to 15 November and use heat tolerant varieties."}
+                  {__v.N.twins[0]?.[2]}
                 </p>
                 <span className="row" style={{"gap":"4px"} as any}>
                   <span className="pill pv-demo">
@@ -310,20 +314,20 @@ export default function NextScreen() {
                 </span>
               </section>
               <section className="card rise lift" style={{"--d":"7","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"7"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"7"} as any} />
                 <div className="row sp">
                   <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
-                    {"Gezira, Sudan"}
+                    {__v.N.twins[1]?.[0]}
                   </b>
                   <span className="pill">
-                    {"84% same weather"}
+                    {__v.N.twins[1]?.[1]}
                   </span>
                 </div>
                 <p className="body">
                   <b style={{"color":"var(--ink)"} as any}>
                     {"What they do:"}
                   </b>
-                  {" Short season wheat and watering at night."}
+                  {__v.N.twins[1]?.[2]}
                 </p>
                 <span className="row" style={{"gap":"4px"} as any}>
                   <span className="pill pv-demo">
@@ -332,20 +336,20 @@ export default function NextScreen() {
                 </span>
               </section>
               <section className="card rise lift" style={{"--d":"8","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"8"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"8"} as any} />
                 <div className="row sp">
                   <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
-                    {"Hisar, India"}
+                    {__v.N.twins[2]?.[0]}
                   </b>
                   <span className="pill">
-                    {"78% same weather"}
+                    {__v.N.twins[2]?.[1]}
                   </span>
                 </div>
                 <p className="body">
                   <b style={{"color":"var(--ink)"} as any}>
                     {"What they do:"}
                   </b>
-                  {" Early sowing and two light waterings at the end."}
+                  {__v.N.twins[2]?.[2]}
                 </p>
                 <span className="row" style={{"gap":"4px"} as any}>
                   <span className="pill pv-demo">
@@ -364,7 +368,7 @@ export default function NextScreen() {
             </div>
             <div className="grid" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))"} as any}>
               <section className="card rise " style={{"--d":"10"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"10"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"10"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span style={{"width":"34px","height":"34px","borderRadius":"10px","background":"var(--inset)","color":"var(--ink)","display":"flex","alignItems":"center","justifyContent":"center","fontWeight":"700"} as any}>
@@ -401,7 +405,7 @@ export default function NextScreen() {
                 </Link>
               </section>
               <section className="card rise " style={{"--d":"11","boxShadow":"0 0 0 2px var(--dark)"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"11"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"11"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span style={{"width":"34px","height":"34px","borderRadius":"10px","background":"var(--dark)","color":"#fff","display":"flex","alignItems":"center","justifyContent":"center","fontWeight":"700"} as any}>
@@ -442,7 +446,7 @@ export default function NextScreen() {
                 </Link>
               </section>
               <section className="card rise " style={{"--d":"12"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"12"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"12"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span style={{"width":"34px","height":"34px","borderRadius":"10px","background":"var(--inset)","color":"var(--ink)","display":"flex","alignItems":"center","justifyContent":"center","fontWeight":"700"} as any}>
@@ -487,7 +491,7 @@ export default function NextScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.N.foot}
                 <AboutLink />
               </span>
             </footer>

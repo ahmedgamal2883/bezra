@@ -3,19 +3,23 @@
 // Generated from design/html/V11-Calendar.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Calendar.logic.js (verbatim from the design).
 import { Fragment } from 'react';
+import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Calendar.logic';
 
 export default function CalendarScreen() {
-  const __v = useDC(Logic);
+  const { fp, id } = useField();
+  const cal = useApi(`/fields/${id}/calendar`);
+  const __v = useDC(Logic, { data: cal.data, loading: cal.loading, fieldId: id });
   return (
     <>
       <div className="root">
         <div className="shell">
           <header className="top">
-            <Link href="/field/north-plot" className="brand" aria-label="Bezra, my field">
+            <Link href={fp("")} className="brand" aria-label="Bezra, my field">
               <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
                 <rect width="34" height="34" rx="11" fill="#17251C" />
                 <ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" strokeWidth="1.8" transform="rotate(-24 17 17)" />
@@ -24,7 +28,7 @@ export default function CalendarScreen() {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
-              <Link href="/field/north-plot" aria-current="page" className="press">
+              <Link href={fp("")} aria-current="page" className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
                 </svg>
@@ -58,7 +62,7 @@ export default function CalendarScreen() {
                   {"Details"}
                 </button>
               </div>
-              <Link href="/field/north-plot/alerts" className="ibtn press" aria-label="Alerts, 2 new">
+              <Link href={fp("/alerts")} className="ibtn press" aria-label="Alerts, 2 new">
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                 </svg>
@@ -73,7 +77,7 @@ export default function CalendarScreen() {
                     {"Hassan Farouk"}
                   </b>
                   <small>
-                    {"North plot, Menoufia"}
+                    <FieldWho />
                   </small>
                 </span>
               </span>
@@ -105,22 +109,22 @@ export default function CalendarScreen() {
               </div>
             </div>
             <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
-              <Link href="/field/north-plot">
+              <Link href={fp("")}>
                 {"Today"}
               </Link>
-              <Link href="/field/north-plot/plan">
+              <Link href={fp("/plan")}>
                 {"Season plan"}
               </Link>
-              <Link href="/field/north-plot/health">
+              <Link href={fp("/health")}>
                 {"Field health"}
               </Link>
-              <Link href="/field/north-plot/calendar" aria-current="page">
+              <Link href={fp("/calendar")} aria-current="page">
                 {"Calendar"}
               </Link>
-              <Link href="/field/north-plot/next">
+              <Link href={fp("/next")}>
                 {"Next season"}
               </Link>
-              <Link href="/field/north-plot/alerts">
+              <Link href={fp("/alerts")}>
                 {"Alerts"}
               </Link>
             </nav>
@@ -130,6 +134,7 @@ export default function CalendarScreen() {
                 <h2 className="h2">
                   {"Sowing windows, "}
                   {__s(__v?.eraLabel)}
+                  {__v.live ? <>{" "}<span className="pill pv-demo" style={{ verticalAlign: "middle" }}>Other crops: Demo</span></> : null}
                 </h2>
                 <span className="row" style={{"gap":"14px","fontSize":"12px","color":"var(--ink2)"} as any}>
                   <span className="row" style={{"gap":"6px"} as any}>
@@ -273,8 +278,8 @@ export default function CalendarScreen() {
                   </div>
                 </div>
                 <span className="row" style={{"gap":"4px"} as any}>
-                  <span className="pill pv-est">
-                    {"Estimated"}
+                  <span className={__v.pvEst}>
+                    {__v.pvEstL}
                   </span>
                   <span className="pill">
                     {"Your area"}
@@ -299,11 +304,11 @@ export default function CalendarScreen() {
                 <p className="body">
                   {"Your maize is harvested around "}
                   <b>
-                    {"10 December"}
+                    {__v.lateHarvest}
                   </b>
                   {", so wheat goes in late. That costs about "}
                   <b>
-                    {"6% of the harvest"}
+                    {__v.lateCost}
                   </b>
                   {"."}
                 </p>
@@ -319,16 +324,16 @@ export default function CalendarScreen() {
               <section className="card rise " style={{"--d":"5"} as any}>
                 <i className="sk " aria-hidden="true" style={{"--d":"5"} as any} />
                 <h2 className="h2">
-                  {"The best time is earlier now"}
+                  {__v.earlierTitle}
                 </h2>
                 <p className="body">
                   {"In the 1990s the best time to sow wheat started about "}
                   <b>
-                    {"12 days later"}
+                    {__v.earlier90}
                   </b>
                   {". By 2040 it will be about "}
                   <b>
-                    {"9 days earlier"}
+                    {__v.earlier40}
                   </b>
                   {" than today."}
                 </p>
@@ -336,11 +341,11 @@ export default function CalendarScreen() {
                   <span className="pill pv-est">
                     {"Estimated"}
                   </span>
-                  <span className="pill pv-demo">
+                  {__v.live ? null : <span className="pill pv-demo">
                     {"Demo"}
-                  </span>
+                  </span>}
                 </span>
-                <Link href="/field/north-plot/next" className="btn line cta press">
+                <Link href={fp("/next")} className="btn line cta press">
                   {"See next season"}
                   <span className="ar">
                     <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -358,7 +363,7 @@ export default function CalendarScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.foot}
                 <AboutLink />
               </span>
             </footer>

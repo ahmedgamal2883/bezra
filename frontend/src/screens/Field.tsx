@@ -3,19 +3,23 @@
 // Generated from design/html/V11-Field.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Field.logic.js (verbatim from the design).
 import { Fragment } from 'react';
+import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
+import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Field.logic';
 
 export default function FieldScreen() {
-  const __v = useDC(Logic);
+  const { fp, id } = useField();
+  const summary = useApi(`/fields/${id}/summary`);
+  const __v = useDC(Logic, { data: summary.data, loading: summary.loading, fieldId: id });
   return (
     <>
       <div className="root">
         <div className="shell">
           <header className="top">
-            <Link href="/field/north-plot" className="brand" aria-label="Bezra, my field">
+            <Link href={fp("")} className="brand" aria-label="Bezra, my field">
               <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
                 <rect width="34" height="34" rx="11" fill="#17251C" />
                 <ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" strokeWidth="1.8" transform="rotate(-24 17 17)" />
@@ -24,7 +28,7 @@ export default function FieldScreen() {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
-              <Link href="/field/north-plot" aria-current="page" className="press">
+              <Link href={fp("")} aria-current="page" className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
                 </svg>
@@ -58,7 +62,7 @@ export default function FieldScreen() {
                   {"Details"}
                 </button>
               </div>
-              <Link href="/field/north-plot/alerts" className="ibtn press" aria-label="Alerts, 2 new">
+              <Link href={fp("/alerts")} className="ibtn press" aria-label="Alerts, 2 new">
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                 </svg>
@@ -73,7 +77,7 @@ export default function FieldScreen() {
                     {"Hassan Farouk"}
                   </b>
                   <small>
-                    {"North plot, Menoufia"}
+                    <FieldWho />
                   </small>
                 </span>
               </span>
@@ -83,14 +87,14 @@ export default function FieldScreen() {
             <div className="head">
               <div className="col rise" style={{"--d":"0","gap":"6px"} as any}>
                 <span className="eyebrow">
-                  {"Saturday, 14 November. Wheat, day 30 of 160, tillering."}
+                  {__v.T.eyebrow}
                 </span>
                 <h1 className="h1">
-                  {"Good morning, Hassan"}
+                  {__v.T.hello}
                 </h1>
               </div>
               <div role="list" aria-label="Your fields" className="row rise" style={{"--d":"1","gap":"8px"} as any}>
-                <Link href="/field/north-plot" className="press lift" aria-current="true" style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":"0 0 0 2px #141A16"} as any}>
+                <Link href="/field/north-plot" className="press lift" aria-current={id === "north-plot"} style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === "north-plot" ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
                   <span className="col" style={{"gap":"1px"} as any}>
                     <span className="tl" style={{"fontWeight":"600"} as any}>
                       {"#01"}
@@ -109,7 +113,7 @@ export default function FieldScreen() {
                     <rect x="21" y="9" width="24" height="30" fill="#fff" fillOpacity=".2" stroke="#fff" strokeWidth="2" />
                   </svg>
                 </Link>
-                <a href="#" className="press lift" aria-current="false" style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":"0 1px 2px rgba(20,26,22,.05)"} as any}>
+                <Link href="/field/south-plot" className="press lift" aria-current={id === "south-plot"} style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === "south-plot" ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
                   <span className="col" style={{"gap":"1px"} as any}>
                     <span className="tl" style={{"fontWeight":"600"} as any}>
                       {"#02"}
@@ -127,7 +131,7 @@ export default function FieldScreen() {
                     <rect x="48" width="16" height="48" fill="#A39878" />
                     <rect x="21" y="9" width="24" height="30" fill="#fff" fillOpacity=".2" stroke="#fff" strokeWidth="2" />
                   </svg>
-                </a>
+                </Link>
                 <Link href="/onboarding" className="press ghost" aria-label="Add a field" style={{"width":"64px","height":"64px","boxSizing":"border-box","borderRadius":"12px","border":"1.5px dashed #C3C6BF","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 5v14M5 12h14" />
@@ -136,27 +140,27 @@ export default function FieldScreen() {
               </div>
             </div>
             <nav aria-label="North plot sections" className="tabs rise" style={{"--d":"0"} as any}>
-              <Link href="/field/north-plot" aria-current="page">
+              <Link href={fp("")} aria-current="page">
                 {"Today"}
               </Link>
-              <Link href="/field/north-plot/plan">
+              <Link href={fp("/plan")}>
                 {"Season plan"}
               </Link>
-              <Link href="/field/north-plot/health">
+              <Link href={fp("/health")}>
                 {"Field health"}
               </Link>
-              <Link href="/field/north-plot/calendar">
+              <Link href={fp("/calendar")}>
                 {"Calendar"}
               </Link>
-              <Link href="/field/north-plot/next">
+              <Link href={fp("/next")}>
                 {"Next season"}
               </Link>
-              <Link href="/field/north-plot/alerts">
+              <Link href={fp("/alerts")}>
                 {"Alerts"}
               </Link>
             </nav>
             <section aria-labelledby="hero-h" className="hero rise" style={{"--d":"2","minHeight":"520px","background":"#D9D6C8"} as any}>
-              <i className="sk map" aria-hidden="true" style={{"--d":"2"} as any} />
+              <i className={__v.skMap} aria-hidden="true" style={{"--d":"2"} as any} />
               <h2 id="hero-h" className="vh">
                 {"North plot from above"}
               </h2>
@@ -293,13 +297,13 @@ export default function FieldScreen() {
                 </div>
                 <div className="col" style={{"gap":"2px"} as any}>
                   <span className="tl">
-                    {"Field #01"}
+                    {__v.T.num}
                   </span>
                   <span style={{"fontSize":"26px","fontWeight":"600","letterSpacing":"-.7px"} as any}>
-                    {"North plot"}
+                    {__v.T.name}
                   </span>
                   <span style={{"fontSize":"14px","color":"var(--ink2)"} as any}>
-                    {"Wheat, Sakha 95, sown 15 Oct"}
+                    {__v.T.cropLine}
                   </span>
                 </div>
                 <div className="col" style={{"gap":"4px"} as any}>
@@ -309,7 +313,7 @@ export default function FieldScreen() {
                     </span>
                     <span className="row" style={{"gap":"6px"} as any}>
                       <b>
-                        {"2.4 feddan"}
+                        {__v.T.area}
                       </b>
                       <span className="pill pv-farm">
                         {"You"}
@@ -322,7 +326,7 @@ export default function FieldScreen() {
                     </span>
                     <span className="row" style={{"gap":"6px"} as any}>
                       <b>
-                        {"Heavy clay"}
+                        {__v.T.soil}
                       </b>
                       <span className="pill pv-est">
                         {"Est."}
@@ -335,7 +339,7 @@ export default function FieldScreen() {
                     </span>
                     <span className="row" style={{"gap":"6px"} as any}>
                       <b>
-                        {"Mesqa, tail end"}
+                        {__v.T.water}
                       </b>
                       <span className="pill pv-farm">
                         {"You"}
@@ -348,7 +352,7 @@ export default function FieldScreen() {
                     </span>
                     <span className="row" style={{"gap":"6px"} as any}>
                       <b>
-                        {"Every 10 days"}
+                        {__v.T.turn}
                       </b>
                       <span className="pill pv-farm">
                         {"You"}
@@ -383,16 +387,16 @@ export default function FieldScreen() {
                       </span>
                       <span className="lv lv-med">
                         <i />
-                        {"Medium confidence"}
+                        {__v.T.conf}
                       </span>
                     </span>
                     <h2 id="act-h" style={{"fontSize":"23px","lineHeight":"1.15","fontWeight":"600","letterSpacing":"-.6px"} as any}>
-                      {"Your water turn is Thursday. Don't skip it."}
+                      {__v.T.title}
                     </h2>
                   </div>
                 </div>
                 <p className="body">
-                  {"Your wheat is at the stage that is hurt most by thirst, and the soil is drier than it should be."}
+                  {__v.T.body}
                 </p>
                 <div className="row" style={{"gap":"6px"} as any}>
                   <span className="inset" style={{"flex":"1","flexDirection":"column","alignItems":"flex-start","gap":"2px"} as any}>
@@ -400,7 +404,7 @@ export default function FieldScreen() {
                       {"Protects your harvest by"}
                     </span>
                     <b style={{"fontSize":"20px"} as any}>
-                      {"8 to 12%"}
+                      {__v.T.protects}
                     </b>
                   </span>
                   <span className="inset" style={{"flex":"1","flexDirection":"column","alignItems":"flex-start","gap":"2px"} as any}>
@@ -408,7 +412,7 @@ export default function FieldScreen() {
                       {"To apply"}
                     </span>
                     <b style={{"fontSize":"20px"} as any}>
-                      {"~300"}
+                      {__v.T.apply}
                       <small className="unit">
                         {" m³"}
                       </small>
@@ -417,7 +421,7 @@ export default function FieldScreen() {
                 </div>
                 <div className="row wrap" style={{"gap":"4px"} as any}>
                   <span className="pill pv-est">
-                    {"Estimated"}
+                    {__v.T.pvEst.label}
                   </span>
                   <span className="pill">
                     {"Your field"}
@@ -425,7 +429,7 @@ export default function FieldScreen() {
                   {__v?.details ? (
                     <>
                       <span className="pill">
-                        {"FAO-56, Kc 0.7, RAW 50%"}
+                        {__v.T.method}
                       </span>
                     </>
                   ) : null}
@@ -440,7 +444,7 @@ export default function FieldScreen() {
                     </svg>
                   </button>
                   <Link href="/ask" className="btn soft cta press" style={{"flex":"1"} as any}>
-                    {"Why Thursday?"}
+                    {__v.T.why}
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M7 17 17 7M9 7h8v8" />
@@ -485,12 +489,12 @@ export default function FieldScreen() {
               </div>
               <span className="float" style={{"position":"absolute","right":"18px","bottom":"18px","height":"34px","padding":"0 12px","borderRadius":"17px","display":"flex","alignItems":"center","gap":"8px","fontSize":"13px","fontWeight":"500"} as any}>
                 <span style={{"width":"7px","height":"7px","borderRadius":"4px","background":"#2E8B4A"} as any} />
-                {__s(__v?.stamp)}
+                {__s(__v?.stamp)}{" "}<span className="pill pv-demo">Demo</span>
               </span>
             </section>
             <section aria-label="Risks this week" className="grid" style={{"gridTemplateColumns":"repeat(4, minmax(0, 1fr))"} as any}>
               <section className="card rise lift" style={{"--d":"3","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"3"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"3"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span className="chip s">
@@ -502,17 +506,17 @@ export default function FieldScreen() {
                       {"Heat"}
                     </span>
                   </span>
-                  <span className="lv lv-low">
+                  <span className={__v.T.heat.cls}>
                     <i />
-                    {"Low"}
+                    {__v.T.heat.lv}
                   </span>
                 </div>
                 <p className="sub" style={{"color":"var(--ink2)"} as any}>
-                  {"No hot days in the next week."}
+                  {__v.T.heat.line}
                 </p>
               </section>
               <section className="card rise lift" style={{"--d":"4","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"4"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"4"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span className="chip w">
@@ -524,17 +528,17 @@ export default function FieldScreen() {
                       {"Water"}
                     </span>
                   </span>
-                  <span className="lv lv-med">
+                  <span className={__v.T.wat.cls}>
                     <i />
-                    {"Medium"}
+                    {__v.T.wat.lv}
                   </span>
                 </div>
                 <p className="sub" style={{"color":"var(--ink2)"} as any}>
-                  {"The soil is drying. Don't miss Thursday."}
+                  {__v.T.wat.line}
                 </p>
               </section>
               <section className="card rise lift" style={{"--d":"5","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"5"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"5"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span className="chip r">
@@ -546,17 +550,17 @@ export default function FieldScreen() {
                       {"Rust"}
                     </span>
                   </span>
-                  <span className="lv lv-med">
+                  <span className={__v.T.rust.cls}>
                     <i />
-                    {"Medium"}
+                    {__v.T.rust.lv}
                   </span>
                 </div>
                 <p className="sub" style={{"color":"var(--ink2)"} as any}>
-                  {"4 of the last 7 nights were foggy. Rust likes that."}
+                  {__v.T.rust.line}
                 </p>
               </section>
               <section className="card rise lift" style={{"--d":"6","gap":"10px"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"6"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"6"} as any} />
                 <div className="row sp">
                   <span className="row" style={{"gap":"10px"} as any}>
                     <span className="chip g">
@@ -574,14 +578,14 @@ export default function FieldScreen() {
                   </span>
                 </div>
                 <p className="sub" style={{"color":"var(--ink2)"} as any}>
-                  {"No pests reported near you."}
+                  {"No pests reported near you."}{" "}<span className="pill pv-demo">Demo</span>
                 </p>
               </section>
             </section>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1.05fr) minmax(0, .9fr) minmax(0, 1.25fr) minmax(0, .95fr)","alignItems":"stretch"} as any}>
               <section aria-label="Field numbers" className="grid" style={{"gridTemplateColumns":"1fr 1fr","gap":"10px"} as any}>
                 <section className="card rise " style={{"--d":"8","padding":"14px","gap":"10px","justifyContent":"flex-start"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"8"} as any} />
+                  <i className={__v.sk} aria-hidden="true" style={{"--d":"8"} as any} />
                   <div className="row" style={{"gap":"8px"} as any}>
                     <span className="chip" style={{"width":"28px","height":"28px","borderRadius":"8px"} as any}>
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -593,14 +597,14 @@ export default function FieldScreen() {
                     </span>
                   </div>
                   <span className="num">
-                    {"38"}
+                    {__v.T.soilW}
                     <small>
                       {"%"}
                     </small>
                   </span>
                   <span className="row wrap" style={{"gap":"4px"} as any}>
-                    <span className="pill pv-est">
-                      {"Estimated"}
+                    <span className={__v.T.pvEst.cls}>
+                      {__v.T.pvEst.label}
                     </span>
                     <span className="pill">
                       {"Your field"}
@@ -609,13 +613,13 @@ export default function FieldScreen() {
                   {__v?.details ? (
                     <>
                       <span className="tl" style={{"fontSize":"11px"} as any}>
-                        {"FAO-56 water balance, POWER ET₀"}
+                        {__v.T.soilSrc}
                       </span>
                     </>
                   ) : null}
                 </section>
                 <section className="card rise " style={{"--d":"9","padding":"14px","gap":"10px","justifyContent":"flex-start"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"9"} as any} />
+                  <i className={__v.sk} aria-hidden="true" style={{"--d":"9"} as any} />
                   <div className="row" style={{"gap":"8px"} as any}>
                     <span className="chip" style={{"width":"28px","height":"28px","borderRadius":"8px"} as any}>
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -633,8 +637,8 @@ export default function FieldScreen() {
                     </small>
                   </span>
                   <span className="row wrap" style={{"gap":"4px"} as any}>
-                    <span className="pill pv-sat">
-                      {"Satellite"}
+                    <span className="pill pv-demo">
+                      {"Demo"}
                     </span>
                     <span className="pill">
                       {"Your field"}
@@ -649,7 +653,7 @@ export default function FieldScreen() {
                   ) : null}
                 </section>
                 <section className="card rise " style={{"--d":"10","padding":"14px","gap":"10px","justifyContent":"flex-start"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"10"} as any} />
+                  <i className={__v.sk} aria-hidden="true" style={{"--d":"10"} as any} />
                   <div className="row" style={{"gap":"8px"} as any}>
                     <span className="chip" style={{"width":"28px","height":"28px","borderRadius":"8px"} as any}>
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -661,14 +665,14 @@ export default function FieldScreen() {
                     </span>
                   </div>
                   <span className="num">
-                    {"0"}
+                    {__v.T.rain}
                     <small>
                       {" mm"}
                     </small>
                   </span>
                   <span className="row wrap" style={{"gap":"4px"} as any}>
-                    <span className="pill pv-sat">
-                      {"Satellite"}
+                    <span className={__v.T.pvSat.cls}>
+                      {__v.T.pvSat.label}
                     </span>
                     <span className="pill">
                       {"Your area"}
@@ -677,13 +681,13 @@ export default function FieldScreen() {
                   {__v?.details ? (
                     <>
                       <span className="tl" style={{"fontSize":"11px"} as any}>
-                        {"NASA GPM IMERG, past rain only"}
+                        {__v.T.rainSrc}
                       </span>
                     </>
                   ) : null}
                 </section>
                 <section className="card rise " style={{"--d":"11","padding":"14px","gap":"10px","justifyContent":"flex-start"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"11"} as any} />
+                  <i className={__v.sk} aria-hidden="true" style={{"--d":"11"} as any} />
                   <div className="row" style={{"gap":"8px"} as any}>
                     <span className="chip" style={{"width":"28px","height":"28px","borderRadius":"8px"} as any}>
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -695,7 +699,7 @@ export default function FieldScreen() {
                     </span>
                   </div>
                   <span className="num">
-                    {"1,150"}
+                    {__v.T.used}
                     <small>
                       {" m³"}
                     </small>
@@ -718,16 +722,16 @@ export default function FieldScreen() {
                 </section>
               </section>
               <section className="card rise " style={{"--d":"12"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"12"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"12"} as any} />
                 <div className="row sp">
                   <h2 className="h2">
                     {"Water in the root zone"}
                   </h2>
-                  <span className="pill pv-est">
-                    {"Estimated"}
+                  <span className={__v.T.pvEst.cls}>
+                    {__v.T.pvEst.label}
                   </span>
                 </div>
-                <svg role="img" aria-label="Root zone water gauge: 38 percent. Refill point 50 percent." viewBox="0 -20 240 160" width="100%" style={{"maxHeight":"168px"} as any}>
+                <svg role="img" aria-label={__v.T.gaugeLabel} viewBox="0 -20 240 160" width="100%" style={{"maxHeight":"168px"} as any}>
                   {((__v?.gauge) || []).map((g: any, i7: number) => (
                     <Fragment key={i7}>
                       <path className="fade" style={__css(g?.st)} d={__s(g?.d) as any} stroke={__s(g?.c) as any} strokeWidth="16" strokeLinecap="round" fill="none" />
@@ -738,13 +742,13 @@ export default function FieldScreen() {
                     {"Refill 50%"}
                   </text>
                   <text x="120" y="112" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="34" fontWeight="600" fill="#141A16">
-                    {"38"}
+                    {__v.T.soilW}
                     <tspan fontSize="16" fill="#8B918C">
                       {"%"}
                     </tspan>
                   </text>
                   <text x="120" y="132" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="12" fill="#6A716C">
-                    {"Below refill point"}
+                    {__v.T.refillTxt}
                   </text>
                 </svg>
                 <div className="col" style={{"gap":"4px"} as any}>
@@ -753,31 +757,31 @@ export default function FieldScreen() {
                       {"Last watered"}
                     </span>
                     <b>
-                      {"3 Nov, 11 days ago"}
+                      {__v.T.lastW}
                     </b>
                   </div>
                   <div className="inset">
                     <span>
-                      {"After Thursday's water"}
+                      {__v.T.afterLabel}
                     </span>
                     <b>
-                      {"About 90% full"}
+                      {__v.T.after}
                     </b>
                   </div>
                 </div>
               </section>
               <section className="card rise " style={{"--d":"13"} as any}>
-                <i className="sk " aria-hidden="true" style={{"--d":"13"} as any} />
+                <i className={__v.sk} aria-hidden="true" style={{"--d":"13"} as any} />
                 <div className="row sp">
                   <h2 className="h2">
                     {"This field's year"}
                   </h2>
                   <span className="tl">
-                    {"Oct 2026 to Sep 2027"}
+                    {__v.T.yearRange}
                   </span>
                 </div>
                 <div role="img" aria-label="Season strip by week. Wheat from mid October to mid April, a bare gap, maize May to mid September. Hot days likely in late April during grain fill. Today is week 5." style={{"position":"relative"} as any}>
-                  <span style={{"position":"absolute","left":"calc(4.5 / 52 * 100%)","top":"0","transform":"translateX(-30%)","height":"20px","padding":"0 7px","borderRadius":"10px","background":"var(--ink)","color":"#fff","fontSize":"11px","fontWeight":"600","display":"flex","alignItems":"center"} as any} className="fade">
+                  <span style={{"position":"absolute","left":__v.T.todayLeft,"top":"0","transform":"translateX(-30%)","height":"20px","padding":"0 7px","borderRadius":"10px","background":"var(--ink)","color":"#fff","fontSize":"11px","fontWeight":"600","display":"flex","alignItems":"center"} as any} className="fade">
                     {"Today"}
                   </span>
                   <div style={{"display":"flex","alignItems":"flex-end","gap":"2px","height":"76px","marginTop":"26px"} as any}>
@@ -838,7 +842,7 @@ export default function FieldScreen() {
                       <path d="M10 13.5V5a2 2 0 0 1 4 0v8.5a4 4 0 1 1-4 0zM12 9v7" />
                     </svg>
                   </span>
-                  {"Late April is often hot, right when the wheat grain fills."}
+                  {__v.T.yearNote}
                 </div>
               </section>
               <div className="col" style={{"gap":"14px"} as any}>
@@ -863,8 +867,8 @@ export default function FieldScreen() {
                     </span>
                   </span>
                 </Link>
-                <Link href="/field/north-plot/plan" className="card rise lift cta" style={{"--d":"15","flex":"1","justifyContent":"space-between"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"15"} as any} />
+                <Link href={fp("/plan")} className="card rise lift cta" style={{"--d":"15","flex":"1","justifyContent":"space-between"} as any}>
+                  <i className={__v.sk} aria-hidden="true" style={{"--d":"15"} as any} />
                   <span className="row sp">
                     <span className="ar-t" lang="ar" dir="rtl" style={{"fontSize":"14px","color":"var(--muted)"} as any}>
                       {"خطة موسمك"}
@@ -884,7 +888,7 @@ export default function FieldScreen() {
                         <span className="growx" style={{"display":"block","width":"33%","height":"100%","background":"var(--green)","borderRadius":"3px"} as any} />
                       </span>
                       <span className="tl" style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"3 of 9 done"}
+                        {"3 of 9 done"}{" "}<span className="pill pv-demo">Demo</span>
                       </span>
                     </span>
                   </span>
@@ -894,7 +898,7 @@ export default function FieldScreen() {
             {__v?.details ? (
               <>
                 <section className="card rise " style={{"--d":"16"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"16"} as any} />
+                  <i className={__v.sk} aria-hidden="true" style={{"--d":"16"} as any} />
                   <div className="row sp">
                     <h2 className="h2">
                       {"Data behind this screen"}
@@ -912,7 +916,7 @@ export default function FieldScreen() {
                         {"Heat, ET₀"}
                       </b>
                       <span className="tl">
-                        {"2 days lag"}
+                        {__v.T.powerLag}
                       </span>
                     </div>
                     <div className="inset" style={{"flexDirection":"column","alignItems":"flex-start","gap":"4px"} as any}>
@@ -923,7 +927,7 @@ export default function FieldScreen() {
                         {"Greenness, 30 m"}
                       </b>
                       <span className="tl">
-                        {"Image 10 Nov"}
+                        {__v.T.demo ? "Image 10 Nov" : "Demo until step 4"}
                       </span>
                     </div>
                     <div className="inset" style={{"flexDirection":"column","alignItems":"flex-start","gap":"4px"} as any}>
@@ -934,7 +938,7 @@ export default function FieldScreen() {
                         {"Root zone, 9 km"}
                       </b>
                       <span className="tl">
-                        {"1 day lag"}
+                        {__v.T.demo ? "1 day lag" : "Not connected yet"}
                       </span>
                     </div>
                     <div className="inset" style={{"flexDirection":"column","alignItems":"flex-start","gap":"4px"} as any}>
@@ -945,7 +949,7 @@ export default function FieldScreen() {
                         {"Past rain"}
                       </b>
                       <span className="tl">
-                        {"1 day lag"}
+                        {__v.T.demo ? "1 day lag" : "Using POWER rain for now"}
                       </span>
                     </div>
                     <div className="inset" style={{"flexDirection":"column","alignItems":"flex-start","gap":"4px"} as any}>
@@ -956,7 +960,7 @@ export default function FieldScreen() {
                         {"Next 7 days"}
                       </b>
                       <span className="tl">
-                        {"Today 06:00"}
+                        {__v.T.forecast}
                       </span>
                     </div>
                   </div>
@@ -971,7 +975,7 @@ export default function FieldScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.T.foot}
                 <AboutLink />
               </span>
             </footer>

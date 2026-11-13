@@ -2,6 +2,7 @@
 // Shared page chrome copied 1:1 from the V11 screens (header, footer, mascot), for the screens
 // that were added later (sign in, messages, report). Uses the same classes as the design.
 import Link from 'next/link';
+import { useField, FieldWho } from '@/lib/field';
 import type { ReactNode } from 'react';
 import { useMode } from '@/lib/dc';
 import AboutLink from './AboutLink';
@@ -57,6 +58,7 @@ type Tab = 'field' | 'sim' | 'ask' | 'profile' | null;
 
 // The logged-in farmer header, as on every V11 farmer screen.
 export function FarmerHeader({ active = null }: { active?: Tab }) {
+  const { fp } = useField();
   const { details, setDetails } = useMode();
   const item = (id: Exclude<Tab, null>, href: string, label: string) => (
     <Link href={href} className="press" aria-current={active === id ? 'page' : undefined}>
@@ -66,12 +68,12 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
   );
   return (
     <header className="top">
-      <Link href="/field/north-plot" className="brand" aria-label="Bezra, my field">
+      <Link href={fp("")} className="brand" aria-label="Bezra, my field">
         <BrandMark />
         {'bezra'}
       </Link>
       <nav aria-label="Main" className="nav">
-        {item('field', '/field/north-plot', 'My field')}
+        {item('field', fp(), 'My field')}
         {item('sim', '/sim', 'Simulator')}
         {item('ask', '/ask', 'Ask Bezra')}
         {item('profile', '/profile', 'Profile')}
@@ -81,7 +83,7 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
           <button type="button" className={'segb press' + (details ? '' : ' on')} onClick={() => setDetails(false)} aria-pressed={!details}>{'Simple'}</button>
           <button type="button" className={'segb press' + (details ? ' on' : '')} onClick={() => setDetails(true)} aria-pressed={details}>{'Details'}</button>
         </div>
-        <Link href="/field/north-plot/alerts" className="ibtn press" aria-label="Alerts, 2 new">
+        <Link href={fp("/alerts")} className="ibtn press" aria-label="Alerts, 2 new">
           <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
           </svg>
@@ -91,7 +93,7 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
           <span className="av" aria-hidden="true">{'HF'}</span>
           <span>
             <b>{'Hassan Farouk'}</b>
-            <small>{'North plot, Menoufia'}</small>
+            <small><FieldWho /></small>
           </span>
         </span>
       </div>

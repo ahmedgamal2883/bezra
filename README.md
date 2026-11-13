@@ -28,6 +28,28 @@ Then open http://localhost:3000.
 | `/sim` · `/ask` · `/profile` · `/engineer` · `/about` | V11-Sim · Ask · Profile · Engineer · About |
 | `/states` | V11-States (reference for loading / empty / stale states) |
 
+## Run the backend (Python, FastAPI)
+
+```bash
+cd backend
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt
+.venv/Scripts/python -m uvicorn app.main:app --port 8000
+```
+
+API docs: http://localhost:8000/docs. Tests: `.venv/Scripts/python -m pytest -q`.
+If the backend is not running, every screen falls back to the design values with a **Demo** pill.
+
+| Endpoint | Screen | Data |
+|---|---|---|
+| `GET /fields/{id}/summary` | Today | NASA POWER + Open-Meteo, FAO-56 water balance, stage, risks, action |
+| `GET /fields/{id}/calendar` | Calendar | yield index for every sowing date, every season 1990-2025 |
+| `GET /fields/{id}/next` | Next season | hot days by decade, best windows, climate twins |
+| `POST /sim` | Simulator | one season on real weather (normal year / hot spring) |
+
+`cache/` keeps every API answer so the demo works offline (brief §7).
+Model notes and open questions: see the top of `backend/app/engine/season.py`.
+
 ## How the screens were built
 
 `frontend/scripts/convert-design.mjs` converted each `design/html/V11-*.html` 1:1:

@@ -1,6 +1,7 @@
 /* eslint-disable */
 // Verbatim logic from design/html/V11-Sim.html.
 import { DCLogic } from '@/lib/dc';
+import { dm } from '@/lib/api';
 
 export default class Component extends DCLogic {
 constructor(props) { super(props); this.state = Object.assign({ mode: null }, { sow: 0, va: 0, wa: 0, yr: 0, m: 3, pin: null }); }
@@ -47,17 +48,22 @@ return { ground, canal, road, prisms, soil, edgeR, edgeF, wet, tagX: tag[0], tag
 
 const SOW = ['25 Oct', '15 Nov', '1 Dec'], VAR = ['Sakha 95', 'Giza 171'], WAT = ['Every turn', 'Skip 1 in Jan', 'Skip 2'], YR = ['Normal year', 'Hot spring'];
 const sw = S.sow, va = S.va, wa = S.wa, yr = S.yr, m = S.m;
+// ---- real season from POST /sim (step 2). D = backend answer for the current choices, null = design demo values.
+const D = this.props.data && this.props.data.steps ? this.props.data : null;
+const req = { field_id: this.props.fieldId || 'north-plot', sow: ['2026-10-25', '2026-11-15', '2026-12-01'][sw],
+  variety: ['sakha95', 'giza171'][va], watering: ['every', 'skip1_jan', 'skip2'][wa], year: ['normal', 'hot_spring'][yr] };
 const MONTHS = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
 const start = sw === 0 ? -1 : (sw === 1 ? 0 : 0);
-const mLabel = (k) => { const base = sw === 0 ? ['25 Oct', '25 Nov', '25 Dec', '25 Jan', '25 Feb', '25 Mar', '25 Apr'] : (sw === 1 ? ['15 Nov', '15 Dec', '15 Jan', '15 Feb', '15 Mar', '15 Apr', '15 May'] : ['1 Dec', '1 Jan', '1 Feb', '1 Mar', '1 Apr', '1 May', '1 Jun']); return base[k]; };
-const STAGE = ['Sown', 'Tillering', 'Tillering', 'Stem growth', 'Heading', 'Grain filling', 'Ready to harvest'];
+const mLabel = (k) => { if (D) return dm(D.steps[k].date); const base = sw === 0 ? ['25 Oct', '25 Nov', '25 Dec', '25 Jan', '25 Feb', '25 Mar', '25 Apr'] : (sw === 1 ? ['15 Nov', '15 Dec', '15 Jan', '15 Feb', '15 Mar', '15 Apr', '15 May'] : ['1 Dec', '1 Jan', '1 Feb', '1 Mar', '1 Apr', '1 May', '1 Jun']); return base[k]; };
+const STAGE = D ? D.steps.map((s) => s.stage) : ['Sown', 'Tillering', 'Tillering', 'Stem growth', 'Heading', 'Grain filling', 'Ready to harvest'];
 const hot = yr === 1, late = sw === 2, mid = sw === 1;
-const heat = hot ? (late ? .45 : (mid ? .3 : .15)) : (late ? .2 : (mid ? .08 : 0));
-const water = [.35, .75, 1.25][wa];
-const sc = scene({ month: m, water, heat: m >= 5 ? heat : 0, rust: va === 1, wet: m <= 2 && (m !== 2 || wa === 0) });
+const heat = D ? Math.min(.45, D.hot_days_grain_fill * .05) : (hot ? (late ? .45 : (mid ? .3 : .15)) : (late ? .2 : (mid ? .08 : 0)));
+const water = D ? .35 + D.steps[m].water_stress * 2 : [.35, .75, 1.25][wa];
+const rustAt = (k) => (D ? D.steps[k].rust : va === 1 && k >= 3 && k <= 4);
+const sc = scene({ month: m, water, heat: m >= 5 ? heat : 0, rust: D ? (rustAt(3) || rustAt(4)) : va === 1, wet: m <= 2 && (m !== 2 || wa === 0) });
 const loss = 3 + [0, 4, 10][wa] + [0, 5, 12][sw] + (hot ? (late ? 12 : (mid ? 7 : 3)) : 0) + (va === 1 ? 6 : 0);
-const yieldPct = 100 - loss;
-const wUse = [3150, 2800, 2450][wa] + (hot ? 150 : 0);
+const yieldPct = D ? D.yield_pct : 100 - loss;
+const wUse = D ? D.water_m3_per_feddan : [3150, 2800, 2450][wa] + (hot ? 150 : 0);
 const events = [];
 events.push({ k: 0, t: 'Sown ' + mLabel(0) + '. First water 10 days later.' });
 events.push({ k: 1, t: 'Water turns every 10 days. Tillering needs all of them.' });
@@ -66,19 +72,23 @@ events.push({ k: 3, t: va === 1 ? 'Foggy weeks. Rust shows up on Giza 171 in a f
 events.push({ k: 4, t: va === 1 ? 'Heads appear. The rust spots spread a little.' : 'Heads appear across the field.' });
 events.push({ k: 5, t: hot ? (late ? '5 hot days while the grain fills. This is where most loss happens.' : '3 hot days while the grain fills.') : (late ? '2 hot days while the grain fills.' : 'Grain fills before the heat arrives.') });
 events.push({ k: 6, t: 'Harvest: about ' + yieldPct + '% of what this field can give.' });
-const ev = events[m].t;
+const ev = D ? D.steps[m].event : events[m].t;
 const steps = STAGE.map((l, k) => ({ label: mLabel(k), sub: l, p: String(k === m), pick: () => set({ m: k }),
 style: 'flex: 1; min-width: 0; padding: 8px 4px; border: 0; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-family: inherit; cursor: pointer; transition: background-color .2s; ' + (k === m ? 'background: #17251C; color: #fff;' : 'background: transparent; color: ' + (k < m ? '#141A16' : '#8B918C') + ';'),
-dot: 'width: 8px; height: 8px; border-radius: 4px; background: ' + ((k === 5 && heat > .1) ? '#F29B1E' : ((k >= 3 && k <= 4 && va === 1) || (k === 2 && wa > 0) ? '#C2412A' : (k === m ? '#fff' : '#C9CCC5'))) + ';' }));
+dot: 'width: 8px; height: 8px; border-radius: 4px; background: ' + ((k === 5 && heat > .1) ? '#F29B1E' : (rustAt(k) || (k === 2 && wa > 0) || (D && D.steps[k].water_stress > .2) ? '#C2412A' : (k === m ? '#fff' : '#C9CCC5'))) + ';' }));
 const opt = (arr, cur, key) => arr.map((l, k) => ({ label: l, p: String(cur === k), pick: () => set({ [key]: k }), cls: 'segb press' + (cur === k ? ' on' : '') }));
 const pin = S.pin;
-const height = Math.round([4, 15, 25, 55, 85, 90, 85][m] * (1 - (m >= 2 ? Math.min(.3, (heat + water * .1)) : 0)));
-const soilW = [92, 70, 55 - wa * 12, 60 - wa * 8, 58, 50 - (hot ? 10 : 0), 30][m];
+const height = D ? D.steps[m].plant_height_cm : Math.round([4, 15, 25, 55, 85, 90, 85][m] * (1 - (m >= 2 ? Math.min(.3, (heat + water * .1)) : 0)));
+const soilW = D ? D.steps[m].soil_water_pct : [92, 70, 55 - wa * 12, 60 - wa * 8, 58, 50 - (hot ? 10 : 0), 30][m];
 const label = SOW[sw] + ', ' + VAR[va] + ', ' + WAT[wa].toLowerCase();
 return { sc, wetOn: !!sc.wet, rustOn: va === 1 && m >= 3 && m <= 4, rustDots: sc.prisms.filter((p) => p.rust), hazeOn: m === 5 && heat > .1,
 sceneLabel: 'North plot in 3D at ' + STAGE[m] + '. Ground from a satellite image, crop simulated.',
 sow: opt(SOW, sw, 'sow'), va: opt(VAR, va, 'va'), wa: opt(WAT, wa, 'wa'), yr: opt(YR, yr, 'yr'),
-steps, stage: STAGE[m], when: mLabel(m), ev, height, soilW: Math.max(18, soilW), yieldPct, wUse: wUse.toLocaleString('en-US'), hotDays: hot ? (late ? 5 : (mid ? 3 : 1)) : (late ? 2 : 0),
+steps, stage: STAGE[m], when: mLabel(m), ev, height, soilW: D ? soilW : Math.max(18, soilW), yieldPct, wUse: wUse.toLocaleString('en-US'), hotDays: D ? D.hot_days_grain_fill : (hot ? (late ? 5 : (mid ? 3 : 1)) : (late ? 2 : 0)),
+req, live: !!D,
+checked: D ? `Checked against ${D.years_used} past seasons` : 'Checked against 30 past seasons',
+estCls: D ? 'pill pv-est' : 'pill pv-demo', estLabel: D ? 'Estimated' : 'Demo',
+foot: D ? `Weather of the ${D.season_year} season from NASA POWER. Variety traits are Demo, to verify with ARC.` : 'All numbers on this screen are demo data.',
 next1: () => set({ m: Math.min(6, m + 1) }), next3: () => set({ m: Math.min(6, m + 3) }), back: () => set({ m: Math.max(0, m - 1) }), atEnd: m === 6, notEnd: m < 6,
 hazeChip: m === 5 && heat > .1, hasPin: !!pin, pinLabel: pin ? pin.label : '', pinY: pin ? pin.y : 0, pinW: pin ? pin.w : '', diff: pin ? (yieldPct - pin.y) : 0,
 diffTxt: pin ? (yieldPct === pin.y ? 'Same harvest' : (yieldPct > pin.y ? (yieldPct - pin.y) + '% more harvest than the pinned plan' : (pin.y - yieldPct) + '% less harvest than the pinned plan')) : '',

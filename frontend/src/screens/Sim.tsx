@@ -2,20 +2,28 @@
 /* eslint-disable */
 // Generated from design/html/V11-Sim.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Sim.logic.js (verbatim from the design).
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { useApi } from '@/lib/api';
+import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Sim.logic';
 
 export default function SimScreen() {
-  const __v = useDC(Logic);
+  const { fp, id } = useField();
+  // The simulator asks the backend for the season that matches the current choices (POST /sim).
+  const [req, setReq] = useState<any>({ field_id: id, sow: "2026-10-25", variety: "sakha95", watering: "every", year: "normal" });
+  const sim = useApi("/sim", req);
+  const __v = useDC(Logic, { data: sim.data, loading: sim.loading, fieldId: id });
+  const reqKey = JSON.stringify(__v.req);
+  useEffect(() => { setReq(JSON.parse(reqKey)); }, [reqKey]);
   return (
     <>
       <div className="root">
         <div className="shell">
           <header className="top">
-            <Link href="/field/north-plot" className="brand" aria-label="Bezra, my field">
+            <Link href={fp("")} className="brand" aria-label="Bezra, my field">
               <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
                 <rect width="34" height="34" rx="11" fill="#17251C" />
                 <ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" strokeWidth="1.8" transform="rotate(-24 17 17)" />
@@ -24,7 +32,7 @@ export default function SimScreen() {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
-              <Link href="/field/north-plot" className="press">
+              <Link href={fp("")} className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
                 </svg>
@@ -58,7 +66,7 @@ export default function SimScreen() {
                   {"Details"}
                 </button>
               </div>
-              <Link href="/field/north-plot/alerts" className="ibtn press" aria-label="Alerts, 2 new">
+              <Link href={fp("/alerts")} className="ibtn press" aria-label="Alerts, 2 new">
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                 </svg>
@@ -73,7 +81,7 @@ export default function SimScreen() {
                     {"Hassan Farouk"}
                   </b>
                   <small>
-                    {"North plot, Menoufia"}
+                    <FieldWho />
                   </small>
                 </span>
               </span>
@@ -92,7 +100,7 @@ export default function SimScreen() {
               <div className="row rise" style={{"--d":"1","gap":"8px"} as any}>
                 <span className="pill" style={{"height":"30px","padding":"0 12px","fontSize":"12.5px"} as any}>
                   <span style={{"width":"8px","height":"8px","borderRadius":"4px","background":"#8C9C5A"} as any} />
-                  {"Ground: satellite image, 12 Nov"}
+                  {"Ground: satellite image, 12 Nov"}{" "}<span className="pill pv-demo" style={{ height: "18px" }}>Demo</span>
                 </span>
                 <span className="pill pv-est" style={{"height":"30px","padding":"0 12px","fontSize":"12.5px"} as any}>
                   {"Crop: simulated"}
@@ -432,11 +440,11 @@ export default function SimScreen() {
                     </div>
                   </div>
                   <span className="row" style={{"gap":"4px"} as any}>
-                    <span className="pill pv-est">
-                      {"Estimated"}
+                    <span className={__v.estCls}>
+                      {__v.estLabel}
                     </span>
                     <span className="pill">
-                      {"Checked against 30 past seasons"}
+                      {__v.checked}
                     </span>
                   </span>
                   {__v?.hasPin ? (
@@ -459,7 +467,7 @@ export default function SimScreen() {
                     <button type="button" className="btn soft press" onClick={__v?.pinIt} style={{"flex":"1"} as any}>
                       {"Pin to compare"}
                     </button>
-                    <Link href="/field/north-plot/plan" className="btn cta press" style={{"flex":"1.3"} as any}>
+                    <Link href={fp("/plan")} className="btn cta press" style={{"flex":"1.3"} as any}>
                       {"Use in my plan"}
                       <span className="ar">
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -479,7 +487,7 @@ export default function SimScreen() {
                 {" Bezra helps you think. It doesn't decide for you."}
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {__v.foot}
                 <AboutLink />
               </span>
             </footer>

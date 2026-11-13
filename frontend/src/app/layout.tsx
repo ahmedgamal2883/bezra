@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ModeProvider } from '@/lib/dc';
+import { FieldProvider } from '@/lib/field';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
-        <ModeProvider>{children}</ModeProvider>
+        <ModeProvider>
+          <FieldProvider>{children}</FieldProvider>
+        </ModeProvider>
       </body>
     </html>
   );

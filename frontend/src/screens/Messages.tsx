@@ -3,6 +3,7 @@
 // (chat panel + side cards), the engineer avatar from Profile and the rules card from Ask.
 // Demo conversation: messages are kept in the page only, nothing is sent yet.
 import Link from 'next/link';
+import { useField, FieldWho } from '@/lib/field';
 import { useState } from 'react';
 import { FarmerHeader, Foot, Mascot } from '@/components/chrome';
 
@@ -21,6 +22,7 @@ const MonaAvatar = ({ size = 36 }: { size?: number }) => (
 );
 
 export default function MessagesScreen() {
+  const { fp } = useField();
   const [msgs, setMsgs] = useState<Msg[]>(START);
   const [draft, setDraft] = useState('');
   const send = () => {
@@ -92,7 +94,7 @@ export default function MessagesScreen() {
                   <div className="inset"><span>{'Season plan'}</span><b>{'Waiting for review'}</b></div>
                   <div className="inset"><span>{'Weak corner'}</span><b>{'NE, ~0.25 feddan'}</b></div>
                 </div>
-                <Link href="/field/north-plot/plan" className="btn soft cta press">
+                <Link href={fp("/plan")} className="btn soft cta press">
                   {'See the season plan'}
                   <span className="ar">
                     <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M9 7h8v8" /></svg>

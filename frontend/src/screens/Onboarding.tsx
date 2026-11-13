@@ -4,6 +4,7 @@
 // Steps 1, 3 and 4 of the design's own step bar are built from the same parts:
 // map panel, mascot speech bubble, inset fields, chips, segmented controls, accuracy card, CTA row.
 import { Fragment, type ReactNode } from 'react';
+import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Logic from './Onboarding.logic';
@@ -74,6 +75,7 @@ const BackIcon = () => (
 );
 
 export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: number }) {
+  const { fp } = useField();
   const __v = useDC(Logic, { initialStep });
   const step: number = __v.step;
 
@@ -136,7 +138,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
               ))}
             </div>
             <div className="tools">
-              <Link href="/field/north-plot" className="btn soft sm press">
+              <Link href={fp("")} className="btn soft sm press">
                 {'Skip for now'}
               </Link>
             </div>
@@ -248,7 +250,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                   {accuracy}
                   {actions(
                     backBtn(1),
-                    <Link href="/field/north-plot" className="btn cta press" style={{ flex: '1' }}>{'Save and see my field'}<Arrow /></Link>,
+                    <Link href={fp("")} className="btn cta press" style={{ flex: '1' }}>{'Save and see my field'}<Arrow /></Link>,
                   )}
                 </>
               ) : null}
@@ -298,7 +300,7 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                   {accuracy}
                   {actions(
                     backBtn(3),
-                    <Link href="/field/north-plot" className="btn cta press" style={{ flex: '1' }}>{'Save and see my field'}<Arrow /></Link>,
+                    <Link href={fp("")} className="btn cta press" style={{ flex: '1' }}>{'Save and see my field'}<Arrow /></Link>,
                   )}
                 </>
               ) : null}

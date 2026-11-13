@@ -1,0 +1,197 @@
+"""GET /fields/{id}/summary — everything the Today screen shows (brief §5, V11-Field → Today)."""
+from __future__ import annotations
+
+import statistics
+from datetime import date, timedelta
+
+from .. import fields
+from ..engine import season
+from ..engine.season import MM_TO_M3_PER_FEDDAN
+from ..num import num
+from .context import Ctx
+
+LEVELS = ["Low", "Medium", "High"]
+FIELD_WORD = {"Emerging": "coming up", "Tillering": "tillering", "Stem growth": "growing stems", "Heading": "heading",
+              "Grain filling": "filling its grain", "Ready to harvest": "ready to harvest", "Growing": "growing"}
+
+
+def _next_turn(c: Ctx) -> date:
+    nt = date.fromisoformat(c.f["next_turn"])
+    while nt < c.today:
+        nt += timedelta(days=c.f["turn_days"])
+    return nt
+
+
+def _plan_turns(c: Ctx, next_turn: date, skip: date | None = None) -> set[date]:
+    past = {date.fromisoformat(x["date"]) for x in c.f["waterings"]}
+    future = set(season.turns(next_turn, c.f["turn_days"], c.today + timedelta(days=240)))
+    if skip:
+        future.discard(skip)
+    return past | future
+
+
+def season_runs(c: Ctx):
+    nt = _next_turn(c)
+    base = season.run(c.w.day, c.sow, crop=c.f["crop"], variety=c.variety, irrigate=_plan_turns(c, nt),
+                      every=c.f["turn_days"], lat=c.f["lat"])
+    skip = season.run(c.w.day, c.sow, crop=c.f["crop"], variety=c.variety, irrigate=_plan_turns(c, nt, skip=nt),
+                      skipped=[nt], every=c.f["turn_days"], lat=c.f["lat"])
+    return nt, base, skip
+
+
+def _wd(d: date) -> str:
+    return d.strftime("%A")
+
+
+def _dm(d: date) -> str:
+    return f"{d.day} {d.strftime('%b')}"
+
+
+def _part(d: date) -> str:
+    return ("Early " if d.day <= 10 else "Mid " if d.day <= 20 else "Late ") + d.strftime("%B")
+
+
+def build(c: Ctx) -> dict:
+    f, w, today = c.f, c.w, c.today
+    wheat = f["crop"] == "wheat"
+    nt, base, skip = season_runs(c)
+    cur = base.at(today)
+    before_turn = base.at(nt - timedelta(days=1)) or cur
+    on_turn = base.at(nt)
+    obs_src = "NASA POWER" if w.last_obs <= w.power_last else f"NASA POWER to {_dm(w.power_last)}, Open-Meteo after"
+    as_of = w.last_obs.isoformat()
+
+    # ---- stage, day N of M ------------------------------------------------------
+    day_n = (today - c.sow).days
+    season_len = (base.ripe - c.sow).days if base.ripe else None
+    stage = cur.stage if cur else "Growing"
+
+    # ---- water ------------------------------------------------------------------
+    last_w = max(date.fromisoformat(x["date"]) for x in f["waterings"] if x["date"] <= today.isoformat())
+    rain = sum((w.obs.get((last_w + timedelta(days=i)).isoformat()) or {}).get("rain", 0) for i in range(1, (today - last_w).days + 1))
+    used = sum(x["m3"] for x in f["waterings"])
+    water_pct = round(cur.water_pct) if cur else None
+    apply_m3 = round(on_turn.irrigated_mm * MM_TO_M3_PER_FEDDAN * f["area_feddan"], -1) if on_turn else None
+    after_pct = round(on_turn.water_pct) if on_turn else None
+    gain = max(0.0, (base.yield_index - skip.yield_index) * 100)
+    protect = (round(gain * 0.7), max(1, round(gain))) if gain >= 1 else None
+
+    # ---- risks --------------------------------------------------------------------
+    fc = w.forecast_days(7)
+    hot = [d for d in fc if d["tmax"] >= 32]
+    sensitive = stage in ("Heading", "Grain filling")
+    heat_lv = 0 if not hot else (2 if len(hot) >= 3 and sensitive else 1)
+    heat_line = ("No hot days in the next week." if not hot else
+                 f"{len(hot)} hot day{'s' if len(hot) > 1 else ''} over 32 °C in the next week." +
+                 ("" if sensitive or not wheat else " Your wheat is not at the sensitive stage yet."))
+
+    below_now = water_pct is not None and water_pct < 50
+    below_turn = before_turn and before_turn.water_pct < 50
+    days_to_turn = (nt - today).days
+    water_lv = 2 if below_now and days_to_turn > 3 else (1 if below_now or below_turn else 0)
+    water_line = {0: f"Enough water until your turn on {_wd(nt)}.",
+                  1: f"The soil is drying. Don't miss {_wd(nt)}.",
+                  2: "The soil is dry. Water as soon as you can."}[water_lv]
+
+    recent = w.recent_days(7)
+    rust_n = sum(season.is_rust_day(r) for r in recent)
+    if wheat:
+        rust_lv = 0 if rust_n < 3 else (1 if rust_n <= 4 else 2)
+        if c.variety.get("rust") == "susceptible" and rust_n >= 2:
+            rust_lv = min(2, rust_lv + 1)
+        rust_line = (f"{rust_n} of the last 7 nights were foggy. Rust likes that." if rust_n >= 2 else
+                     ("1 foggy night this week. Rust is unlikely." if rust_n == 1 else "No foggy nights this week. Rust is unlikely."))
+    else:
+        rust_lv, rust_line = 0, f"Yellow rust does not attack {fields.CROP_LABEL[f['crop']].lower()}."
+
+    # ---- the one action (brief §5 priority: watering > rust walk > heat prep) -----------------------
+    stage_word = FIELD_WORD.get(stage, stage.lower())
+    turn_stage = on_turn.stage if on_turn else stage
+    if water_lv or (wheat and turn_stage in season.SENSITIVE and days_to_turn <= 7):
+        title = (f"Your water turn is {_wd(nt)}. Don't skip it." if days_to_turn <= 7 else "Water as soon as you can.")
+        body = ("Your wheat is at the stage that is hurt most by thirst" if wheat and turn_stage in season.SENSITIVE else
+                f"Your {fields.CROP_LABEL[f['crop']].lower()} is {stage_word}")
+        body += ", and the soil is drier than it should be." if water_lv else ". The soil still has water, but it will need this turn."
+        action = {"kind": "water", "title": title, "body": body, "done_label": f"I will water on {_wd(nt)}"}
+    elif wheat and rust_lv >= 1 and stage in ("Stem growth", "Heading"):
+        action = {"kind": "rust", "title": "Walk the field and check the leaves for yellow rust.",
+                  "body": f"{rust_n} of the last 7 nights were cool and foggy. That is rust weather.", "done_label": "I checked the leaves"}
+    elif wheat and hot and sensitive:
+        action = {"kind": "heat", "title": "Water before the heat.",
+                  "body": f"{len(hot)} hot days are coming while the grain fills. A light turn 2 days before cools the crop.",
+                  "done_label": "I will water before the heat"}
+    else:
+        action = {"kind": "water", "title": f"Your next water turn is {_wd(nt)} {_dm(nt)}.",
+                  "body": f"Your {fields.CROP_LABEL[f['crop']].lower()} is {stage_word} and the soil has enough water until then.",
+                  "done_label": f"I will water on {_wd(nt)}"}
+    kc_now = None
+    if cur:
+        from ..engine.crop import kc
+        kc_now = round(kc(f["crop"], cur.gdd, day_n), 2)
+
+    # ---- this field's year: 52 weeks from 1 October ------------------------------------
+    y0 = date(c.sow.year if c.sow.month >= 10 else c.sow.year - 1, 10, 1)
+    weeks = []
+    hot_years = range(1996, 2026)
+    gf_start = base.stage_date("Heading") if wheat else None
+    for k in range(52):
+        ws = y0 + timedelta(weeks=k)
+        in_crop = c.sow <= ws + timedelta(days=6) and (base.ripe is None or ws <= base.ripe)
+        p_hot = 0.0
+        if in_crop and wheat:
+            hits = 0
+            for yy in hot_years:
+                start = ws.replace(year=ws.year - (y0.year - yy))
+                hits += any((w.historical(start + timedelta(days=i)) or {}).get("tmax", 0) >= 32 for i in range(7))
+            p_hot = hits / len(hot_years)
+        weeks.append({"start": ws.isoformat(), "crop": f["crop"] if in_crop else None, "hot": p_hot >= 0.5,
+                      "p_hot": round(p_hot, 2), "grain_fill": bool(gf_start and in_crop and ws + timedelta(days=6) >= gf_start)})
+    today_week = (today - y0).days // 7
+    gf_hot = [x for x in weeks if x["hot"] and x["grain_fill"]]
+    year_note = (f"{_part(date.fromisoformat(gf_hot[0]['start']))} is often hot, right when the wheat grain fills." if gf_hot else
+                 ("Your grain usually fills before the hot weeks start." if wheat else "No heat-sensitive stage this season."))
+
+    est = "estimated"
+    return {
+        "field": {"id": f["id"], "num": f["num"], "name": f["name"], "farmer": f["farmer"], "village": f["village"],
+                  "governorate": f["governorate"], "crop": fields.CROP_LABEL[f["crop"]],
+                  "variety": c.variety.get("label"), "sow_date": f["sow_date"],
+                  "area": num(f["area_feddan"], "feddan", "farmer", "You"),
+                  "soil": num(fields.SOIL_LABEL[f["soil"]], None, est, "Default for the Delta until SoilGrids is connected"),
+                  "water_source": num(f["water_source"], None, "farmer", "You"),
+                  "turn": num(f"Every {f['turn_days']} days", None, "farmer", "You")},
+        "today": today.isoformat(),
+        "day_n": day_n, "season_days": season_len, "stage": stage,
+        "action": action | {
+            "protects": num(protect, "%", est, "Season model: with vs without this turn, FAO-56 water balance + yield index", as_of),
+            "apply_m3": num(apply_m3, "m3", est, "Depletion at the turn x 4.2 m3/mm/feddan x area", as_of),
+            "confidence": "Medium", "confidence_why": "soil is a first guess",
+            "method": f"FAO-56, Kc {kc_now}, RAW 50%" if kc_now is not None else None,
+            "next_turn": nt.isoformat(),
+        },
+        "risks": {
+            "heat": {"level": LEVELS[heat_lv], "line": heat_line, "source": "Open-Meteo forecast, next 7 days"},
+            "water": {"level": LEVELS[water_lv], "line": water_line, "source": "FAO-56 water balance"},
+            "rust": {"level": LEVELS[rust_lv], "line": rust_line, "source": f"{obs_src}, last 7 days",
+                     "variety_trait": num(c.variety.get("rust"), None, "demo", "Variety traits to verify with ARC")},
+            "pests": {"level": "Low", "line": "No pests reported near you.", "provenance": "demo"},
+        },
+        "soil_water": num(water_pct, "%", est, f"FAO-56 water balance, {obs_src} ET0", as_of, refill=50,
+                          taw_mm=round(cur.taw) if cur else None),
+        "rain_since_watering": num(round(rain), "mm", "satellite", f"{obs_src} rain (GPM IMERG later)", as_of),
+        "water_used": num(used, "m3", "farmer", "From your watering log"),
+        "last_watered": {"date": last_w.isoformat(), "days_ago": (today - last_w).days},
+        "after_turn": num(after_pct, "%", est, "FAO-56 water balance", as_of, label=f"After {_wd(nt)}'s water"),
+        "year": {"from": y0.isoformat(), "weeks": weeks, "today_week": today_week, "note": year_note,
+                 "ripe": base.ripe.isoformat() if base.ripe else None, "source": "NASA POWER 1996-2025, Tmax over 32 °C"},
+        "sources": [
+            {"name": "NASA POWER", "what": "Heat, ET₀, rain", "last_date": w.power_last.isoformat(),
+             "lag_days": (today - w.power_last).days, "state": w.power_meta.get("state")},
+            {"name": "Open-Meteo", "what": "Last days, next 7 days", "generated": w.forecast_generated,
+             "state": w.openmeteo_meta.get("state")},
+        ],
+    }
+
+
+def median(xs):
+    return statistics.median(xs) if xs else None

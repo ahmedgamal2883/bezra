@@ -1,10 +1,16 @@
-import { DEMO_FIELD_ID } from '@/lib/routes';
+import { SetField } from '@/lib/field';
 
-// Pre-build the demo field's pages ahead of time so they open instantly in production.
+// Pre-build the demo fields' pages so they open instantly in production.
 export function generateStaticParams() {
-  return [{ id: DEMO_FIELD_ID }];
+  return [{ id: 'north-plot' }, { id: 'south-plot' }];
 }
 
-export default function FieldLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function FieldLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return (
+    <>
+      <SetField id={id} />
+      {children}
+    </>
+  );
 }

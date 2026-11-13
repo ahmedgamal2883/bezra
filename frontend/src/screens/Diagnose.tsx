@@ -3,19 +3,21 @@
 // Generated from design/html/V11-Diagnose.html by scripts/convert-design.mjs (layout and copy 1:1).
 // Logic lives in ./Diagnose.logic.js (verbatim from the design).
 import { Fragment } from 'react';
+import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Diagnose.logic';
 
 export default function DiagnoseScreen() {
+  const { fp } = useField();
   const __v = useDC(Logic);
   return (
     <>
       <div className="root">
         <div className="shell">
           <header className="top">
-            <Link href="/field/north-plot" className="brand" aria-label="Bezra, my field">
+            <Link href={fp("")} className="brand" aria-label="Bezra, my field">
               <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
                 <rect width="34" height="34" rx="11" fill="#17251C" />
                 <ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" strokeWidth="1.8" transform="rotate(-24 17 17)" />
@@ -24,7 +26,7 @@ export default function DiagnoseScreen() {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
-              <Link href="/field/north-plot" aria-current="page" className="press">
+              <Link href={fp("")} aria-current="page" className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
                 </svg>
@@ -58,7 +60,7 @@ export default function DiagnoseScreen() {
                   {"Details"}
                 </button>
               </div>
-              <Link href="/field/north-plot/alerts" className="ibtn press" aria-label="Alerts, 2 new">
+              <Link href={fp("/alerts")} className="ibtn press" aria-label="Alerts, 2 new">
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                 </svg>
@@ -73,7 +75,7 @@ export default function DiagnoseScreen() {
                     {"Hassan Farouk"}
                   </b>
                   <small>
-                    {"North plot, Menoufia"}
+                    <FieldWho />
                   </small>
                 </span>
               </span>

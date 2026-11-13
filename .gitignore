@@ -15,3 +15,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Python test cache
+.pytest_cache/

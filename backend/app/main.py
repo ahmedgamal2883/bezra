@@ -1,0 +1,87 @@
+"""Bezra backend (FastAPI). Run:  .venv/Scripts/python -m uvicorn app.main:app --reload --port 8000
+
+Endpoints (brief §6) built so far: /fields, /fields/{id}, /summary, /calendar, /next, POST /sim, /sources.
+"""
+from __future__ import annotations
+
+from datetime import date
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from . import fields
+from .services import calendar, nextseason, sim, summary
+from .services.context import ctx
+
+app = FastAPI(title="Bezra API", version="0.2")
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+                   allow_methods=["*"], allow_headers=["*"])
+
+
+def _ctx(field_id: str):
+    c = ctx(field_id)
+    if not c:
+        raise HTTPException(404, "Unknown field")
+    return c
+
+
+@app.get("/health")
+def health():
+    return {"ok": True, "today": date.today().isoformat()}
+
+
+@app.get("/fields")
+def list_fields():
+    return [{"id": f["id"], "num": f["num"], "name": f["name"], "crop": fields.CROP_LABEL[f["crop"]],
+             "area_feddan": f["area_feddan"]} for f in fields.FIELDS.values()]
+
+
+@app.get("/fields/{field_id}")
+def get_field(field_id: str):
+    f = fields.get(field_id)
+    if not f:
+        raise HTTPException(404, "Unknown field")
+    return f
+
+
+@app.get("/fields/{field_id}/summary")
+def get_summary(field_id: str):
+    return summary.build(_ctx(field_id))
+
+
+@app.get("/fields/{field_id}/calendar")
+def get_calendar(field_id: str):
+    return calendar.build(_ctx(field_id))
+
+
+@app.get("/fields/{field_id}/next")
+def get_next(field_id: str):
+    return nextseason.build(_ctx(field_id))
+
+
+class SimReq(BaseModel):
+    field_id: str
+    sow: str
+    variety: str = "sakha95"
+    watering: str = "every"
+    year: str = "normal"
+
+
+@app.post("/sim")
+def post_sim(req: SimReq):
+    c = _ctx(req.field_id)
+    if req.variety not in fields.VARIETIES or req.watering not in ("every", "skip1_jan", "skip2") or req.year not in ("normal", "hot_spring"):
+        raise HTTPException(422, "Unknown choice")
+    try:
+        return sim.build(c, req.model_dump())
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.get("/sources")
+def sources(field_id: str = "north-plot"):
+    c = _ctx(field_id)
+    w = c.w
+    return {"power": {"last_date": w.power_last.isoformat(), "state": w.power_meta.get("state")},
+            "openmeteo": {"generated": w.forecast_generated, "state": w.openmeteo_meta.get("state")}}
