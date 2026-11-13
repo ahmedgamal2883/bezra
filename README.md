@@ -46,7 +46,7 @@ If the backend is not running, every screen falls back to the design values with
 | `GET /fields/{id}/calendar` | Calendar | yield index for every sowing date, every season 1990-2025 |
 | `GET /fields/{id}/next` | Next season | hot days by decade, best windows, climate twins |
 | `POST /sim` | Simulator | one season on real weather (normal year / hot spring) |
-| `GET /fields/{id}/ndvi`, `/health` | Today map, Field health | greenness per 30 m square: NASA HLS with an Earthdata login, else Sentinel-2; normal year from MODIS |
+| `GET /fields/{id}/ndvi`, `/health` | Today map, Field health | greenness per 30 m square: NASA HLS with an Earthdata login, else Sentinel-2; normal year from MODIS; SMAP + ECOSTRESS via AppEEARS (login); slope and low spots from 30 m elevation |
 
 `cache/` keeps every API answer so the demo works offline (brief §7).
 Model notes and open questions: see the top of `backend/app/engine/season.py`.

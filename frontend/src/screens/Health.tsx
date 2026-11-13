@@ -361,15 +361,15 @@ export default function HealthScreen() {
                       {"NDVI, field median"}
                     </span>
                     <span className="num">
-                      {"0.61"}
+                      {__v.H.layers[0].value}
                       <small />
                     </span>
                     <span className="row wrap" style={{"gap":"4px"} as any}>
-                      <span className="pill pv-sat">
-                        {"Satellite"}
+                      <span className={__v.H.layers[0].pv}>
+                        {__v.H.layers[0].pvL}
                       </span>
                       <span className="pill">
-                        {"HLS 30 m"}
+                        {__v.H.layers[0].src}
                       </span>
                     </span>
                   </section>
@@ -379,15 +379,15 @@ export default function HealthScreen() {
                       {"EVI"}
                     </span>
                     <span className="num">
-                      {"0.38"}
+                      {__v.H.layers[1].value}
                       <small />
                     </span>
                     <span className="row wrap" style={{"gap":"4px"} as any}>
-                      <span className="pill pv-sat">
-                        {"Satellite"}
+                      <span className={__v.H.layers[1].pv}>
+                        {__v.H.layers[1].pvL}
                       </span>
                       <span className="pill">
-                        {"HLS 30 m"}
+                        {__v.H.layers[1].src}
                       </span>
                     </span>
                   </section>
@@ -397,15 +397,15 @@ export default function HealthScreen() {
                       {"NDMI, moisture"}
                     </span>
                     <span className="num">
-                      {"0.22"}
+                      {__v.H.layers[2].value}
                       <small />
                     </span>
                     <span className="row wrap" style={{"gap":"4px"} as any}>
-                      <span className="pill pv-sat">
-                        {"Satellite"}
+                      <span className={__v.H.layers[2].pv}>
+                        {__v.H.layers[2].pvL}
                       </span>
                       <span className="pill">
-                        {"HLS 30 m"}
+                        {__v.H.layers[2].src}
                       </span>
                     </span>
                   </section>
@@ -415,17 +415,17 @@ export default function HealthScreen() {
                       {"Surface temperature"}
                     </span>
                     <span className="num">
-                      {"24"}
+                      {__v.H.layers[3].value}
                       <small>
                         {" °C"}
                       </small>
                     </span>
                     <span className="row wrap" style={{"gap":"4px"} as any}>
-                      <span className="pill pv-sat">
-                        {"Satellite"}
+                      <span className={__v.H.layers[3].pv}>
+                        {__v.H.layers[3].pvL}
                       </span>
                       <span className="pill">
-                        {"ECOSTRESS 70 m, 27 Oct"}
+                        {__v.H.layers[3].src}
                       </span>
                     </span>
                   </section>
@@ -435,17 +435,17 @@ export default function HealthScreen() {
                       {"Root zone moisture"}
                     </span>
                     <span className="num">
-                      {"0.31"}
+                      {__v.H.layers[4].value}
                       <small>
                         {" m³/m³"}
                       </small>
                     </span>
                     <span className="row wrap" style={{"gap":"4px"} as any}>
-                      <span className="pill pv-sat">
-                        {"Satellite"}
+                      <span className={__v.H.layers[4].pv}>
+                        {__v.H.layers[4].pvL}
                       </span>
                       <span className="pill">
-                        {"SMAP 9 km"}
+                        {__v.H.layers[4].src}
                       </span>
                     </span>
                   </section>

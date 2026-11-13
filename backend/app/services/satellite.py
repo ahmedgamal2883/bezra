@@ -12,7 +12,7 @@ from __future__ import annotations
 import statistics
 from datetime import date, timedelta
 
-from ..connectors import hls, modis, sentinel2
+from ..connectors import appeears, dem, hls, modis, sentinel2
 from ..connectors.grid import Grid
 from ..num import num
 from .context import Ctx
@@ -119,6 +119,25 @@ def ndvi(c: Ctx) -> dict:
     }
 
 
+def layers(c: Ctx) -> dict:
+    """Details layers (brief §5 V11-Health): SMAP root-zone moisture and ECOSTRESS surface temperature via
+    AppEEARS (need the Earthdata login; the screen shows Demo until they arrive), terrain from 30 m elevation."""
+    out = {}
+    for name in ("smap", "ecostress"):
+        s = appeears.point_series(name, c.f["lat"], c.f["lon"], c.today)
+        rows = (s["data"] or {}).get("rows") or []
+        if name == "ecostress":  # Kelvin -> C, drop bad pixels
+            rows = [{"date": r["date"], "value": round(r["value"] - 273.15, 1)} for r in rows if 250 < r["value"] < 350]
+        last = rows[-1] if rows else None
+        out[name] = {"value": last["value"] if last else None, "date": last["date"] if last else None,
+                     "product": (s["data"] or {}).get("product"), "updating": s["updating"], "login": s["login"]}
+    try:
+        out["terrain"] = dem.terrain(grid(c))
+    except Exception as e:
+        out["terrain"] = {"error": str(e)}
+    return out
+
+
 def _season_x(d: date, season_start_year: int) -> int:
     return (d - date(season_start_year, 10, 1)).days
 
@@ -158,6 +177,6 @@ def health(c: Ctx) -> dict:
         word = "Better than" if diff > 0.08 else ("Slightly better than" if diff > 0.03 else
                ("About the same as" if diff >= -0.03 else ("Slightly below" if diff >= -0.08 else "Below")))
         compare = {"diff": round(diff, 3), "text": f"{word} a normal year for {part}."}
-    return {"ndvi": nd, "curve": {"this_season": this, "normal": normal, "season_start": f"{y0}-10-01",
+    return {"ndvi": nd, "layers": layers(c), "curve": {"this_season": this, "normal": normal, "season_start": f"{y0}-10-01",
                                   "normal_seasons": sorted(set(used)), "compare": compare,
                                   "this_source": source, "normal_source": modis.SOURCE}}

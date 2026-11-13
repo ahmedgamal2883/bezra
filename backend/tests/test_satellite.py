@@ -31,3 +31,12 @@ def test_grid_is_snapped_to_30m():
     left, bottom, right, top = Grid(30.55351, 30.98915).bounds_utm("EPSG:32636")
     assert (right - left, top - bottom) == (90, 120)
     assert left % 30 == 0 and top % 30 == 0
+
+
+def test_appeears_without_login_never_blocks(monkeypatch):
+    from datetime import date
+    from app.connectors import appeears
+    monkeypatch.delenv("EARTHDATA_USERNAME", raising=False)
+    monkeypatch.delenv("EARTHDATA_PASSWORD", raising=False)
+    out = appeears.point_series("smap", 1.0, 1.0, date(2026, 11, 13))
+    assert out["login"] is False and out["updating"] is False and out["data"] is None

@@ -8,11 +8,32 @@ const cx = (day) => (10 + (day / 182) * 290).toFixed(1);
 const cy = (v) => Math.max(20, Math.min(140, 136 - ((v - 0.1) / 0.8) * 110)).toFixed(1);
 const path = (pts) => pts.map((p, i) => (i ? 'L' : 'M') + cx(p.day) + ' ' + cy(p.ndvi)).join(' ');
 
+// The five Details cards: NDVI, EVI, NDMI (field medians), ECOSTRESS surface temperature, SMAP root-zone moisture.
+// Design values with a Demo pill until the layer is really there (SMAP / ECOSTRESS need the Earthdata login).
+const DESIGN_LAYERS = [['0.61', 'HLS 30 m'], ['0.38', 'HLS 30 m'], ['0.22', 'HLS 30 m'], ['24', 'ECOSTRESS 70 m, 27 Oct'], ['0.31', 'SMAP 9 km']];
+const demoLayer = ([value, src]) => ({ value, src, pv: 'pill pv-demo', pvL: 'Demo' });
+function layerCards(D) {
+  const N = D && D.ndvi && D.ndvi.available ? D.ndvi : null;
+  const L = (D && D.layers) || {};
+  const src = N ? (N.source.startsWith('NASA HLS') ? 'HLS 30 m' : 'Sentinel-2, ' + shortDate(N.date)) : null;
+  const idx = (ix, i) => (N && N.indices[ix].median != null
+    ? { value: N.indices[ix].median.toFixed(2), src, pv: 'pill pv-sat', pvL: 'Satellite' } : demoLayer(DESIGN_LAYERS[i]));
+  const app = (k, i, fmt, label) => {
+    const x = L[k];
+    if (x && x.value != null) return { value: fmt(x.value), src: label + (x.date ? ', ' + shortDate(x.date) : ''), pv: 'pill pv-sat', pvL: 'Satellite' };
+    const d = demoLayer(DESIGN_LAYERS[i]);
+    if (x && x.updating) d.src = 'Updating from NASA…';
+    return d;
+  };
+  return [idx('ndvi', 0), idx('evi', 1), idx('ndmi', 2),
+    app('ecostress', 3, (v) => String(Math.round(v)), 'ECOSTRESS 70 m'), app('smap', 4, (v) => v.toFixed(2), 'SMAP 9 km')];
+}
+
 // Field health texts from GET /fields/{id}/health. null -> V11 design values.
 export function healthTexts(D) {
   const N = D && D.ndvi && D.ndvi.available ? D.ndvi : null;
   if (!N) {
-    return { live: false, eyebrow: 'North plot. Latest clear image 10 November, HLS 30 m.', pill: 'Check this spot', pillCls: 'lv lv-med',
+    return { live: false, layers: DESIGN_LAYERS.map(demoLayer), eyebrow: 'North plot. Latest clear image 10 November, HLS 30 m.', pill: 'Check this spot', pillCls: 'lv lv-med',
       where: 'NE corner, ~0.25 feddan', title: 'This corner looks weaker',
       body: "It has been 20% less green than the rest of your field in the last two satellite images. It is also the driest corner. The satellite can't tell why, so please go and look.",
       normalPath: 'M10 135C60 132 90 110 130 80S220 30 300 26', thisPath: 'M10 136C50 130 80 112 110 92S150 70 170 64', dot: ['170', '64'],
@@ -27,12 +48,16 @@ export function healthTexts(D) {
     const spotNdmi = S.squares.map(([r, c]) => (nd.find((x) => x.r === r && x.c === c) || {}).value).filter((v) => v != null);
     const minNdmi = Math.min(...nd.filter((x) => x.value != null).map((x) => x.value));
     const driest = spotNdmi.length && Math.min(...spotNdmi) <= minNdmi + 0.005;
+    // terrain (30 m elevation): say so only if the weak spot is clearly the lowest part (Delta is flat; >= 0.25 m)
+    const T = D.layers && D.layers.terrain;
+    const lowest = T && T.lowest && T.lowest.below_mean_m >= 0.25 && S.squares.some(([r, c]) => r === T.lowest.r && c === T.lowest.c);
     body = `It has been ${S.pct_less_green}% less green than the rest of your field in the last two satellite images.` +
-      (driest ? ' It is also the driest corner.' : '') + " The satellite can't tell why, so please go and look.";
+      (driest ? ' It is also the driest corner.' : '') + (lowest ? ' It is the lowest part of the field, so water can stay there.' : '') +
+      " The satellite can't tell why, so please go and look.";
   }
   const last = C.this_season[C.this_season.length - 1];
   return {
-    live: true,
+    live: true, layers: layerCards(D),
     eyebrow: `Your field. Latest clear image ${longDate(N.date)}, ${src}.`,
     pill: S ? 'Check this spot' : 'All squares look even', pillCls: S ? 'lv lv-med' : 'lv lv-low',
     where: S ? `${S.where}, ~${S.feddan} feddan` : `${N.grid.rows * N.grid.cols} squares of 30 m`,

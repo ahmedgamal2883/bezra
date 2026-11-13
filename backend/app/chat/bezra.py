@@ -122,7 +122,21 @@ def _summary_brief(c: Ctx) -> dict:
                              "protects_pct_range": s["action"]["protects"]["value"]},
             "risks": {k: {"level": v["level"], "why": v["line"]} for k, v in s["risks"].items()},
             "pests_note": "Pest reports are demo data for now.",
+            "greenness_and_terrain": _satellite_brief(c),
             "data": "NASA POWER weather (ET0, rain), Open-Meteo for the last days and the 7-day forecast, FAO-56"}
+
+
+def _satellite_brief(c: Ctx) -> dict:
+    from ..services import satellite
+    try:
+        nd = satellite.ndvi(c)
+        t = satellite.layers(c).get("terrain", {})
+    except Exception:
+        return {"note": "Satellite data not available right now."}
+    return {"latest_image": nd.get("date"), "field_median_ndvi": (nd.get("median_ndvi") or {}).get("value"),
+            "weak_spot": nd.get("weak_spot"), "source": nd.get("source"),
+            "terrain": {k: t.get(k) for k in ("lowest", "range_m", "slope_pct", "field_vs_around_m", "source")},
+            "terrain_note": "Rows go north to south (0 = north), columns west to east. The Delta is flat: under 0.3 m is small."}
 
 
 def run_tool(c: Ctx, name: str, args: dict):
