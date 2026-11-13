@@ -26,7 +26,7 @@ const steps = [['Your field', 1], ['Basics', 2], ['More accurate', 3], ['Expert'
   textColor: n <= S.step ? 'var(--ink)' : 'var(--muted)',
   dot: 'width: 26px; height: 26px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 12px; ' + (n < S.step ? 'background: var(--green); color: #fff;' : n === S.step ? 'background: var(--dark); color: #fff;' : 'background: #fff;'),
 }));
-return { crops, varieties, acc, accAr, steps, step: S.step,
+return { crop: S.crop, variety: S.variety, mesqaPick: S.mesqa, tenurePick: S.tenure, crops, varieties, acc, accAr, steps, step: S.step,
   tenure: { owner: seg(S.tenure, 'owner', set, 'tenure'), tenant: seg(S.tenure, 'tenant', set, 'tenure') },
   mesqa: ['head', 'middle', 'tail'].reduce((o, m) => (o[m] = seg(S.mesqa, m, set, 'mesqa'), o), {}),
   goStep: (n) => () => { set({ step: n }); window.scrollTo(0, 0); },

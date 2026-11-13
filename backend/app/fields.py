@@ -51,3 +51,58 @@ def all_ids() -> list[str]:
     from . import db
     with db.conn() as c:
         return [r["id"] for r in c.execute("SELECT id FROM fields")]
+
+
+# ---- a field drawn on the map (onboarding, checkpoint 3) -------------------------------------------
+FEDDAN_M2 = 4200.83
+PLANNED_CROPS = ("wheat", "maize")   # the water plan engine knows these two for now
+
+
+def _local_m(poly: list[list[float]]) -> list[tuple[float, float]]:
+    import math
+    lat0 = sum(p[0] for p in poly) / len(poly)
+    k = 111_320.0
+    return [((p[1]) * k * math.cos(math.radians(lat0)), p[0] * k) for p in poly]
+
+
+def polygon_area_m2(poly: list[list[float]]) -> float:
+    pts = _local_m(poly)
+    return abs(sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]))) / 2
+
+
+def from_drawing(d: dict) -> dict:
+    import secrets
+    from datetime import date
+    poly = d["polygon"]
+    if len(poly) < 3 or any(len(p) != 2 or not (-90 <= p[0] <= 90 and -180 <= p[1] <= 180) for p in poly):
+        raise ValueError("Draw at least 3 corners of your field")
+    area = polygon_area_m2(poly)
+    if not 400 <= area <= 2_000_000:
+        raise ValueError("The field looks too small or too big. Check the corners.")
+    crop = d["crop"].lower()
+    if crop not in PLANNED_CROPS:
+        raise ValueError(f"Bezra plans wheat and maize for now. {crop.capitalize()} is coming soon.")
+    date.fromisoformat(d["sow_date"])
+    if d.get("next_turn"):
+        date.fromisoformat(d["next_turn"])
+    name = d["name"].strip()[:40]
+    if not name:
+        raise ValueError("Please give your field a name")
+    pts = _local_m(poly)
+    w = max(x for x, _ in pts) - min(x for x, _ in pts)
+    h = max(y for _, y in pts) - min(y for _, y in pts)
+    variety = d.get("variety") if d.get("variety") in VARIETIES and crop == "wheat" else None
+    parts = [p.strip() for p in (d.get("place") or "").split(",") if p.strip()]
+    return {
+        "id": "f-" + secrets.token_hex(4), "num": "01", "name": name,
+        "village": parts[0] if parts else "", "governorate": parts[1] if len(parts) > 1 else "",
+        "lat": round(sum(p[0] for p in poly) / len(poly), 6), "lon": round(sum(p[1] for p in poly) / len(poly), 6),
+        "polygon": [[round(a, 6), round(b, 6)] for a, b in poly],
+        "grid_cols": max(2, min(10, round(w / 30))), "grid_rows": max(2, min(10, round(h / 30))),
+        "area_feddan": round(area / FEDDAN_M2, 2), "crop": crop, "variety": variety, "sow_date": d["sow_date"],
+        "prev_crop": d.get("prev_crop") or "maize", "prev_crop_harvest": None,
+        "mesqa_position": d.get("mesqa") or "middle",
+        "water_source": "Mesqa, middle" if d.get("mesqa") == "middle" else f"Mesqa, {d.get('mesqa') or 'middle'} end",
+        "turn_days": int(d.get("turn_days") or 10), "next_turn": d.get("next_turn"), "waterings": [],
+        "tenure": d.get("tenure") or "owner", "soil": "clay",
+    }

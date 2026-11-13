@@ -3,7 +3,13 @@
 // From design/html/V11-Onboarding.html (layout and copy 1:1 for step 2, "Basics").
 // Steps 1, 3 and 4 of the design's own step bar are built from the same parts:
 // map panel, mascot speech bubble, inset fields, chips, segmented controls, accuracy card, CTA row.
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useRef, useState, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
+import type { MapDrawHandle, LatLon } from '@/components/MapDraw';
+import { areaM2 } from '@/components/MapDraw';
+import { API } from '@/lib/api';
+
+const MapDraw = dynamic(() => import('@/components/MapDraw'), { ssr: false });
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -61,6 +67,20 @@ const Field = ({ label, value, icon }: { label: string; value: string; icon: Rea
   </label>
 );
 
+// Same look as Field, but the value can be typed (checkpoint 3: onboarding saves a real field).
+const InField = ({ label, icon, ...p }: { label: string; icon: ReactNode } & React.InputHTMLAttributes<HTMLInputElement>) => (
+  <label className="col" style={{ gap: '6px' }}>
+    <span className="h2" style={{ fontSize: '14px' }}>{label}</span>
+    <span className="inset" style={{ height: '46px', fontSize: '15px' }}>
+      <input {...p} style={{ flex: 1, minWidth: 0, border: 0, background: 'transparent', font: 'inherit', fontWeight: 700, color: 'var(--ink)', outline: 'none' }} />
+      <Icon d={icon} />
+    </span>
+  </label>
+);
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const CROP_KEY: Record<string, string> = { Wheat: 'wheat', Maize: 'maize', Rice: 'rice', Berseem: 'berseem', Cotton: 'cotton', 'Sugar beet': 'sugar beet', Other: 'other' };
+const VAR_KEY: Record<string, string> = { 'Sakha 95': 'sakha95', 'Giza 171': 'giza171' };
+
 const Arrow = () => (
   <span className="ar">
     <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -78,6 +98,39 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
   const { fp } = useField();
   const __v = useDC(Logic, { initialStep });
   const step: number = __v.step;
+  const mapRef = useRef<MapDrawHandle>(null);
+  const [corners, setCorners] = useState<LatLon[]>([]);
+  const [drawing, setDrawing] = useState(false);
+  const [q, setQ] = useState('');
+  const [place, setPlace] = useState('');
+  const [name, setName] = useState('North plot');
+  const [sow, setSow] = useState(iso(new Date()));
+  const [prev, setPrev] = useState('Maize');
+  const [nextTurn, setNextTurn] = useState(iso(new Date(Date.now() + 10 * 86400000)));
+  const [err, setErr] = useState('');
+  const [saving, setSaving] = useState(false);
+  const fed = areaM2(corners) / 4200.83;
+  const hasField = corners.length >= 3 && !drawing;
+  const find = async () => {
+    if (!q.trim()) return;
+    setErr('');
+    const a = await mapRef.current?.search(q.trim());
+    if (a) setPlace(a); else setErr('Could not find that place. Try the village and governorate.');
+  };
+  const save = async () => {
+    setErr('');
+    if (!hasField) { setErr('Draw your field on the map first.'); return; }
+    setSaving(true);
+    try {
+      const r = await fetch(`${API}/fields`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, polygon: corners, place: place || q, crop: CROP_KEY[__v.crop] || 'wheat', variety: VAR_KEY[__v.variety] || null,
+          sow_date: sow, prev_crop: prev.toLowerCase(), mesqa: __v.mesqaPick, next_turn: nextTurn || null, tenure: __v.tenurePick }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { setErr(typeof j.detail === 'string' ? j.detail : 'Could not save. Check the answers.'); return; }
+      window.location.assign(`/field/${j.id}`); // full load so the header and field chips include the new field
+    } catch { setErr('Can not reach Bezra. Check the internet.'); } finally { setSaving(false); }
+  };
+  const errBox = err ? <div role="alert" className="row" style={{ padding: '12px 14px', borderRadius: '12px', background: '#FBE3DC', color: '#8A2A12', fontSize: '14px' }}>{err}</div> : null;
 
   const accuracy = (
     <div className="col" style={{ gap: '8px', padding: '14px', borderRadius: '12px', background: 'var(--sun-tint)' }}>
@@ -145,49 +198,32 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
           </header>
           <main className="grid" style={{ gridTemplateColumns: 'minmax(0, 1fr) 560px', alignItems: 'stretch', minHeight: '760px' }}>
             <section className="hero rise" style={{ '--d': '1', background: '#D9D6C8' } as any}>
-              <i className="sk map" aria-hidden="true" style={{ '--d': '1' } as any} />
-              <svg viewBox="0 0 800 760" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: '0' }} aria-label="Satellite map with your field drawn as a polygon" role="img">
-                <rect x="0" y="0" width="180" height="300" fill="#8C9C5A" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="180" y="0" width="140" height="260" fill="#5A7A3C" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="320" y="0" width="240" height="200" fill="#B1A584" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="560" y="0" width="240" height="320" fill="#8FA05B" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="0" y="300" width="220" height="460" fill="#628342" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="220" y="260" width="120" height="500" fill="#B6AC8E" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="340" y="200" width="240" height="300" fill="#8C9C5A" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="580" y="320" width="220" height="440" fill="#4E6E36" stroke="#D8D1BA" strokeWidth="1" />
-                <rect x="340" y="500" width="240" height="260" fill="#95A463" stroke="#D8D1BA" strokeWidth="1" />
-                <path d="M0 640C200 610 420 700 800 650" stroke="#3B6E8F" strokeWidth="12" fill="none" />
-                <path className="draw" pathLength="1" style={{ '--d': '2' } as any} d="M360 220L560 210 572 480 352 492Z" fill="none" stroke="#fff" strokeWidth="4" strokeLinejoin="round" />
-                <path d="M360 220L560 210 572 480 352 492Z" fill="#F29B1E" fillOpacity=".22" className="fade" style={{ '--d': '5' } as any} />
-                <circle className="pop" style={{ '--i': '0' } as any} cx="360" cy="220" r="8" fill="#fff" stroke="#141A16" strokeWidth="2.5" />
-                <circle className="pop" style={{ '--i': '3' } as any} cx="560" cy="210" r="8" fill="#fff" stroke="#141A16" strokeWidth="2.5" />
-                <circle className="pop" style={{ '--i': '6' } as any} cx="572" cy="480" r="8" fill="#fff" stroke="#141A16" strokeWidth="2.5" />
-                <circle className="pop" style={{ '--i': '9' } as any} cx="352" cy="492" r="8" fill="#fff" stroke="#141A16" strokeWidth="2.5" />
-              </svg>
-              <div className="float" style={{ position: 'absolute', left: '18px', top: '18px', right: '18px', height: '52px', padding: '0 8px 0 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <MapDraw ref={mapRef} start={[30.5535, 30.9891]} corners={corners} onCorners={setCorners} onDrawing={setDrawing} />
+              <div className="float" style={{ zIndex: 500, position: 'absolute', left: '18px', top: '18px', right: '18px', height: '52px', padding: '0 8px 0 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
                 </svg>
-                <span className="ar-t" style={{ flex: '1', fontSize: '15px', color: 'var(--muted)' }}>{'شبين الكوم، المنوفية'}</span>
-                <button type="button" className="btn sm press">
+                <input className="ar-t" dir="auto" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') find(); }}
+                  placeholder="شبين الكوم، المنوفية" aria-label="Search your village" style={{ flex: '1', minWidth: 0, fontSize: '15px', border: 0, background: 'transparent', outline: 'none', color: 'var(--ink)' }} />
+                <button type="button" className="btn sm press" aria-pressed={drawing} onClick={() => { if (!drawing) mapRef.current?.draw(); }}>
                   <Icon d={I.pencil} />
-                  {'Draw'}
+                  {drawing ? (corners.length >= 3 ? 'Tap first corner' : 'Tap corners') : 'Draw'}
                 </button>
-                <button type="button" className="btn soft sm press">
+                <button type="button" className="btn soft sm press" onClick={() => mapRef.current?.pin()}>
                   <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
                   </svg>
                   {'Drop pin'}
                 </button>
               </div>
-              <div className="float rise" style={{ '--d': '6', position: 'absolute', left: '18px', bottom: '18px', padding: '14px 18px', display: 'flex', gap: '22px' } as any}>
+              <div className="float rise" style={{ '--d': '6', zIndex: 500, position: 'absolute', left: '18px', bottom: '18px', padding: '14px 18px', display: 'flex', gap: '22px' } as any}>
                 <span className="col">
                   <span className="tl">{'Area'}</span>
-                  <b style={{ fontSize: '22px', fontWeight: '600' }}>{'2.4'}<small className="unit">{' feddan'}</small></b>
+                  <b style={{ fontSize: '22px', fontWeight: '600' }}>{hasField ? fed.toFixed(1) : '–'}<small className="unit">{' feddan'}</small></b>
                 </span>
                 <span className="col">
                   <span className="tl">{'Same as'}</span>
-                  <b style={{ fontSize: '22px', fontWeight: '600' }}>{'1.0'}<small className="unit">{' ha'}</small></b>
+                  <b style={{ fontSize: '22px', fontWeight: '600' }}>{hasField ? (fed * 0.42).toFixed(1) : '–'}<small className="unit">{' ha'}</small></b>
                 </span>
               </div>
             </section>
@@ -210,15 +246,16 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                     ))}
                   </div>
                   <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <Field label="Field name" value="North plot" icon={I.pencil} />
-                    <Field label="Area" value="2.4 feddan" icon={I.list} />
+                    <InField label="Field name" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} icon={I.pencil} />
+                    <Field label="Area" value={hasField ? fed.toFixed(1) + ' feddan' : 'Draw it first'} icon={I.list} />
                   </div>
                   <div className="row" style={{ gap: '12px', padding: '14px', borderRadius: '12px', background: 'var(--sun-tint)', color: '#5A3B0B', fontSize: '14px', lineHeight: '1.45' }}>
                     {'Bezra uses the edges to read NASA data for your field only, square by square.'}
                   </div>
+                  {errBox}
                   {actions(
                     <Link href="/" className="btn soft press"><BackIcon />{'Back'}</Link>,
-                    <button type="button" className="btn cta press" style={{ flex: '1' }} onClick={__v.goStep(2)}>{'Next: the basics'}<Arrow /></button>,
+                    <button type="button" className="btn cta press" style={{ flex: '1' }} onClick={() => { if (hasField) { setErr(''); __v.goStep(2)(); } else setErr('Draw your field on the map first.'); }}>{'Next: the basics'}<Arrow /></button>,
                   )}
                 </>
               ) : null}
@@ -235,10 +272,10 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                     </div>
                   </div>
                   <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <Field label="Sowing date" value="15 October" icon={I.cal} />
-                    <Field label="Last crop" value="Maize" icon={I.sprout} />
+                    <InField label="Sowing date" type="date" value={sow} onChange={(e) => setSow(e.target.value)} icon={I.cal} />
+                    <InField label="Last crop" value={prev} onChange={(e) => setPrev(e.target.value)} maxLength={20} icon={I.sprout} />
                     <Field label="Water source" value="Canal, mesqa" icon={I.drop} />
-                    <Field label="Next turn" value="Thursday 19 Nov" icon={I.cal} />
+                    <InField label="Next turn" type="date" value={nextTurn} onChange={(e) => setNextTurn(e.target.value)} icon={I.cal} />
                   </div>
                   <div className="col" style={{ gap: '8px' }}>
                     <span className="h2" style={{ fontSize: '14px' }}>{'You are'}</span>
@@ -248,9 +285,10 @@ export default function OnboardingScreen({ initialStep = 1 }: { initialStep?: nu
                     </div>
                   </div>
                   {accuracy}
+                  {errBox}
                   {actions(
                     backBtn(1),
-                    <Link href={fp("")} className="btn cta press" style={{ flex: '1' }}>{'Save and see my field'}<Arrow /></Link>,
+                    <button type="button" className="btn cta press" style={{ flex: '1' }} onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save and see my field'}<Arrow /></button>,
                   )}
                 </>
               ) : null}

@@ -168,6 +168,32 @@ def list_fields(user: dict = Depends(current_user)):
     return [_field_card(f) for f in db.fields_for(user)]
 
 
+class NewField(BaseModel):
+    name: str
+    polygon: list[list[float]]          # [[lat, lon], ...] corners drawn on the map
+    place: str = ""
+    crop: str = "wheat"
+    variety: str | None = None
+    sow_date: str
+    prev_crop: str = "maize"
+    mesqa: str = "middle"
+    turn_days: int = 10
+    next_turn: str | None = None
+    tenure: str = "owner"
+
+
+@app.post("/fields")
+def add_field(req: NewField, user: dict = Depends(current_user)):
+    """Checkpoint 3: save a field drawn on the map. Area and centre come from the drawn corners."""
+    try:
+        f = fields.from_drawing(req.model_dump())
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    f["num"] = f"{sum(x['owner_id'] == user['id'] for x in db.fields_for(user)) + 1:02d}"
+    db.save_field(f, user["id"])
+    return _field_card(db.get_field(f["id"]))
+
+
 @app.get("/fields/{field_id}")
 def get_field(field_id: str, user: dict = Depends(current_user)):
     return _ctx(field_id, user).f

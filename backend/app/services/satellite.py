@@ -23,7 +23,7 @@ _mem: dict[str, tuple[str, list]] = {}
 
 
 def grid(c: Ctx) -> Grid:
-    return Grid(c.f["lat"], c.f["lon"])
+    return Grid(c.f["lat"], c.f["lon"], c.f.get("grid_cols", 3), c.f.get("grid_rows", 4))
 
 
 _building: set[str] = set()
