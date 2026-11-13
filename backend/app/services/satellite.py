@@ -180,7 +180,13 @@ def layers(c: Ctx) -> dict:
         rows = (s["data"] or {}).get("rows") or []
         if name == "ecostress":  # Kelvin -> C, drop bad pixels
             rows = [{"date": r["date"], "value": round(r["value"] - 273.15, 1)} for r in rows if 250 < r["value"] < 350]
-        last = rows[-1] if rows else None
+        rows = sorted(rows, key=lambda r: r["date"])  # AppEEARS does not return them in date order
+        if rows:  # several pixels per day: use that day's average
+            day = rows[-1]["date"]
+            vals = [r["value"] for r in rows if r["date"] == day]
+            last = {"date": day, "value": round(sum(vals) / len(vals), 3 if name == "smap" else 1)}
+        else:
+            last = None
         out[name] = {"value": last["value"] if last else None, "date": last["date"] if last else None,
                      "product": (s["data"] or {}).get("product"), "updating": s["updating"], "login": s["login"]}
     try:
