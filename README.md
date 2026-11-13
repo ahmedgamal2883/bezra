@@ -57,3 +57,7 @@ Model notes and open questions: see the top of `backend/app/engine/season.py`.
 the template became `frontend/src/screens/<Name>.tsx`, the design's logic script was copied
 unchanged into `<Name>.logic.js`, and the shared stylesheet became `src/app/globals.css`.
 From step 2 on, these files are edited by hand to show real data, so don't re-run the converter.
+
+## Put it online
+
+See [DEPLOY.md](DEPLOY.md): backend on Render (`render.yaml`), website on Vercel.

@@ -1,0 +1,47 @@
+# Putting Bezra online
+
+Two free services: **Render** runs the Python backend, **Vercel** runs the website.
+Do them in this order (the website needs the backend's address). About 20 minutes.
+
+## 0. Put the code on GitHub (once)
+
+1. Go to https://github.com/new, name the repository `bezra`, choose **Private**, click **Create repository**.
+2. Tell Claude "push to GitHub" and paste the repository's address. Claude pushes the code for you.
+   (`backend/.env` with your keys is never pushed.)
+
+## 1. Backend on Render
+
+1. Go to https://render.com and sign up with your GitHub account.
+2. Click **New** → **Blueprint**, pick the `bezra` repository, click **Connect**.
+   Render reads `render.yaml` and proposes a service called **bezra-api**.
+3. It asks for four values. Paste them (same as in `backend/.env`):
+   - `ANTHROPIC_API_KEY`: your Claude key (leave empty to skip Ask Bezra for now)
+   - `EARTHDATA_USERNAME` / `EARTHDATA_PASSWORD`: your NASA Earthdata login (or leave empty)
+   - `BEZRA_ORIGINS`: leave empty for now, fill it in step 3
+4. Click **Apply**. The first build takes about 5 minutes.
+5. When it says **Live**, copy its address, e.g. `https://bezra-api.onrender.com`.
+   Check it: open that address + `/health`; you should see `{"ok":true,...}`.
+
+Free plan note: the backend sleeps after 15 minutes without visits; the first visit after that
+takes about a minute. Open `/health` a minute before a demo.
+
+## 2. Website on Vercel
+
+1. Go to https://vercel.com and sign up with your GitHub account.
+2. Click **Add New** → **Project**, pick `bezra`, click **Import**.
+3. Set **Root Directory** to `frontend` (click **Edit** next to it).
+4. Open **Environment Variables**, add:
+   - Name `NEXT_PUBLIC_API_URL`, Value: the Render address from step 1 (no `/` at the end)
+5. Click **Deploy**. When done, copy the site address, e.g. `https://bezra.vercel.app`.
+
+## 3. Connect the two
+
+1. In Render, open **bezra-api** → **Environment**, set `BEZRA_ORIGINS` to the Vercel address
+   (e.g. `https://bezra.vercel.app`), click **Save changes**. Render restarts the backend.
+2. Open the Vercel address. The screens should show real data (Satellite / Estimated pills, not Demo).
+
+## What is kept where
+
+- `cache/` (in the repository): NASA and ESA answers, so the demo works even if an API is slow.
+- `data/` (on the server, not in GitHub): plan approvals and photo cases. On Render's free plan this
+  folder is reset when the backend restarts; a paid disk keeps it.
