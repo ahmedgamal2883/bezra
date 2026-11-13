@@ -4,7 +4,7 @@ Login: EARTHDATA_USERNAME / EARTHDATA_PASSWORD in backend/.env. We exchange them
 bearer token and read only the field's pixels from the cloud-optimized GeoTIFFs (no full downloads).
 Bands: HLSS30 red B04, NIR B8A, blue B02, SWIR1 B11; HLSL30 red B04, NIR B05, blue B02, SWIR1 B06; Fmask for clouds.
 Until the login is set, satellite.py uses Sentinel-2 instead (same squares, same indices).
-NOTE: written to the CMR-STAC / LP DAAC docs; it has not run yet because no Earthdata login is set.
+Tested with a real Earthdata login on 13 Nov 2026.
 """
 from __future__ import annotations
 
@@ -47,6 +47,14 @@ def token() -> str:
     return _token
 
 
+def _signed(href: str) -> str:
+    r = httpx.get(href, headers={"Authorization": f"Bearer {token()}"}, follow_redirects=False, timeout=60)
+    if r.status_code in (301, 302, 303, 307, 308):
+        return r.headers["location"]
+    r.raise_for_status()
+    return href
+
+
 def search(lat: float, lon: float, start: date, end: date, max_cloud: float = 60) -> list[dict]:
     def fetch():
         from pystac_client import Client
@@ -69,14 +77,14 @@ def search(lat: float, lon: float, start: date, end: date, max_cloud: float = 60
 
 def squares(scene: dict, grid: Grid) -> dict:
     def fetch():
-        env = {"GDAL_HTTP_HEADERS": f"Authorization: Bearer {token()}", "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
-               "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif", "GDAL_HTTP_COOKIEFILE": "~/.bezra_cookies",
-               "GDAL_HTTP_COOKIEJAR": "~/.bezra_cookies"}
+        # NASA answers with a short-lived signed link; read that link directly (sending the Earthdata token to
+        # it as well makes the storage refuse the request).
+        env = {"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif"}
         v = {}
         with rasterio.Env(**env):
             crs = None
             for k, href in scene["assets"].items():
-                with rasterio.open(href) as r:
+                with rasterio.open(_signed(href)) as r:
                     crs = crs or r.crs.to_string()
                     w = from_bounds(*grid.bounds_utm(crs), r.transform)
                     raw = r.read(1, window=w, out_shape=(grid.rows, grid.cols), resampling=Resampling.nearest,

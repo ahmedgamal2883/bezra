@@ -42,8 +42,9 @@ export function todayTexts(D, fieldId) {
   const yr = new Date(D.year.from + 'T00:00:00').getFullYear();
   return {
     demo: false,
-    eyebrow: `${WD[t.getDay()]}, ${t.getDate()} ${t.toLocaleString('en-GB', { month: 'long' })}. ${f.crop}, day ${D.day_n}` +
-      (D.season_days ? ` of ${D.season_days}` : '') + `, ${D.stage.toLowerCase()}.`,
+    eyebrow: `${WD[t.getDay()]}, ${t.getDate()} ${t.toLocaleString('en-GB', { month: 'long' })}. ` + (D.day_n < 0
+      ? `${f.crop}, sowing in ${-D.day_n} day${D.day_n === -1 ? '' : 's'}.`
+      : `${f.crop}, day ${D.day_n}` + (D.season_days ? ` of ${D.season_days}` : '') + `, ${D.stage.toLowerCase()}.`),
     hello: `${hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening'}, ${f.farmer.split(' ')[0]}`,
     num: `Field #${f.num}`, name: f.name,
     cropLine: [f.crop, f.variety, `sown ${dm(f.sow_date)}`].filter(Boolean).join(', '),
@@ -55,9 +56,9 @@ export function todayTexts(D, fieldId) {
     heat: { cls: LV[D.risks.heat.level], lv: D.risks.heat.level, line: D.risks.heat.line },
     wat: { cls: LV[D.risks.water.level], lv: D.risks.water.level, line: D.risks.water.line },
     rust: { cls: LV[D.risks.rust.level], lv: D.risks.rust.level, line: D.risks.rust.line },
-    soilW: sw != null ? String(sw) : '—', soilSrc: D.soil_water.source, refillTxt: sw != null && sw < 50 ? 'Below refill point' : 'Above refill point',
+    soilW: sw != null ? String(sw) : '—', soilSrc: D.soil_water.source, refillTxt: sw == null ? 'No crop yet' : (sw < 50 ? 'Below refill point' : 'Above refill point'),
     rain: String(D.rain_since_watering.value), rainSrc: D.rain_since_watering.source, used: D.water_used.value.toLocaleString('en-US'),
-    lastW: `${dm(D.last_watered.date)}, ${D.last_watered.days_ago} days ago`,
+    lastW: D.last_watered ? `${dm(D.last_watered.date)}, ${D.last_watered.days_ago} days ago` : 'Not yet',
     afterLabel: D.after_turn.label, after: D.after_turn.value != null ? `About ${Math.round(D.after_turn.value / 5) * 5}% full` : '—',
     yearRange: `Oct ${yr} to Sep ${yr + 1}`, todayLeft: `calc(${D.year.today_week + 0.5} / 52 * 100%)`, yearNote: D.year.note,
     powerLag: `${lag} day${lag === 1 ? '' : 's'} lag`, forecast: fcGen ? `Updated ${fcGen.slice(11, 16)}` : 'Not available',

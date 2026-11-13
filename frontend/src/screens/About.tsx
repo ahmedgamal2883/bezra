@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
+import ApiStatus from '@/components/ApiStatus';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Logic from './About.logic';
 
@@ -449,6 +450,7 @@ export default function AboutScreen() {
                 </section>
               </aside>
             </div>
+            <ApiStatus />
             <footer className="foot">
               <span>
                 <span lang="ar" dir="rtl" className="ar-t">

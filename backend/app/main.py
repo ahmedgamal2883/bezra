@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from . import config  # noqa: F401  (loads backend/.env)
 from . import db, fields
 from .chat import bezra
-from .services import alerts, calendar, cases, engineer, nextseason, satellite, sim, summary
+from .services import alerts, apistatus, calendar, cases, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 COOKIE = "bezra_session"
@@ -150,6 +150,12 @@ def _field_card(f: dict) -> dict:
     return {"id": f["id"], "num": f.get("num"), "name": f["name"], "crop": fields.CROP_LABEL.get(f["crop"], f["crop"]),
             "area_feddan": f["area_feddan"], "farmer": f["farmer"], "village": f.get("village"),
             "governorate": f.get("governorate"), "lat": f["lat"], "lon": f["lon"]}
+
+
+@app.get("/status/apis")
+def status_apis(fresh: bool = False):
+    """Phase 2 §E1: live health check of every planned data source (public: no field data in it)."""
+    return apistatus.report(fresh)
 
 
 @app.get("/health")

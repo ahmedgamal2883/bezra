@@ -64,11 +64,14 @@ def build(c: Ctx) -> dict:
     # ---- stage, day N of M ------------------------------------------------------
     day_n = (today - c.sow).days
     season_len = (base.ripe - c.sow).days if base.ripe else None
-    stage = cur.stage if cur else "Growing"
+    sown = today >= c.sow
+    stage = (cur.stage if cur else "Growing") if sown else "Not sown yet"
 
     # ---- water ------------------------------------------------------------------
-    last_w = max(date.fromisoformat(x["date"]) for x in f["waterings"] if x["date"] <= today.isoformat())
-    rain = sum((w.obs.get((last_w + timedelta(days=i)).isoformat()) or {}).get("rain", 0) for i in range(1, (today - last_w).days + 1))
+    past = [date.fromisoformat(x["date"]) for x in f["waterings"] if x["date"] <= today.isoformat()]
+    last_w = max(past) if past else None
+    since = last_w or (today - timedelta(days=7))  # no watering yet: rain of the last week
+    rain = sum((w.obs.get((since + timedelta(days=i)).isoformat()) or {}).get("rain", 0) for i in range(1, (today - since).days + 1))
     used = sum(x["m3"] for x in f["waterings"])
     water_pct = round(cur.water_pct) if cur else None
     apply_m3 = round(on_turn.irrigated_mm * MM_TO_M3_PER_FEDDAN * f["area_feddan"], -1) if on_turn else None
@@ -92,6 +95,8 @@ def build(c: Ctx) -> dict:
     water_line = {0: f"Enough water until your turn on {_wd(nt)}.",
                   1: f"The soil is drying. Don't miss {_wd(nt)}.",
                   2: "The soil is dry. Water as soon as you can."}[water_lv]
+    if not sown:
+        water_lv, water_line = 0, "No crop yet. Water just after sowing."
 
     recent = w.recent_days(7)
     rust_n = sum(season.is_rust_day(r) for r in recent)
@@ -107,7 +112,11 @@ def build(c: Ctx) -> dict:
     # ---- the one action (brief §5 priority: watering > rust walk > heat prep) -----------------------
     stage_word = FIELD_WORD.get(stage, stage.lower())
     turn_stage = on_turn.stage if on_turn else stage
-    if water_lv or (wheat and turn_stage in season.SENSITIVE and days_to_turn <= 7):
+    if not sown:
+        action = {"kind": "sow", "title": f"Sowing is planned for {c.sow.strftime('%A')} {_dm(c.sow)}.",
+                  "body": "Bezra starts your water plan from sowing day. Water the field just after sowing.",
+                  "done_label": "I sowed today"}
+    elif water_lv or (wheat and turn_stage in season.SENSITIVE and days_to_turn <= 7):
         title = (f"Your water turn is {_wd(nt)}. Don't skip it." if days_to_turn <= 7 else "Water as soon as you can.")
         body = ("Your wheat is at the stage that is hurt most by thirst" if wheat and turn_stage in season.SENSITIVE else
                 f"Your {fields.CROP_LABEL[f['crop']].lower()} is {stage_word}")
@@ -180,7 +189,7 @@ def build(c: Ctx) -> dict:
                           taw_mm=round(cur.taw) if cur else None),
         "rain_since_watering": num(round(rain), "mm", "satellite", f"{obs_src} rain (GPM IMERG later)", as_of),
         "water_used": num(used, "m3", "farmer", "From your watering log"),
-        "last_watered": {"date": last_w.isoformat(), "days_ago": (today - last_w).days},
+        "last_watered": {"date": last_w.isoformat(), "days_ago": (today - last_w).days} if last_w else None,
         "after_turn": num(after_pct, "%", est, "FAO-56 water balance", as_of, label=f"After {_wd(nt)}'s water"),
         "year": {"from": y0.isoformat(), "weeks": weeks, "today_week": today_week, "note": year_note,
                  "ripe": base.ripe.isoformat() if base.ripe else None, "source": "NASA POWER 1996-2025, Tmax over 32 °C"},

@@ -29,56 +29,74 @@ def grid(c: Ctx) -> Grid:
 _building: set[str] = set()
 
 
+def _cached_squares(prefix: str, scene: dict, g) -> dict | None:
+    """A scene's squares if they were read before (no network)."""
+    import json
+    from ..connectors.cache import CACHE_DIR
+    p = CACHE_DIR / f"{prefix}_cells_{scene['id']}_{g.key}.json".replace("/", "_")
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))["data"]
+    except (OSError, ValueError, KeyError):
+        return None
+
+
 def _scenes(c: Ctx) -> tuple[str, list[dict]]:
-    """All clear images of the field since 15 days before sowing: [(source, cells-record)], oldest first.
-    A field seen for the first time is read in a background thread (it can take many minutes on a slow
-    connection); until then this returns no images and the screens say so."""
+    """All clear images of the field since 15 days before sowing, oldest first.
+
+    Source: NASA HLS (30 m) when the Earthdata login is set, plus Sentinel-2 images newer than the last HLS
+    image (HLS is published a few days later). Each record keeps its own "source".
+    Screens never wait for downloads: this returns the images already read, and reads new ones in a
+    background thread (a field's first time can take many minutes on a slow connection)."""
     key = f"{c.f['id']}:{c.today}"
     if key in _mem:
         return _mem[key]
-    from ..connectors.cache import CACHE_DIR
-    g = grid(c)
-    warm = any(g.key in p.name for p in CACHE_DIR.glob("*_cells_*.json"))
-    if not warm:
-        if key not in _building:
-            _building.add(key)
-            import threading
+    if key not in _building:
+        _building.add(key)
+        import threading
 
-            def work():
-                try:
-                    _scenes_now(c, key)
-                except Exception as e:
-                    print("satellite warm-up failed for", c.f["id"], e)
-                finally:
-                    _building.discard(key)
-            threading.Thread(target=work, daemon=True).start()
+        def work():
+            try:
+                _mem[key] = _scenes_now(c, cached_only=False)
+            except Exception as e:
+                print("satellite update failed for", c.f["id"], e)
+            finally:
+                _building.discard(key)
+        threading.Thread(target=work, daemon=True).start()
+    try:
+        return _scenes_now(c, cached_only=True)
+    except Exception:
         return sentinel2.SOURCE, []
-    return _scenes_now(c, key)
 
 
-def _scenes_now(c: Ctx, key: str) -> tuple[str, list[dict]]:
+def _scenes_now(c: Ctx, cached_only: bool) -> tuple[str, list[dict]]:
     g = grid(c)
     start = date.fromisoformat(c.f["sow_date"]) - timedelta(days=15)
-    out, source = [], sentinel2.SOURCE
+    out: list[dict] = []
     if hls.available():
         try:
             for sc in hls.search(g.lat, g.lon, start, c.today):
-                rec = hls.squares(sc, g)
-                if rec["field_clear"] >= MIN_CLEAR:
+                rec = _cached_squares("hls", sc, g) if cached_only else hls.squares(sc, g)
+                if rec and rec["field_clear"] >= MIN_CLEAR:
                     out.append(rec)
-            source = hls.SOURCE
         except Exception:
-            out = []  # Earthdata down or login wrong: fall back to Sentinel-2
-    if not out:
-        source = sentinel2.SOURCE
+            out = []  # Earthdata down or login wrong: Sentinel-2 below fills in
+    last_hls = out[-1]["date"] if out else ""
+    try:
         for sc in sentinel2.search(g.lat, g.lon, start, c.today, max_cloud=40):
+            if sc["date"] <= last_hls:
+                continue
             try:
-                rec = sentinel2.squares(sc, g)
+                rec = _cached_squares("s2", sc, g) if cached_only else sentinel2.squares(sc, g)
             except Exception:
                 continue
-            if rec["field_clear"] >= MIN_CLEAR:
+            if rec and rec["field_clear"] >= MIN_CLEAR:
                 out.append(rec)
-    _mem[key] = (source, out)
+    except Exception:
+        pass
+    out.sort(key=lambda r: r["date"])
+    source = out[-1]["source"] if out else (hls.SOURCE if hls.available() else sentinel2.SOURCE)
     return source, out
 
 
@@ -140,6 +158,7 @@ def ndvi(c: Ctx) -> dict:
                 "feddan": round(len(weak_both) * g.square_feddan, 2),
                 "pct_less_green": round((med - mean_weak) / med * 100), "images": 2}
     days_ago = (c.today - date.fromisoformat(last["date"])).days
+    source = last.get("source", source)
     return {
         "available": True, "date": last["date"], "days_ago": days_ago, "source": source,
         "pixel_m": last.get("pixel_m", 30), "field_clear": last["field_clear"],
