@@ -71,7 +71,7 @@ export default function MessagesScreen() {
                   ),
                 )}
               </div>
-              <div className="row rise" style={{ '--d': '9', gap: '8px', padding: '6px 6px 6px 18px', borderRadius: '999px', background: '#fff', boxShadow: '0 1px 2px rgba(20,26,22,.06)' } as React.CSSProperties}>
+              <div className="row rise" style={{ '--d': '9', gap: '8px', paddingBlock: '6px', paddingInline: '18px 6px', borderRadius: '999px', background: '#fff', boxShadow: '0 1px 2px rgba(20,26,22,.06)' } as React.CSSProperties}>
                 <label className="vh" htmlFor="monaq">{'Your message'}</label>
                 <input
                   id="monaq"

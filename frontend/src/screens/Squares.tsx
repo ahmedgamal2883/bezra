@@ -37,7 +37,7 @@ export default function SquaresScreen() {
             <div className="col" style={{ gap: '14px' }}>
               <section className="card">
                 <h2 className="h2">{'The image'}</h2>
-                <div className="grid sofar-grid">
+                <div className="grid sofar-grid keep-cols">
                   {[['Date', `${new Date(S.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, `${S.days_ago} days ago`],
                     ['Satellite', S.satellite], ['Pixel size', `${S.pixel_m} m`, `squares of ${S.square_m} m`],
                     ['Field clear of cloud', `${S.field_clear_pct}%`], ['Images this season', String(S.images_this_season)],

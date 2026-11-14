@@ -38,7 +38,7 @@ export default function LandingScreen() {
           </header>
           <main className="main" style={{"gap":"22px"} as any}>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, .9fr) minmax(0, 1.1fr)","alignItems":"stretch","gap":"18px"} as any}>
-              <div className="col" style={{"gap":"22px","justifyContent":"center","padding":"10px 20px 10px 8px"} as any}>
+              <div className="col" style={{"gap":"22px","justifyContent":"center","paddingBlock":"10px","paddingInline":"8px 20px"} as any}>
                 <span className="row rise" style={{"--d":"0","gap":"8px","fontSize":"14px","color":"var(--muted)"} as any}>
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
@@ -55,7 +55,7 @@ export default function LandingScreen() {
                   {"Bezra shows your real field from space. Then you test sowing dates, water and varieties, and watch the result grow month by month, before you spend a pound."}
                 </p>
                 <div className="row rise" style={{"--d":"4","gap":"10px"} as any}>
-                  <Link href="/onboarding" className="btn cta press" style={{"height":"54px","borderRadius":"27px","fontSize":"16px","padding":"0 7px 0 22px","gap":"14px"} as any}>
+                  <Link href="/onboarding" className="btn cta press" style={{"height":"54px","borderRadius":"27px","fontSize":"16px","paddingBlock":"0","paddingInline":"22px 7px","gap":"14px"} as any}>
                     {"Add my field"}
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

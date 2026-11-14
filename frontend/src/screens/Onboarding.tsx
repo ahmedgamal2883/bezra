@@ -249,7 +249,7 @@ export default function OnboardingScreen({ initialStep = 1, editId = '' }: { ini
           <main className="grid ob-main">
             <section className="hero ob-map" style={{ background: '#D9D6C8' }}>
               <MapDraw ref={mapRef} start={[30.5535, 30.9891]} corners={corners} onCorners={setCorners} onDrawing={setDrawing} />
-              <div className="float ob-bar" style={{ zIndex: 500, position: 'absolute', left: '12px', top: '12px', right: '12px', minHeight: '52px', padding: '6px 6px 6px 14px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+              <div className="float ob-bar" style={{ zIndex: 500, position: 'absolute', left: '12px', top: '12px', right: '12px', minHeight: '52px', paddingBlock: '6px', paddingInline: '14px 6px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
                 </svg>

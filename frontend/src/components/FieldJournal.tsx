@@ -77,7 +77,7 @@ export function SeasonSoFar({ data }: { data: any }) {
           </span>
         </div>
       ) : null}
-      <div className="grid sofar-grid">
+      <div className="grid sofar-grid keep-cols">
         {tile('Stage', S?.stage)}
         {tile('Water you logged', S ? `${S.water_used_m3} m³` : null, S ? `${S.water_per_feddan_m3} m³ per feddan` : undefined)}
         {tile('Rain since sowing', S ? `${S.rain_mm} mm` : null)}

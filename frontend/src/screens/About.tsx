@@ -99,7 +99,7 @@ export default function AboutScreen() {
               </div>
             </div>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 360px","alignItems":"start"} as any}>
-              <section aria-label="Datasets" className="col" style={{"gap":"2px"} as any}>
+              <section aria-label="Datasets" className="col ds-table" style={{"gap":"2px"} as any}>
                 <div style={{"display":"grid","gridTemplateColumns":"1.1fr 2fr 1fr 1fr 1.6fr 110px","gap":"12px","padding":"0 14px 8px","fontSize":"12px","fontWeight":"600","color":"var(--muted)"} as any}>
                   <span>
                     {"Dataset"}

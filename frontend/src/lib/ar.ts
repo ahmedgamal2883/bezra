@@ -605,6 +605,7 @@ export function toArabic(s: string): string | null {
       return rep.replace(/\$d(\d)/g, (_, i) => arDate(piece(m[+i]))).replace(/\$(\d)/g, (_, i) => piece(m[+i]));
     }
   }
+  if (MONTH[t]) return MONTH[t];
   if (new RegExp(`^${D}$`).test(t) || new RegExp(`^\\d{1,2} ${M} to \\d{1,2} ${M}$`).test(t)) return arDate(t).replace(' to ', ' لـ ');
   return null;
 }

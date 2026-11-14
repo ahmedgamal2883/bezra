@@ -119,7 +119,7 @@ export default function FieldScreen() {
               </div>
               <div role="list" aria-label="Your fields" className="row rise" style={{"--d":"1","gap":"8px"} as any}>
                 {chipFields.map((ff, k) => (
-                <Link key={ff.id} href={`/field/${ff.id}`} className="press lift" aria-current={id === ff.id} style={{"height":"64px","padding":"0 8px 0 14px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === ff.id ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
+                <Link key={ff.id} href={`/field/${ff.id}`} className="press lift" aria-current={id === ff.id} style={{"height":"64px","paddingBlock":"0","paddingInline":"14px 8px","boxSizing":"border-box","borderRadius":"12px","background":"#fff","display":"flex","alignItems":"center","gap":"14px","boxShadow":id === ff.id ? "0 0 0 2px #141A16" : "0 1px 2px rgba(20,26,22,.05)"} as any}>
                   <span className="col" style={{"gap":"1px"} as any}>
                     <span className="tl" style={{"fontWeight":"600"} as any}>
                       {"#" + (ff.num || String(k + 1).padStart(2, "0"))}
@@ -340,7 +340,7 @@ export default function FieldScreen() {
               </span>
             </footer>
           </main>
-          <Link href="/ask" className="press lift" aria-label="Ask Bezra" style={{"position":"fixed","right":"30px","bottom":"30px","zIndex":"20","height":"60px","padding":"0 20px 0 6px","borderRadius":"30px","background":"var(--dark)","color":"#fff","display":"flex","alignItems":"center","gap":"8px","boxShadow":"0 18px 40px -16px rgba(20,26,22,.6)"} as any}>
+          <Link href="/ask" className="press lift" aria-label="Ask Bezra" style={{"position":"fixed","right":"30px","bottom":"30px","zIndex":"20","height":"60px","paddingBlock":"0","paddingInline":"6px 20px","borderRadius":"30px","background":"var(--dark)","color":"#fff","display":"flex","alignItems":"center","gap":"8px","boxShadow":"0 18px 40px -16px rgba(20,26,22,.6)"} as any}>
             <svg aria-hidden="true" width="48" height="48" viewBox="0 0 60 60">
               <g className="sway">
                 <path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45" />

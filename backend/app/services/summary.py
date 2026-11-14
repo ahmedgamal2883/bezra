@@ -16,7 +16,8 @@ FIELD_WORD = {"Emerging": "coming up", "Tillering": "tillering", "Stem growth": 
 
 
 def _next_turn(c: Ctx) -> date:
-    nt = date.fromisoformat(c.f["next_turn"])
+    # no canal-turn date given (API or old field): count turns from the sowing day
+    nt = date.fromisoformat(c.f.get("next_turn") or c.f["sow_date"])
     while nt < c.today:
         nt += timedelta(days=c.f["turn_days"])
     return nt
