@@ -7,6 +7,7 @@ import { Fragment } from 'react';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
+import { LangSwitch } from '@/lib/i18n';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './States.logic';
@@ -55,7 +56,8 @@ export default function StatesScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
-              <DataLive />
+              <LangSwitch />
+<DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}

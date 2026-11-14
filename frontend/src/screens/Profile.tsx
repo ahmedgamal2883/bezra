@@ -6,7 +6,7 @@ import { T, useT } from '@/lib/i18n';
 import { Fragment, useState } from 'react';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab, signOut, EngName, useUser, useDemo } from '@/lib/field';
 import { useApi } from '@/lib/api';
-import { useLang } from '@/lib/i18n';
+import { useLang, LangSwitch } from '@/lib/i18n';
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -71,7 +71,8 @@ export default function ProfileScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
-              <DataLive />
+              <LangSwitch />
+<DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
@@ -454,7 +455,7 @@ export default function ProfileScreen() {
                         {"Language"}
                       </span>
                       <b>
-                        {lang === 'ar' ? 'Egyptian Arabic' : 'English'}
+                        <LangSwitch big />
                       </b>
                     </div>
                     <div className="inset">

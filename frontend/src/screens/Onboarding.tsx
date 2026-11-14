@@ -141,7 +141,7 @@ export default function OnboardingScreen({ initialStep = 1, editId = '' }: { ini
   // Edit: fill every step with the saved answers
   useEffect(() => {
     if (!editId) return;
-    fetch(`${API}/fields/${editId}`, { credentials: 'include' }).then((r) => r.json()).then((f) => {
+    fetch(`${API}/fields/${editId}`, { credentials: 'include' }).then((r) => (r.ok ? r.json() : Promise.reject(r.status))).then((f) => {
       const y = String(f.yields || '').split(',').map((s: string) => s.trim());
       setF({ name: f.name, crop: KEY_CROP[f.crop] || 'Wheat', variety: KEY_VAR[f.variety] || 'Other', sow: f.sow_date, prev: f.prev_crop ? f.prev_crop[0].toUpperCase() + f.prev_crop.slice(1) : '',
         water: f.water_kind || 'canal', irrigation: f.irrigation || 'flood', turn: String(f.turn_days || 10), nextTurn: f.next_turn || '', tenure: f.tenure || 'owner',

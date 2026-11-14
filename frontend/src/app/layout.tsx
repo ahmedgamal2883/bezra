@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { ModeProvider } from '@/lib/dc';
 import { FieldProvider } from '@/lib/field';
 import { LangProvider } from '@/lib/i18n';
@@ -9,9 +10,10 @@ export const metadata: Metadata = {
   description: 'Try your season before you plant it.',
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const lang = (await cookies()).get('bezra_lang')?.value === 'ar' ? 'ar' : 'en';
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <head>
         {/* The design has its own colours: stop the Dark Reader extension from repainting the page
             (it changes SVG attributes before React loads, which causes hydration errors). */}
@@ -24,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
-        <LangProvider>
+        <LangProvider initial={lang}>
           <ModeProvider>
             <FieldProvider>{children}</FieldProvider>
           </ModeProvider>

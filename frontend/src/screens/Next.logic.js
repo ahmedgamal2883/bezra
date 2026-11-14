@@ -17,7 +17,7 @@ const DESIGN = {
   foot: 'All numbers on this screen are demo data.',
 };
 
-function fromData(D) {
+function fromData(D, demo) {
   const vals = D.hot_days.bars.map((b) => b.value);
   const max = Math.max(...vals, 1);
   const short = (s) => s.replace(/ (\w{3})\w*$/, ' $1');
@@ -40,7 +40,7 @@ function fromData(D) {
     pos90: pos(D.windows['1990s']), posToday: pos(t), pos40: pos(D.windows['2040']),
     twins: D.twins.map((x) => [x.name, `${x.similarity}% same weather`, ' ' + x.practice]),
     srcSat: 'pill pv-sat', srcSatL: 'NASA POWER', src40L: '2040: trend',
-    foot: this.props.demo ? 'Hot days and sowing windows from NASA POWER 1990-2026. Twin practices and the three plans are Demo.' : 'Hot days, sowing windows and climate twins from NASA POWER 1990-2026.',
+    foot: demo ? 'Hot days and sowing windows from NASA POWER 1990-2026. Twin practices and the three plans are Demo.' : 'Hot days, sowing windows and climate twins from NASA POWER 1990-2026.',
   };
 }
 
@@ -50,7 +50,7 @@ renderVals() {
 const S = this.state, set = (o) => this.setState(o);
 const details = (S.mode ?? (this.props.details ? 'details' : 'simple')) === 'details';
 const base = { details, simple: !details, segS: 'segb press' + (details ? '' : ' on'), segD: 'segb press' + (details ? ' on' : ''), isS: String(!details), isD: String(details), pickS: () => set({ mode: 'simple' }), pickD: () => set({ mode: 'details' }) };
-const extra = (() => { const D = this.props.data; return { N: D ? fromData(D) : DESIGN, sk: 'sk ' + (this.props.loading ? 'hold' : '') }; })();
+const extra = (() => { const D = this.props.data; return { N: D ? fromData(D, this.props.demo) : DESIGN, sk: 'sk ' + (this.props.loading ? 'hold' : '') }; })();
 return Object.assign(base, extra || {});
 }
 }

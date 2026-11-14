@@ -8,6 +8,7 @@ import { useApi, API } from '@/lib/api';
 import { useField, FieldWho, UserName, UserInitials, useUser } from '@/lib/field';
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
+import { LangSwitch } from '@/lib/i18n';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Engineer.logic';
@@ -83,7 +84,8 @@ export default function EngineerScreen() {
               </Link>
             </nav>
             <div className="tools">
-              <DataLive />
+              <LangSwitch />
+<DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}

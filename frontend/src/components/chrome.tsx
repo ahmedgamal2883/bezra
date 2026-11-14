@@ -4,6 +4,7 @@ import { T, useT } from '@/lib/i18n';
 // that were added later (sign in, messages, report). Uses the same classes as the design.
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
+import { LangSwitch } from '@/lib/i18n';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab } from '@/lib/field';
 import type { ReactNode } from 'react';
 import { useMode } from '@/lib/dc';
@@ -82,7 +83,8 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
         <EngineerTab />
       </nav>
       <div className="tools">
-        <DataLive />
+        <LangSwitch />
+<DataLive />
         <div role="group" aria-label="Detail level" className="seg">
           <button type="button" className={'segb press' + (details ? '' : ' on')} onClick={() => setDetails(false)} aria-pressed={!details}>{'Simple'}</button>
           <button type="button" className={'segb press' + (details ? ' on' : '')} onClick={() => setDetails(true)} aria-pressed={details}>{'Details'}</button>

@@ -66,7 +66,7 @@ export function healthTexts(D, demo) {
   }
   const last = C.this_season[C.this_season.length - 1];
   return {
-    live: true, layers: layerCards(D, this.props.demo),
+    live: true, layers: layerCards(D, demo),
     eyebrow: `Your field. Latest clear image ${longDate(N.date)}, ${src}.`,
     pill: S ? 'Check this spot' : 'All squares look even', pillCls: S ? 'lv lv-med' : 'lv lv-low',
     where: S ? `${S.where}, ~${S.feddan} feddan` : `${N.grid.rows * N.grid.cols} squares of 30 m`,

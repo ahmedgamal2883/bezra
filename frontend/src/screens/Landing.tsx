@@ -1,4 +1,5 @@
 'use client';
+import { LangSwitch } from '@/lib/i18n';
 import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Landing.html by scripts/convert-design.mjs (layout and copy 1:1).
@@ -29,14 +30,7 @@ export default function LandingScreen() {
               {"bezra"}
             </span>
             <div className="tools">
-              <div role="group" aria-label="Language" className="seg">
-                <button type="button" className="segb on">
-                  {"English"}
-                </button>
-                <button type="button" className="segb">
-                  {"العربية"}
-                </button>
-              </div>
+              <LangSwitch big />
               <Link href="/sign-in" className="btn soft press">
                 {"Sign in"}
               </Link>

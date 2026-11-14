@@ -7,6 +7,7 @@ import { Fragment } from 'react';
 import { useField, FieldWho, UserName, UserInitials, EngineerTab, EngName, useDemo } from '@/lib/field';
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
+import { LangSwitch } from '@/lib/i18n';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
@@ -65,7 +66,8 @@ export default function PlanScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
-              <DataLive />
+              <LangSwitch />
+<DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}

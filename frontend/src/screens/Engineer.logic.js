@@ -23,7 +23,7 @@ const D = this.props.data;
 const F = this.props.filter || 'all';
 const pass = (x) => F === 'all' || (F === 'pending' ? x.plan.status !== 'approved' : x.driver === F);
 const mine = D ? D.fields.filter((x) => x.score != null).sort((a, b) => b.score - a.score) : [];
-let queue = D ? mine.filter(pass).map((x) => ({ name: x.farmer, place: x.place + ' (' + x.field + ')', reason: x.reason + (x.tracker ? '. ' + x.tracker : ''),
+let queue = D ? mine.filter(pass).map((x) => ({ name: x.farmer, place: x.place + ' (' + x.field + ')', reason: x.reason.replace(/\.$/, '') + (x.tracker ? '. ' + x.tracker : ''),
   score: x.score, status: x.status, demo: false, fieldId: x.field_id, key: x.field_id })) : DEMO_Q.slice();
 queue = queue.map((q) => ({ ...q, lv: LVC[q.status] }));
 // Plan approval card: the field picked in the queue, else the riskiest field still waiting for approval.

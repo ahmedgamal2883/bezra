@@ -226,3 +226,14 @@ html[data-demo="0"] .pv-demo{display:none!important}
   .ob-main .grid:not(.keep-cols){grid-template-columns:minmax(0,1fr)!important}
   .ob-map{min-height:420px}
 }
+
+/* ---- Arabic (rework D): IBM Plex Sans Arabic, right to left ---------------------------------------- */
+html[lang="ar"] .root,html[lang="ar"] body,html[lang="ar"] button,html[lang="ar"] input,html[lang="ar"] textarea{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',system-ui,sans-serif}
+html[lang="ar"] .h1,html[lang="ar"] h1,html[lang="ar"] h2,html[lang="ar"] h3{letter-spacing:0!important}
+html[dir="rtl"] .ar svg,html[dir="rtl"] .next-row>span:last-child svg,html[dir="rtl"] a.btn>svg:first-child{transform:scaleX(-1)}
+html[dir="rtl"] .wx-col{left:auto;right:18px}
+html[dir="rtl"] .leaflet-container{direction:ltr}
+html[dir="rtl"] input[type="date"],html[dir="rtl"] input[type="number"]{direction:ltr;text-align:right}
+@media (max-width:960px){html[dir="rtl"] .wx-col{right:auto}}
+
+@media (max-width:760px){.tools{flex-wrap:wrap;justify-content:flex-end;row-gap:6px}}

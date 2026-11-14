@@ -9,6 +9,7 @@ import { FIELD_NAMES, UserName, UserInitials, EngineerTab, EngName, useDemo } fr
 import { useField, FieldWho } from '@/lib/field';
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
+import { LangSwitch } from '@/lib/i18n';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Diagnose.logic';
@@ -73,7 +74,8 @@ export default function DiagnoseScreen() {
               <EngineerTab />
             </nav>
             <div className="tools">
-              <DataLive />
+              <LangSwitch />
+<DataLive />
               <div role="group" aria-label="Detail level" className="seg">
                 <button type="button" className={__s(__v?.segS) as any} onClick={__v?.pickS} aria-pressed={__s(__v?.isS) as any}>
                   {"Simple"}
