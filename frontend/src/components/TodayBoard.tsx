@@ -6,7 +6,8 @@
 import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 import { API, PV } from '@/lib/api';
-import { LogSheet, SatelliteAsk, logAction } from '@/components/PlanToday';
+import { LogSheet } from '@/components/PlanToday';
+import FieldJournal, { SeasonSoFar, useJournal } from '@/components/FieldJournal';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LVC: Record<string, string> = { Low: 'lv lv-low', Medium: 'lv lv-med', High: 'lv lv-high' };
@@ -70,7 +71,9 @@ function Weather({ w, href }: { w: any; href: string }) {
 }
 
 export default function TodayBoard({ id, map, details }: { id: string; map: ReactNode; details: boolean }) {
-  const { data: D, reload } = useToday(id);
+  const { data: D, reload: reloadToday } = useToday(id);
+  const J = useJournal(id);
+  const reload = () => { reloadToday(); J.reload(); };
   const [sheet, setSheet] = useState(false);
   const fp = (k: string) => `/field/${id}/insight/${encodeURIComponent(k)}`;
   const ready = !!D;
@@ -116,6 +119,8 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
         </aside>
       </div>
 
+      <SeasonSoFar data={J.data} />
+
       <div className="today-bottom">
         <section className="card rise" style={{ '--d': '4' } as React.CSSProperties} aria-labelledby="next-h">
           <div className="row sp wrap" style={{ gap: '8px' }}>
@@ -152,72 +157,9 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
           <span className="tl">{'Fertilizer: dates only. Your engineer sets the amount.'}</span>
         </section>
 
-        <CheckIn id={id} c={D?.checkin} details={details} onDone={reload} />
+        <FieldJournal id={id} data={J.data} details={details} onChange={reload} askWatered={!!D?.checkin?.ask_watered} />
       </div>
       <LogSheet fieldId={id} open={sheet} onClose={() => setSheet(false)} onSaved={reload} />
     </div>
-  );
-}
-
-/** Small recurring questions that keep the plan true (each answer is one tap). */
-function CheckIn({ id, c, details, onDone }: { id: string; c: any; details: boolean; onDone: () => void }) {
-  const [step, setStep] = useState<'ask' | 'pick' | 'done'>('ask');
-  const [news, setNews] = useState('');
-  const days = Array.from({ length: 10 }, (_, i) => iso(new Date(Date.now() - i * 86400000)));
-  const watered = async (d: string) => { await logAction(id, 'water', d).catch(() => {}); setStep('done'); onDone(); };
-  const tell = async (k: string) => {
-    setNews(k);
-    if (k === 'All good') await logAction(id, 'check', iso(new Date())).catch(() => {});
-  };
-  return (
-    <section className="card rise" style={{ '--d': '5' } as React.CSSProperties} aria-labelledby="ci-h">
-      <h2 id="ci-h" className="h2">{'Quick check-in'}</h2>
-      {c?.ask_watered && step !== 'done' ? (
-        <div className="col inset" style={{ alignItems: 'stretch', gap: '8px' }}>
-          <b style={{ color: 'var(--ink)', fontSize: '15px' }}>{'Did you water in the last 10 days?'}</b>
-          {step === 'ask' ? (
-            <span className="row" style={{ gap: '6px' }}>
-              <button type="button" className="btn sm press" style={{ flex: 1 }} onClick={() => setStep('pick')}>{'Yes'}</button>
-              <button type="button" className="btn soft sm press" style={{ flex: 1 }} onClick={() => setStep('done')}>{'No'}</button>
-            </span>
-          ) : (
-            <div className="col" style={{ gap: '6px' }}>
-              <span className="tl">{'Which day?'}</span>
-              <span className="row wrap" style={{ gap: '4px' }}>
-                {days.map((d, i) => (
-                  <button key={d} type="button" className="btn soft sm press" style={{ height: '34px', padding: '0 10px' }} onClick={() => watered(d)}>
-                    {i === 0 ? 'Today' : i === 1 ? 'Yesterday' : short(d).split(' ').slice(0, 2).join(' ')}
-                  </button>
-                ))}
-              </span>
-            </div>
-          )}
-        </div>
-      ) : c && c.watered_last10.length ? (
-        <span className="sub">{`Watering logged on ${c.watered_last10.map((d: string) => short(d).split(' ').slice(1).join(' ')).join(', ')}. Thanks.`}</span>
-      ) : null}
-      <SatelliteAsk fieldId={id} details={details} onDone={onDone} />
-      <div className="col inset" style={{ alignItems: 'stretch', gap: '8px' }}>
-        <b style={{ color: 'var(--ink)', fontSize: '15px' }}>{'Anything new in your field?'}</b>
-        {!news ? (
-          <span className="row wrap" style={{ gap: '4px' }}>
-            {(c?.updates || ['Yellow leaves', 'Insects', 'Weeds', 'Water problem', 'All good']).map((k: string) => (
-              <button key={k} type="button" className="btn soft sm press" style={{ height: '34px' }} onClick={() => tell(k)}>{k}</button>
-            ))}
-          </span>
-        ) : news === 'All good' ? (
-          <span className="sub">{'Great. Bezra noted it.'}</span>
-        ) : (
-          <span className="col" style={{ gap: '6px' }}>
-            <span className="sub">{`${news}: a photo helps your engineer see it.`}</span>
-            <span className="row" style={{ gap: '6px' }}>
-              <Link href={`/field/${id}/diagnose`} className="btn sm press" style={{ flex: 1 }}>{'Take a photo'}</Link>
-              <button type="button" className="btn soft sm press" onClick={() => setNews('')}>{'Back'}</button>
-            </span>
-          </span>
-        )}
-      </div>
-      <span className="tl"><span className={PV.farmer.cls}>{'You'}</span>{' Your answers keep the water plan true.'}</span>
-    </section>
   );
 }

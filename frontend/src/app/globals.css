@@ -237,3 +237,10 @@ html[dir="rtl"] input[type="date"],html[dir="rtl"] input[type="number"]{directio
 @media (max-width:960px){html[dir="rtl"] .wx-col{right:auto}}
 
 @media (max-width:760px){.tools{flex-wrap:wrap;justify-content:flex-end;row-gap:6px}}
+
+/* ---- Season so far + Field journal (rework F) -------------------------------------------------- */
+.sofar-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.journal-day{display:block;margin:10px 0 4px;font-weight:600;color:var(--ink2)}
+.journal-row{padding:8px 10px;border-radius:10px;background:var(--inset)}
+.journal-src{flex:0 0 auto;min-width:64px;justify-content:center}
+.today-bottom{align-items:start}

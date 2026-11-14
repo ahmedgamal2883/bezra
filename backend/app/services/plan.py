@@ -21,7 +21,8 @@ from ..engine.season import MM_TO_M3_PER_FEDDAN
 from .context import Ctx
 from .summary import _next_turn, season_runs
 
-KINDS = {"water": "Watered", "fertilizer": "Fertilizer", "spray": "Spray", "weeding": "Weeding", "check": "Checked the field", "other": "Other"}
+KINDS = {"water": "Watered", "fertilizer": "Fertilizer", "spray": "Spray", "weeding": "Weeding", "check": "Checked the field",
+         "observe": "Saw a problem", "note": "Note", "harvest": "Harvest", "other": "Other"}
 GRACE = 3        # days after the planned date before a task counts as Skipped
 STATE = Path(__file__).resolve().parents[3] / "data" / "plan_state.json"
 
@@ -46,7 +47,8 @@ def log_entries(f: dict) -> list[dict]:
     return sorted(out, key=lambda x: x["date"])
 
 
-def add_log(c: Ctx, kind: str, when: str, amount: float | None, unit: str | None) -> dict:
+def add_log(c: Ctx, kind: str, when: str, amount: float | None, unit: str | None, note: str | None = None,
+            tags: list[str] | None = None) -> dict:
     if kind not in KINDS:
         raise ValueError("Unknown action")
     d = date.fromisoformat(when)
@@ -57,6 +59,12 @@ def add_log(c: Ctx, kind: str, when: str, amount: float | None, unit: str | None
     for k in ("farmer", "engineer_id"):
         f.pop(k, None)
     entry = {"kind": kind, "date": d.isoformat(), "source": "You", "logged_at": datetime.now().isoformat(timespec="minutes")}
+    if note and note.strip():
+        entry["note"] = note.strip()[:300]
+    if tags:
+        entry["tags"] = [t[:30] for t in tags[:6]]
+    if kind == "harvest" and not amount:
+        raise ValueError("How many ardeb per feddan did you harvest?")
     if kind == "water":
         if unit == "hours" and amount:
             entry["hours"] = amount

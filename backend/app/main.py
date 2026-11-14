@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from . import config  # noqa: F401  (loads backend/.env)
 from . import db, fields
 from .chat import bezra
-from .services import alerts, apistatus, irrigation, plan, today, calendar, cases, engineer, nextseason, satellite, sim, summary
+from .services import alerts, apistatus, irrigation, journal, plan, today, calendar, cases, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 COOKIE = "bezra_session"
@@ -280,14 +280,16 @@ class LogReq(BaseModel):
     kind: str
     date: str
     amount: float | None = None
-    unit: str | None = None   # "m3" or "hours" for watering; free for others
+    unit: str | None = None   # "m3" or "hours" for watering; "ardeb" for harvest
+    note: str | None = None
+    tags: list[str] | None = None
 
 
 @app.post("/fields/{field_id}/log")
 def post_log(field_id: str, req: LogReq, user: dict = Depends(current_user)):
     c = _ctx(field_id, user)
     try:
-        entry = plan.add_log(c, req.kind, req.date, req.amount, req.unit)
+        entry = plan.add_log(c, req.kind, req.date, req.amount, req.unit, req.note, req.tags)
     except ValueError as e:
         raise HTTPException(422, str(e))
     return entry
@@ -310,6 +312,41 @@ def get_mapframe(field_id: str, user: dict = Depends(current_user)):
         xs, ys = _tr("EPSG:4326", crs, list(lons), list(lats))
         out["outline"] = [[round(x, 1), round(y, 1)] for x, y in zip(xs, ys)]
     return out
+
+
+@app.get("/fields/{field_id}/journal")
+def get_journal(field_id: str, user: dict = Depends(current_user)):
+    """Rework F: one timeline of satellite, weather, Bezra's estimates, the farmer's log and the plan."""
+    return journal.build(_ctx(field_id, user))
+
+
+@app.get("/fields/{field_id}/squares")
+def get_squares(field_id: str, user: dict = Depends(current_user)):
+    """Rework F: proof that the map squares are real: the image they come from and every square's value,
+    with links to open the same image in NASA's / ESA's own viewers."""
+    from rasterio.warp import transform as _tr
+    from .connectors.grid import utm_crs
+    c = _ctx(field_id, user)
+    nd = satellite.ndvi(c)
+    if not nd.get("available"):
+        return {"available": False, "reason": nd.get("reason")}
+    g = satellite.grid(c)
+    crs = utm_crs(g.lon)
+    left, bottom, right, top = g.bounds_utm(crs)
+    xs, ys = _tr(crs, "EPSG:4326", [left, right], [bottom, top])
+    d = nd["date"]
+    s2 = "Sentinel-2" in nd["source"]
+    links = [{"label": "Open the same day in ESA Copernicus Browser",
+              "url": f"https://browser.dataspace.copernicus.eu/?zoom=16&lat={c.f['lat']:.5f}&lng={c.f['lon']:.5f}"
+                     f"&fromTime={d}T00:00:00.000Z&toTime={d}T23:59:59.999Z&datasetId=S2_L2A_CDAS&layerId=1_TRUE_COLOR"},
+             {"label": "Find the image in NASA Earthdata Search",
+              "url": f"https://search.earthdata.nasa.gov/search?q=HLS&sp[0]={c.f['lon']:.5f}%2C{c.f['lat']:.5f}&qt={d}T00%3A00%3A00.000Z%2C{d}T23%3A59%3A59.999Z"}]
+    cells = nd["indices"]["ndvi"]["cells"]
+    return {"available": True, "date": d, "days_ago": nd["days_ago"], "source": nd["source"], "satellite": "ESA Sentinel-2" if s2 else "NASA HLS (Landsat + Sentinel-2)",
+            "pixel_m": nd.get("pixel_m", 30), "square_m": 30, "rows": g.rows, "cols": g.cols, "field_clear_pct": round(nd["field_clear"] * 100),
+            "median": nd["indices"]["ndvi"]["median"], "bounds_lonlat": [round(xs[0], 6), round(ys[0], 6), round(xs[1], 6), round(ys[1], 6)],
+            "cells": [{"r": x["r"], "c": x["c"], "ndvi": x["value"], "class": x["class"]} for x in cells],
+            "images_this_season": nd["images_this_season"], "links": links}
 
 
 @app.get("/fields/{field_id}/irrigation")

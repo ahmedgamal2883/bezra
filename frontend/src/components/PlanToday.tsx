@@ -21,9 +21,9 @@ export function usePlan(fieldId: string | undefined) {
   return { plan: data, reload: useCallback(() => setN((x) => x + 1), []) };
 }
 
-export async function logAction(fieldId: string, kind: string, date: string, amount?: number | null, unit?: string | null) {
+export async function logAction(fieldId: string, kind: string, date: string, amount?: number | null, unit?: string | null, note?: string, tags?: string[]) {
   const r = await fetch(`${API}/fields/${fieldId}/log`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ kind, date, amount: amount || null, unit: unit || null }) });
+    body: JSON.stringify({ kind, date, amount: amount || null, unit: unit || null, note: note || null, tags: tags?.length ? tags : null }) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(typeof j.detail === 'string' ? j.detail : 'Could not save');
   return j;
@@ -93,20 +93,24 @@ export function Changed({ plan, details }: { plan: any; details: boolean }) {
   );
 }
 
-const WHAT: [string, string][] = [['water', 'Watered'], ['fertilizer', 'Fertilizer'], ['spray', 'Spray'], ['weeding', 'Weeding'], ['other', 'Other']];
+const WHAT: [string, string][] = [['water', 'Watered'], ['fertilizer', 'Fertilizer'], ['spray', 'Spray'], ['weeding', 'Weeding'],
+  ['observe', 'Saw a problem'], ['note', 'Note'], ['harvest', 'Harvest'], ['other', 'Other']];
+const SEEN = ['Yellow leaves', 'Rust spots', 'Insects', 'Weeds', 'Dry patch', 'Standing water', 'Plants lying flat'];
 const chip = (on: boolean) => ({ height: '44px', padding: '0 10px', border: 0, borderRadius: '12px', fontSize: '14px', fontWeight: 600,
   background: on ? '#17251C' : '#F4F4F1', color: on ? '#fff' : '#141A16' });
 
 /** U3: log sheet. What -> when -> optional amount -> Save. */
-export function LogSheet({ fieldId, open, onClose, onSaved }: { fieldId: string; open: boolean; onClose: () => void; onSaved: () => void }) {
-  const [what, setWhat] = useState('water');
+export function LogSheet({ fieldId, open, onClose, onSaved, initial = 'water' }: { fieldId: string; open: boolean; onClose: () => void; onSaved: () => void; initial?: string }) {
+  const [what, setWhat] = useState(initial);
+  const [note, setNote] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [when, setWhen] = useState('today');
   const [day, setDay] = useState(iso(new Date()));
   const [amount, setAmount] = useState('');
   const [unit, setUnit] = useState('m3');
   const [err, setErr] = useState('');
   const [saving, setSaving] = useState(false);
-  useEffect(() => { if (open) { setErr(''); setAmount(''); } }, [open]);
+  useEffect(() => { if (open) { setErr(''); setAmount(''); setNote(''); setTags([]); setWhat(initial); } }, [open, initial]);
   useEffect(() => {
     if (!open) return;
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -118,7 +122,8 @@ export function LogSheet({ fieldId, open, onClose, onSaved }: { fieldId: string;
   const save = async () => {
     setSaving(true); setErr('');
     try {
-      await logAction(fieldId, what, date, amount ? Number(amount) : null, what === 'water' ? unit : null);
+      if (what === 'observe' && !tags.length && !note.trim()) throw new Error('Tap what you saw, or write it.');
+      await logAction(fieldId, what, date, amount ? Number(amount) : null, what === 'water' ? unit : what === 'harvest' ? 'ardeb' : null, note, tags);
       onSaved(); onClose();
     } catch (e: any) { setErr(e.message); } finally { setSaving(false); }
   };
@@ -132,7 +137,7 @@ export function LogSheet({ fieldId, open, onClose, onSaved }: { fieldId: string;
         <span className="row sp"><h2 className="h2">{'Log what you did'}</h2><button type="button" className="btn soft sm press" onClick={onClose}>{'Close'}</button></span>
         <div className="col" style={{ gap: '8px' }}>
           <span className="h2" style={{ fontSize: '14px' }}>{'What'}</span>
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+          <div className="grid keep-cols" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '6px' }}>
             {WHAT.map(([k, l]) => <button key={k} type="button" className="press" aria-pressed={what === k} onClick={() => setWhat(k)} style={chip(what === k)}>{l}</button>)}
           </div>
         </div>
@@ -163,6 +168,28 @@ export function LogSheet({ fieldId, open, onClose, onSaved }: { fieldId: string;
             </div>
           </div>
         ) : null}
+        {what === 'observe' ? (
+          <div className="col" style={{ gap: '8px' }}>
+            <span className="h2" style={{ fontSize: '14px' }}>{'What did you see?'}</span>
+            <div className="row wrap" style={{ gap: '6px' }}>
+              {SEEN.map((t) => <button key={t} type="button" className="press" aria-pressed={tags.includes(t)} onClick={() => setTags((x) => (x.includes(t) ? x.filter((y) => y !== t) : [...x, t]))} style={{ ...chip(tags.includes(t)), height: '38px' }}>{t}</button>)}
+            </div>
+          </div>
+        ) : null}
+        {what === 'harvest' ? (
+          <div className="col" style={{ gap: '8px' }}>
+            <span className="h2" style={{ fontSize: '14px' }}>{'Ardeb per feddan'}</span>
+            <span className="inset" style={{ height: '44px' }}>
+              <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))} placeholder="e.g. 18" aria-label="Ardeb per feddan"
+                style={{ flex: 1, minWidth: 0, border: 0, background: 'transparent', font: 'inherit', fontWeight: 700, outline: 'none' }} />
+            </span>
+          </div>
+        ) : null}
+        <div className="col" style={{ gap: '8px' }}>
+          <span className="h2" style={{ fontSize: '14px' }}>{what === 'note' ? 'Your note' : 'Note (optional)'}</span>
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} rows={2} placeholder={what === 'spray' || what === 'fertilizer' ? 'e.g. which product (your engineer set the dose)' : 'Anything worth remembering'}
+            style={{ padding: '10px 12px', border: 0, borderRadius: '10px', background: 'var(--inset)', font: 'inherit', fontSize: '14px', resize: 'none' }} />
+        </div>
         {err ? <div role="alert" style={{ padding: '10px 14px', borderRadius: '12px', background: '#FBE3DC', color: '#8A2A12', fontSize: '14px' }}>{err}</div> : null}
         <button type="button" className="btn press" onClick={save} disabled={saving} style={{ height: '52px', justifyContent: 'center' }}>{saving ? 'Saving…' : 'Save'}</button>
       </div>

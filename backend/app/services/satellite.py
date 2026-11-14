@@ -132,16 +132,55 @@ def _where(cells: list[dict], rows: int, cols: int) -> str:
     return "South side" if dy > 0 else "North side"
 
 
+def outside_squares(c: Ctx, g) -> set:
+    """Squares whose centre is outside the field the farmer drew: they show the neighbours' land, so they are
+    left out of the field's numbers (median, weak spots, greenness curve). Fields without a drawing keep all."""
+    poly = c.f.get("polygon")
+    if not poly or len(poly) < 3:
+        return set()
+    from rasterio.warp import transform as _tr
+    from ..connectors.grid import SQUARE_M, utm_crs
+    crs = utm_crs(g.lon)
+    left, bottom, right, top = g.bounds_utm(crs)
+    lats, lons = zip(*poly)
+    xs, ys = _tr("EPSG:4326", crs, list(lons), list(lats))
+    pts = list(zip(xs, ys))
+
+    def inside(x, y):
+        hit = False
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]):
+            if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1:
+                hit = not hit
+        return hit
+    out = set()
+    for r in range(g.rows):
+        for col in range(g.cols):
+            cx, cy = left + (col + 0.5) * SQUARE_M, top - (r + 0.5) * SQUARE_M
+            if not inside(cx, cy):
+                out.add((r, col))
+    return out
+
+
+def _masked(scene: dict, out: set) -> list[dict]:
+    if not out:
+        return scene["cells"]
+    return [x if (x["r"], x["c"]) not in out else {**x, **{k: None for k in INDICES}, "outside": True} for x in scene["cells"]]
+
+
 def ndvi(c: Ctx) -> dict:
     source, scenes = _scenes(c)
     g = grid(c)
     if not scenes:
         return {"available": False, "source": source, "reason": "No clear image of the field yet"}
-    last = scenes[-1]
-    prev = scenes[-2] if len(scenes) > 1 else None
+    out = outside_squares(c, g)
+    last = {**scenes[-1], "cells": _masked(scenes[-1], out)}
+    prev = {**scenes[-2], "cells": _masked(scenes[-2], out)} if len(scenes) > 1 else None
     by_index = {}
     for ix in INDICES:
         cells, med = _classify(last["cells"], ix)
+        for x in cells:
+            if (x["r"], x["c"]) in out:
+                x["class"] = "outside"
         by_index[ix] = {"cells": cells, "median": med}
     cells = by_index["ndvi"]["cells"]
     weak = [x for x in cells if x["class"] == "less"]
@@ -206,8 +245,9 @@ def health(c: Ctx) -> dict:
     sow = date.fromisoformat(c.f["sow_date"])
     y0 = sow.year if sow.month >= 8 else sow.year - 1
     this = []
+    out = outside_squares(c, grid(c))
     for s in scenes:
-        vals = [x["ndvi"] for x in s["cells"] if x["ndvi"] is not None]
+        vals = [x["ndvi"] for x in _masked(s, out) if x["ndvi"] is not None]
         if vals:
             this.append({"date": s["date"], "day": _season_x(date.fromisoformat(s["date"]), y0), "ndvi": round(statistics.median(vals), 3)})
     # MODIS normal: average of the last 5 complete seasons (Oct -> May), by day of season
