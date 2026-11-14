@@ -64,3 +64,13 @@ def test_farmer_answer_ranks_the_cause():
     assert T.water_missed_recently(C()) == "2026-11-09"     # only waterings count, not fertilizer
     C.f = {"task_answers": {"turn-2026-10-01": {"answer": "not_done", "at": "2026-10-02T08:00"}}}
     assert T.water_missed_recently(C()) is None             # too long ago to explain today's weak spot
+
+
+def test_one_log_entry_one_task():
+    log = [{"kind": "fertilizer", "date": "2026-11-08", "note": "From the checklist: Potassium (potassium sulfate)"},
+           {"kind": "fertilizer", "date": "2026-11-09"}]
+    d = date(2026, 11, 8)
+    used: set = set()
+    assert T._match_log(log, ("fertilizer",), d, d, "Potassium (potassium sulfate)", used) == "2026-11-08"
+    assert T._match_log(log, ("fertilizer",), d, d, "Nitrogen, 2nd dose", used) == "2026-11-09"   # the hand-logged one
+    assert T._match_log(log, ("fertilizer",), d, d, "Phosphate", used) is None                    # already used

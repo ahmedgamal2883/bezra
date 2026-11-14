@@ -80,6 +80,24 @@ def rule_dates(rule: dict, sow: date, turns: list[date]) -> tuple[date, date] | 
     return None
 
 
+def _match_log(log: list[dict], kinds: tuple, d0: date, d1: date, title: str, used: set) -> str | None:
+    """Pure: the log entry that shows this task was done. An entry ticked from the checklist belongs to its own
+    task only; any other entry (logged by hand) counts for one task, the first that matches."""
+    tag = f"From the checklist: {title}"
+    for i, x in enumerate(log):
+        if x["kind"] not in kinds or not (d0 - timedelta(days=4) <= date.fromisoformat(x["date"]) <= d1 + timedelta(days=4)):
+            continue
+        note = x.get("note") or ""
+        if note.startswith("From the checklist: "):
+            if note == tag:
+                return x["date"]
+            continue
+        if i not in used:
+            used.add(i)
+            return x["date"]
+    return None
+
+
 # ---- answers (stored on the field) ----------------------------------------------------------------
 def _answers(f: dict) -> dict:
     return f.get("task_answers") or {}
@@ -133,6 +151,7 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
     turns = plan._turn_dates(c, (base.ripe or c.sow + timedelta(days=160)) - timedelta(days=10))
     log = plan.log_entries(c.f)
     out: list[dict] = []
+    used: set[int] = set()
 
     def add(tid, cat, title, why, d0: date, d1: date | None = None, *, source="", provenance="estimated",
             amount=None, done_date=None, note=None, priority="normal", extra=None):
@@ -173,8 +192,7 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
                 continue
             d0, d1 = span
             lk = ("fertilizer",) if kind == "fertilizer" else ("spray", "weeding")
-            done = next((x["date"] for x in log if x["kind"] in lk and
-                         d0 - timedelta(days=4) <= date.fromisoformat(x["date"]) <= d1 + timedelta(days=4)), None)
+            done = _match_log(log, lk, d0, d1, r["type"], used)
             add(f"{kind}-{r['id']}", cat, r["type"], r["why"], d0, d1, source=R.SOURCES[r["source"]],
                 provenance="agronomist", amount="Your engineer sets the amount", done_date=done)
 

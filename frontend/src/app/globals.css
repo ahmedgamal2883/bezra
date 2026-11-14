@@ -275,28 +275,41 @@ html[lang="ar"] .cal-grid span{font-size:10.5px;white-space:nowrap;overflow:visi
   .top .nav>a{flex:0 0 auto;white-space:nowrap}
 }
 
-/* ---- Phase 3: field calendar + checklist ------------------------------------------------------- */
-.cal-month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px}
-.cal-dow{font-size:12px;font-weight:600;color:var(--muted);text-align:center;padding:4px 0}
-.cal-day{min-height:68px;border:0;border-radius:10px;background:var(--inset);display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px 5px;font-family:inherit;cursor:pointer;text-align:start}
-.cal-day.other{opacity:.45}
-.cal-day.is-today{box-shadow:inset 0 0 0 2px var(--ink)}
-.cal-num{font-size:13px;font-weight:700;color:var(--ink)}
-.cal-bars{display:flex;flex-direction:column;gap:3px}
-.cal-bars small{font-size:10px;color:var(--muted)}
-.task-bar{height:12px;border-radius:4px;display:flex;align-items:center;justify-content:center}
-.task-row{width:100%;border:0;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:start}
-.task-row.is-today{box-shadow:inset 0 0 0 2px var(--ink)}
-.task-chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:3px 8px;border-radius:999px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.task-card{display:flex;flex-direction:column;gap:8px}
-.task-ico{width:38px;height:38px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex:none}
-.task-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.task-btn{min-height:52px;font-size:16px;justify-content:center;padding-inline:8px}
-.task-nudge{display:flex;flex-direction:column;gap:10px}
-html[dir="rtl"] .flip{display:inline-block;transform:scaleX(-1)}
+/* ---- Phase 3: field calendar + checklist (V11 tokens only) -------------------------------------- */
+.trow{border-radius:10px;background:var(--inset)}
+.trow-main{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;padding-inline:6px 10px;min-height:56px}
+.trow-text{flex:1;min-width:0;border:0;background:none;padding:6px 0;text-align:start;display:flex;flex-direction:column;gap:3px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.trow-text b{font-size:15px;font-weight:600;line-height:1.35}
+.trow-meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.trow.done .trow-text b{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
+.trow.late{box-shadow:inset 0 0 0 1.5px var(--risk)}
+.trow-more{display:flex;flex-direction:column;gap:8px;padding:2px 12px 12px;padding-inline:58px 12px}
+.trow-more .input{width:100%;box-sizing:border-box;border:0;border-radius:10px;background:#fff;padding:10px 12px;font:inherit;font-size:14px;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line);resize:vertical}
+.chip.mini{width:20px;height:20px;border-radius:6px}
+.tcheck{width:48px;height:48px;flex:none;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tcheck>span{width:26px;height:26px;box-sizing:border-box;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 2px #C9CCC5;display:flex;align-items:center;justify-content:center;color:#fff;transition:background-color .2s var(--ease),box-shadow .2s var(--ease),transform .2s var(--ease)}
+.tcheck:hover:not(:disabled)>span{box-shadow:inset 0 0 0 2px var(--ink2)}
+.tcheck:active:not(:disabled)>span{transform:scale(.9)}
+.tcheck.late>span{box-shadow:inset 0 0 0 2px var(--risk)}
+.tcheck.on>span{background:var(--dark);box-shadow:none}
+.tcheck:disabled{cursor:default}
+.tcheck:disabled:not(.on)>span{opacity:.45}
+.tlist{width:100%;border:0;font-family:inherit;cursor:pointer;text-align:start;justify-content:flex-start}
+.tlist.is-today,.cal-day.is-today{box-shadow:inset 0 0 0 2px var(--ink)}
+.ellip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.cal-month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-dow{font-size:12px;font-weight:600;color:var(--muted);text-align:center;padding:2px 0 4px}
+.cal-day{height:64px;border:0;border-radius:10px;background:var(--inset);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7px 3px 8px;font-family:inherit;cursor:pointer;color:var(--ink)}
+.cal-day.other{opacity:.4}
+.cal-num{font-size:13px;font-weight:600}
+.cal-marks{display:flex;gap:3px;align-items:center;min-height:7px}
+.cal-marks i{width:7px;height:7px;border-radius:4px;display:block}
+.cal-marks i.done{opacity:.35}
+.cal-marks i.late,.cal-key.late{box-shadow:inset 0 0 0 1.5px var(--risk)}
+.cal-marks small{font-size:10px;color:var(--muted)}
+.cal-key{width:8px;height:8px;border-radius:4px;display:inline-block}
+html[dir="rtl"] .flip{transform:scaleX(-1)}
 @media (max-width:760px){
-  .cal-day{min-height:56px;padding:4px 3px}
-  .task-bar{height:9px}.task-bar svg{display:none}
-  .task-actions{grid-template-columns:1fr}
-  .task-btn{min-height:56px;font-size:17px}
+  .trow-more{padding-inline:12px}
+  .cal-day{height:auto;aspect-ratio:1/1;min-height:44px;padding:5px 2px 6px}
 }
