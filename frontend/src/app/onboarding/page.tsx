@@ -3,9 +3,9 @@ import OnboardingScreen from '@/screens/Onboarding';
 
 export const metadata: Metadata = { title: "Bezra, Add your field" };
 
-// /onboarding starts at step 1. Profile's "Complete level 2 / 3" open ?step=3 / ?step=4.
-export default async function Page({ searchParams }: { searchParams: Promise<{ step?: string }> }) {
-  const { step } = await searchParams;
+// /onboarding adds a field (step 1). /onboarding?edit=<field id>&step=N changes a saved field (Profile).
+export default async function Page({ searchParams }: { searchParams: Promise<{ step?: string; edit?: string }> }) {
+  const { step, edit } = await searchParams;
   const n = Math.min(4, Math.max(1, Number(step) || 1));
-  return <OnboardingScreen key={n} initialStep={n} />;
+  return <OnboardingScreen key={`${edit || ''}${n}`} initialStep={n} editId={edit || ''} />;
 }

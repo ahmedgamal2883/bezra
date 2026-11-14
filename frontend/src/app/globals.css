@@ -211,3 +211,18 @@ html[data-demo="0"] .pv-demo{display:none!important}
   section[aria-label="Datasets"]{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
   section[aria-label="Datasets"]>div{min-width:680px}
 }
+
+/* ---- Onboarding (rework C) --------------------------------------------------------------------- */
+.ob-main{grid-template-columns:minmax(0,1fr) 560px;align-items:stretch;min-height:760px}
+.ob-map{min-height:520px}
+@media (max-width:960px){
+  .ob-main{grid-template-columns:1fr;min-height:0}
+  .ob-map{min-height:460px}
+  .ob-label{display:none}
+  .ob-sep{width:18px!important}
+  .ob-steps{order:3;width:100%;flex:1 1 100%!important}
+}
+@media (max-width:760px){
+  .ob-main .grid:not(.keep-cols){grid-template-columns:minmax(0,1fr)!important}
+  .ob-map{min-height:420px}
+}

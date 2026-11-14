@@ -188,6 +188,36 @@ class NewField(BaseModel):
     turn_days: int = 10
     next_turn: str | None = None
     tenure: str = "owner"
+    water_kind: str | None = None        # canal / well / canal + well
+    irrigation: str | None = None        # flood / furrow / drip or sprinkler
+    pump_flow: float | None = None       # m3 per hour (turns watering hours into m3)
+    yields: str | None = None            # last 3 harvests, ardeb per feddan
+    problems: list[str] | None = None
+    soil_ec: float | None = None
+    water_ec: float | None = None
+    sensors: str | None = None
+
+
+class EditField(NewField):
+    polygon: list[list[float]] | None = None
+    name: str = ""
+    sow_date: str = ""
+
+
+@app.put("/fields/{field_id}")
+def edit_field(field_id: str, req: EditField, user: dict = Depends(current_user)):
+    """Rework C: the farmer (or their engineer) can change the field's answers any time."""
+    _ctx(field_id, user)
+    f = db.get_field(field_id)
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    try:
+        new = fields.edit(f, req.model_dump())
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    db.save_field(new, owner)
+    return _field_card(db.get_field(field_id))
 
 
 @app.post("/fields")

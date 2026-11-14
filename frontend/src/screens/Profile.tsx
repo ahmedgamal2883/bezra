@@ -173,6 +173,12 @@ export default function ProfileScreen() {
                       </svg>
                     </div>
                   </div>
+                  {F ? (
+                    <div className="row wrap" style={{ gap: '8px' }}>
+                      <Link href={`/onboarding?edit=${id}&step=1`} className="btn press">{'Edit field'}</Link>
+                      <span className="tl" style={{ alignSelf: 'center' }}>{'Change the shape, crop, dates or any answer, any time.'}</span>
+                    </div>
+                  ) : null}
                 </section>
                 <div className="grid" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))","alignItems":"start"} as any}>
                   <section className="card rise " style={{"--d":"3"} as any}>
@@ -341,7 +347,7 @@ export default function ProfileScreen() {
                         </span>
                       </div>
                     </div>
-                    <Link href="/onboarding?step=3" className="btn soft cta press">
+                    <Link href={`/onboarding?edit=${id}&step=3`} className="btn soft cta press">
                       {"Complete level 2"}
                       <span className="ar">
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -397,7 +403,7 @@ export default function ProfileScreen() {
                         </span>
                       </div>
                     </div>
-                    <Link href="/onboarding?step=4" className="btn soft cta press">
+                    <Link href={`/onboarding?edit=${id}&step=4`} className="btn soft cta press">
                       {"Complete level 3"}
                       <span className="ar">
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

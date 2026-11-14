@@ -107,7 +107,42 @@ def from_drawing(d: dict) -> dict:
         "water_source": "Mesqa, middle" if d.get("mesqa") == "middle" else f"Mesqa, {d.get('mesqa') or 'middle'} end",
         "turn_days": int(d.get("turn_days") or 10), "next_turn": d.get("next_turn"), "waterings": [],
         "tenure": d.get("tenure") or "owner", "soil": "clay",
-    }
+    } | extras(d)
+
+
+# Optional answers (onboarding Level 2 / 3, editable any time). Empty answers are left out.
+EXTRA = ("water_kind", "irrigation", "pump_flow", "yields", "problems", "soil_ec", "water_ec", "sensors")
+
+
+def extras(d: dict) -> dict:
+    out = {}
+    for k in EXTRA:
+        v = d.get(k)
+        if isinstance(v, str):
+            v = v.strip()[:80]
+        if v not in (None, "", [], 0):
+            out[k] = v
+    return out
+
+
+def edit(f: dict, d: dict) -> dict:
+    """Edit a saved field. A new drawing replaces the shape; every other answer is updated in place.
+    The farmer's log, waterings and satellite answers are kept."""
+    keep = {k: f[k] for k in ("id", "num", "waterings", "log", "detections") if k in f}
+    if d.get("polygon"):
+        new = from_drawing(d)
+    else:
+        new = {k: v for k, v in f.items() if k not in EXTRA}
+        crop = (d.get("crop") or f["crop"]).lower()
+        if crop not in PLANNED_CROPS:
+            raise ValueError(f"Bezra plans wheat and maize for now. {crop.capitalize()} is coming soon.")
+        new.update(name=(d.get("name") or f["name"]).strip()[:40], crop=crop, sow_date=d.get("sow_date") or f["sow_date"],
+                   prev_crop=d.get("prev_crop") or f.get("prev_crop"), mesqa_position=d.get("mesqa") or f.get("mesqa_position"),
+                   turn_days=int(d.get("turn_days") or f["turn_days"]), next_turn=d.get("next_turn") or f.get("next_turn"),
+                   tenure=d.get("tenure") or f.get("tenure"),
+                   variety=d.get("variety") if d.get("variety") in VARIETIES and crop == "wheat" else None)
+        new |= extras(d)
+    return new | keep
 
 
 # ---- how much Bezra knows about a field (Profile / Onboarding "accuracy") ----------------------------
