@@ -103,17 +103,52 @@ def _answers(f: dict) -> dict:
     return f.get("task_answers") or {}
 
 
+WATER_HOW = {"full": 1.0, "light": 0.6, "unknown": None}
+FERT_PRODUCTS = ("urea", "ammonium_nitrate", "superphosphate", "potassium_sulfate", "other", "unknown")
+
+
+def clean_details(category: str, details: dict | None) -> dict | None:
+    """Pure: keep only the details that make sense for this kind of task (anything else is dropped)."""
+    if not details:
+        return None
+    out: dict = {}
+    if category == "irrigation":
+        how = details.get("how")
+        if how in WATER_HOW:
+            out["how"] = how
+    elif category == "fertilizer":
+        if details.get("product") in FERT_PRODUCTS:
+            out["product"] = details["product"]
+        bags = details.get("bags")
+        if isinstance(bags, (int, float)) and 0 < bags <= 50:
+            out["bags"] = round(float(bags), 1)  # what the farmer says they used (a record, not advice)
+    elif category == "spray" and isinstance(details.get("what"), str):
+        out["what"] = details["what"].strip()[:60]
+    return out or None
+
+
 def answer(c: Ctx, task_id: str, ans: str, postpone_to: str | None = None, note: str | None = None,
-           case_id: str | None = None, task: dict | None = None) -> dict:
+           case_id: str | None = None, task: dict | None = None, details: dict | None = None) -> dict:
     """Save the farmer's answer. 'done' also writes the matching log entry (so the water balance and the plan
-    know), dated on the task's day if it was in the past, else today."""
+    know), dated on the task's day if it was in the past, else today. Saying 'done' again with details (how much
+    water, which fertilizer) only updates those details: it never logs the same work twice."""
     if ans not in ANSWERS:
         raise ValueError("Answer must be done, later or not_done")
     f = db.get_field(c.f["id"])
     owner = f.pop("owner_id")
     for k in ("farmer", "engineer_id"):
         f.pop(k, None)
+    prev = (f.get("task_answers") or {}).get(task_id) or {}
+    det = clean_details(task["category"], details) if task else None
+    if ans == "done" and prev.get("answer") == "done":
+        rec = {**prev, "details": det or prev.get("details")}
+        f["task_answers"][task_id] = rec
+        _apply_details(f, task, rec.get("details"), prev.get("log_date"))
+        db.save_field(f, owner)
+        return rec
     rec = {"answer": ans, "at": datetime.now().isoformat(timespec="minutes")}
+    if det:
+        rec["details"] = det
     if ans == "later":
         to = date.fromisoformat(postpone_to) if postpone_to else c.today + timedelta(days=1)
         if to <= c.today or to > c.today + timedelta(days=14):
@@ -133,9 +168,51 @@ def answer(c: Ctx, task_id: str, ans: str, postpone_to: str | None = None, note:
             when = max(when, c.today - timedelta(days=10))
             try:
                 plan.add_log(c, kind, when.isoformat(), None, None, note=f"From the checklist: {task['title']}")
+                _remember_log_date(c, task_id, when.isoformat())
+                rec["log_date"] = when.isoformat()
             except ValueError:
                 pass
+            if det and rec.get("log_date"):
+                f2 = db.get_field(c.f["id"])
+                owner2 = f2.pop("owner_id")
+                for k in ("farmer", "engineer_id"):
+                    f2.pop(k, None)
+                _apply_details(f2, task, det, rec["log_date"])
+                db.save_field(f2, owner2)
     return rec
+
+
+def _remember_log_date(c: Ctx, task_id: str, day: str) -> None:
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    if task_id in (f.get("task_answers") or {}):
+        f["task_answers"][task_id]["log_date"] = day
+        db.save_field(f, owner)
+
+
+def _apply_details(f: dict, task: dict | None, det: dict | None, day: str | None) -> None:
+    """Put the farmer's details on the one log entry this task wrote (on `day`): a light watering counts as 60%
+    of a full turn in the water-used total (m³); fertilizer gets its product and the bags the farmer says they used."""
+    if not task or not det or not day:
+        return
+    if task["category"] == "irrigation":
+        for w in f.get("waterings", []):
+            if w["date"] == day:
+                base = w.get("m3_full") or w.get("m3")
+                if det.get("how") == "light" and base:
+                    w["m3_full"], w["m3"], w["light"] = base, round(base * 0.6, -1), True
+                elif det.get("how") == "full" and w.get("m3_full"):
+                    w["m3"], w["light"] = w["m3_full"], False
+                w["how"] = det.get("how")
+        return
+    tag = f"From the checklist: {task['title']}"
+    for x in f.get("log", []):
+        if x.get("note") == tag and x.get("date") == day:
+            x["details"] = det
+            if task["category"] == "fertilizer" and det.get("bags"):
+                x["amount"], x["unit"] = det["bags"], "bags"
 
 
 # ---- building the list ------------------------------------------------------------------------------
@@ -247,6 +324,9 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
     # 7. re-plan: a missed / overdue watering -> water as soon as you can (unless the next turn is close)
     missed = [t for t in out if t["category"] == "irrigation" and t["status"] in ("not_done", "overdue")
               and t["date"] >= (today - timedelta(days=12)).isoformat()]
+    water_days = sorted({x["date"] for x in log if x["kind"] == "water"})
+    if missed and any(d > missed[-1]["date"] for d in water_days):
+        missed = []  # the farmer has watered since the missed turn: nothing to catch up
     if missed:
         nxt = min((date.fromisoformat(t["date"]) for t in out if t["category"] == "irrigation"
                    and t["status"] in ("planned", "today")), default=None)
@@ -256,6 +336,10 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
                 f"The water turn on {missed[-1]['date']} was not done. The crop has been short of water since.",
                 d, d + timedelta(days=1), source="FAO-56 water balance", priority="high", extra={"replan": True})
 
+    # a turn done on another day (e.g. watered yesterday, turn today) says which watering covered it
+    for t in out:
+        if t["category"] == "irrigation" and t["status"] in ("done", "verified") and t.get("done_date") and t["done_date"] != t["date"]:
+            t["covered_by"] = t["done_date"]
     out.sort(key=lambda t: (t["date"], 0 if t["priority"] == "high" else 1))
     return {"field_id": c.f["id"], "today": today.isoformat(), "week_starts": "saturday", "tasks": out,
             "reminders": reminders(out, today, hour), "categories": list(dict.fromkeys(CATEGORY.values()))}

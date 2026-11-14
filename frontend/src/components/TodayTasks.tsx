@@ -11,6 +11,7 @@ import { useT } from '@/lib/i18n';
 export default function TodayTasks({ id }: { id: string }) {
   const tr = useT();
   const [T, setT] = useState<any>(null);
+  const [keep, setKeep] = useState<string[]>([]);
   useEffect(() => {
     if (!id) return;
     let alive = true;
@@ -21,7 +22,9 @@ export default function TodayTasks({ id }: { id: string }) {
     return () => { alive = false; };
   }, [id]);
   if (!T) return null;
-  const open = T.tasks.filter((t: any) => !t.auto && ['today', 'overdue', 'not_done'].includes(t.status));
+  const open = T.tasks.filter((t: any) => !t.auto && (['today', 'overdue', 'not_done'].includes(t.status) || keep.includes(t.id)));
+  const due = open.filter((t: any) => !keep.includes(t.id)).length;
+  const covered = T.tasks.filter((t: any) => t.covered_by && t.date === T.today);
   const nxt = T.tasks.find((t: any) => t.status === 'planned' && !t.auto);
   const answer = async (t: any, body: any) => {
     const r = await fetch(`${API}/fields/${id}/tasks/${encodeURIComponent(t.id)}`, { method: 'POST', credentials: 'include',
@@ -36,15 +39,18 @@ export default function TodayTasks({ id }: { id: string }) {
       <div className="row sp" style={{ gap: '8px' }}>
         <div className="col" style={{ gap: '2px' }}>
           <h2 className="h2">{tr('To do today', 'تعمل إيه النهارده')}</h2>
-          <span className="sub">{open.length ? tr(`${open.length} task${open.length > 1 ? 's' : ''}`, `${open.length} ${open.length > 1 ? 'مهام' : 'مهمة'}`) : tr('Nothing today', 'مفيش حاجة النهارده')}</span>
+          <span className="sub">{due ? tr(`${due} task${due > 1 ? 's' : ''}`, `${due} ${due > 1 ? 'مهام' : 'مهمة'}`) : tr('Nothing left today', 'مفيش حاجة فاضلة النهارده')}</span>
         </div>
         <Link href={`/field/${id}/tasks`} className="btn line sm press">{tr('Calendar', 'التقويم')}</Link>
       </div>
       {open.length ? (
         <div className="col" style={{ gap: '6px' }}>
-          {open.slice(0, 4).map((t: any) => <TaskRow key={t.id} t={t} today={T.today} fid={id} answer={answer} compact />)}
+          {open.slice(0, 4).map((t: any) => <TaskRow key={t.id} t={t} today={T.today} fid={id} answer={answer} compact onTicked={(x) => setKeep((k) => [...k, x])} />)}
         </div>
       ) : null}
+      {covered.map((t: any) => (
+        <span key={t.id} className="sub"><span>{t.title}</span>{' · '}{tr('already covered by your watering on', 'اتغطت بريتك يوم')} {t.covered_by}</span>
+      ))}
       {!open.length && nxt ? <div className="inset"><span>{tr('Next', 'الجاي')}</span><b>{nxt.title}</b></div> : null}
     </section>
   );

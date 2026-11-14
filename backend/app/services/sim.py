@@ -54,11 +54,37 @@ def _irrigation_rule(sow: date, every: int, watering: str):
     return rule, skip
 
 
-def run_one(c: Ctx, sow_md: tuple[int, int], variety: str, watering: str, season_year: int):
+def bezra_rule(base_rule, get_day, every: int):
+    """Following Bezra's advice on top of the farmer's turns: (1) a light watering the day before a day >= 32 C
+    while the grain fills, (2) a catch-up watering the day after a skipped turn when the soil is under 55%."""
+    last = {"d": None}
+
+    def rule(d: date, prev):
+        if base_rule(d, prev):
+            last["d"] = d
+            return True
+        if prev is None:
+            return False
+        recent = last["d"] is not None and (d - last["d"]).days < 3
+        nxt = get_day(d + timedelta(days=1))
+        heat = (C.GRAIN_FILL_START <= prev.gdd < C.RIPE and nxt is not None and nxt["tmax"] >= 32)
+        thirsty = prev.water_pct < 55 and last["d"] is not None and (d - last["d"]).days > every
+        if (heat or thirsty) and not recent:
+            last["d"] = d
+            return True
+        return False
+    return rule
+
+
+def run_one(c: Ctx, sow_md: tuple[int, int], variety: str, watering: str, season_year: int,
+            warming: float = 0.0, bezra: bool = False):
     sow = date(season_year + (1 if sow_md[0] < 6 else 0), *sow_md)
     rule, skipped = _irrigation_rule(sow, c.f["turn_days"], watering)
+    get = c.w.shifted(warming, warming) if warming else c.w.historical  # "what if the climate were warmer"
+    if bezra:
+        rule = bezra_rule(rule, get, c.f["turn_days"])
     wheat = c.f["crop"] == "wheat"  # the field's own crop; variety traits only apply to wheat
-    r = season.run(c.w.historical, sow, crop=c.f["crop"], variety=fields.VARIETIES[variety] if wheat else None, irrigate=rule, skipped=skipped,
+    r = season.run(get, sow, crop=c.f["crop"], variety=fields.VARIETIES[variety] if wheat else None, irrigate=rule, skipped=skipped,
                    every=c.f["turn_days"], lat=c.f["lat"])
     if not r.ripe and not wheat:  # the warmth model ripens wheat only; maize: FAO-56 typical season length
         r.ripe = sow + timedelta(days=SEASON_DAYS.get(c.f["crop"], 125))
@@ -92,12 +118,15 @@ def build(c: Ctx, req: dict) -> dict:
     md = (sow_req.month, sow_req.day)
     variety = req.get("variety", "sakha95")
     watering = req.get("watering", "every")
+    warming = max(0.0, min(3.0, float(req.get("warming") or 0)))
+    bezra = bool(req.get("bezra"))
     years = pick_years(c)
     yr = years[req.get("year", "normal")]
-    sow, r, skipped = run_one(c, md, variety, watering, yr)
+    sow, r, skipped = run_one(c, md, variety, watering, yr, warming, bezra)
     if not r.ripe:
         raise ValueError("season did not finish in the data")
-    all_y = sorted(run_one(c, md, variety, watering, y)[1].yield_index * 100 for y in SEASONS)
+    other = run_one(c, md, variety, watering, yr, warming, not bezra)[1]  # the same season, the other way
+    all_y = sorted(run_one(c, md, variety, watering, y, warming, bezra)[1].yield_index * 100 for y in SEASONS)
     q = statistics.quantiles(all_y, n=4)
     vlabel = fields.VARIETIES[variety]["label"]
 
@@ -134,7 +163,20 @@ def build(c: Ctx, req: dict) -> dict:
     ]
     for s, e in zip(steps, ev):
         s["event"] = e
+    get = c.w.shifted(warming, warming) if warming else c.w.historical
+    weekly = []
+    for x in r.days[::7] + ([r.days[-1]] if r.days and (len(r.days) - 1) % 7 else []):
+        wx = get(x.date) or {}
+        weekly.append({"date": x.date.isoformat(), "soil": round(x.water_pct), "tmax": round(wx.get("tmax", 0), 1),
+                       "stage": x.stage, "stress": x.ks < 1, "hot": bool(x.hot), "watered": x.irrigated_mm > 0})
+    waterings = [x.date.isoformat() for x in r.days if x.irrigated_mm > 0]
+    with_b, without_b = (r, other) if bezra else (other, r)
     return {
+        "inputs": {"warming": warming, "bezra": bezra},
+        "weekly": weekly, "waterings": waterings,
+        "compare": {"with_bezra_pct": round(with_b.yield_index * 100), "without_bezra_pct": round(without_b.yield_index * 100),
+                    "with_bezra_water_m3": int(round(with_b.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1)),
+                    "without_bezra_water_m3": int(round(without_b.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1))},
         "yield_pct": y_pct, "yield_range": [round(q[0]), round(q[2])],
         "water_m3_per_feddan": int(round(r.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1)),
         "hot_days_grain_fill": hot, "steps": steps, "cells": _cells(c), "ground": c.__dict__.get("_ground"),

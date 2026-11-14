@@ -344,3 +344,37 @@ html[dir="rtl"] .flip{transform:scaleX(-1)}
 /* "Open the full map" button on the My field and Health maps: top corner, never under another float */
 .map-full{position:absolute;left:18px;top:18px;z-index:4;height:40px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);text-decoration:none}
 @media (max-width:760px){.map-full{top:auto;bottom:auto;left:10px;top:64px;height:36px;font-size:12px}}
+
+/* ---- No outer frame: the page fills the screen (no grey backdrop, no rounded box around everything) ---- */
+body{background:var(--shell)}
+.root{padding:0;background:var(--shell)}
+.shell{min-height:100vh;border-radius:0;box-shadow:none;background:transparent;max-width:1440px;margin:0 auto;padding:0 32px 32px}
+@media (max-width:760px){.root{padding:0}.shell{border-radius:0;padding:0 14px 96px}}
+@media print{.shell{max-width:none}}
+
+/* tasks: the optional quick details after a tick */
+.trow-quick{display:flex;flex-direction:column;gap:6px;padding:0 12px 12px;padding-inline:58px 12px}
+.stepper{display:inline-flex;align-items:center;gap:2px;height:38px;border-radius:19px;background:#fff;box-shadow:inset 0 0 0 1.5px #D3D5CF}
+.stepper button{width:38px;height:38px;border:0;background:none;font-size:18px;font-weight:600;cursor:pointer;color:var(--ink)}
+.stepper b{min-width:22px;text-align:center;font-size:14px}
+@media (max-width:760px){.trow-quick{padding-inline:12px}}
+
+/* harvest with / without Bezra */
+.hrow{display:grid;grid-template-columns:110px minmax(0,1fr) 56px;align-items:center;gap:10px;font-size:13px;color:var(--ink2)}
+.hrow b{font-size:16px;font-weight:600;color:var(--ink);text-align:end}
+.hbar{height:12px;border-radius:6px;background:var(--inset);overflow:hidden;display:block}
+.hbar i{display:block;height:100%;border-radius:6px}
+.hbar.u i{background:#C9CCC5}.hbar.w i{background:var(--green)}.hbar.n i{background:var(--sun)}
+
+/* simulator: more what-ifs */
+.sim-more{gap:14px}
+.sim-ifs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:end}
+.sim-compare{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sim-cmp{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:var(--inset)}
+.sim-cmp b{font-size:24px;font-weight:600;letter-spacing:-.6px}
+.sim-cmp.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.sim-cmp.diff b{color:var(--green)}
+.field3d canvas{display:block;width:100%!important;height:100%!important;touch-action:none}
+@media (max-width:760px){.sim-ifs{grid-template-columns:1fr}.sim-ifs .seg{overflow-x:auto}}
+
+@media (max-width:760px){.sim-legend{display:none!important}}

@@ -74,3 +74,23 @@ def test_one_log_entry_one_task():
     assert T._match_log(log, ("fertilizer",), d, d, "Potassium (potassium sulfate)", used) == "2026-11-08"
     assert T._match_log(log, ("fertilizer",), d, d, "Nitrogen, 2nd dose", used) == "2026-11-09"   # the hand-logged one
     assert T._match_log(log, ("fertilizer",), d, d, "Phosphate", used) is None                    # already used
+
+
+def test_details_are_cleaned_per_task_type():
+    assert T.clean_details("irrigation", {"how": "light", "bags": 3}) == {"how": "light"}
+    assert T.clean_details("irrigation", {"how": "flood"}) is None
+    assert T.clean_details("fertilizer", {"product": "urea", "bags": 2}) == {"product": "urea", "bags": 2.0}
+    assert T.clean_details("fertilizer", {"product": "poison", "bags": 500}) is None
+    assert T.clean_details("fertilizer", {"product": "unknown"}) == {"product": "unknown"}
+
+
+def test_light_watering_and_fertilizer_details_touch_only_that_day():
+    f = {"waterings": [{"date": "2026-11-10", "m3": 300, "source": "You"}, {"date": "2026-11-14", "m3": 300, "source": "You"}],
+         "log": [{"kind": "fertilizer", "date": "2026-11-14", "note": "From the checklist: Nitrogen"}]}
+    T._apply_details(f, {"category": "irrigation", "title": "Water turn"}, {"how": "light"}, "2026-11-14")
+    assert f["waterings"][0]["m3"] == 300                       # another day: untouched
+    assert f["waterings"][1]["m3"] == 180 and f["waterings"][1]["light"] is True
+    T._apply_details(f, {"category": "irrigation", "title": "Water turn"}, {"how": "full"}, "2026-11-14")
+    assert f["waterings"][1]["m3"] == 300                       # back to a full turn
+    T._apply_details(f, {"category": "fertilizer", "title": "Nitrogen"}, {"product": "urea", "bags": 2}, "2026-11-14")
+    assert f["log"][0]["amount"] == 2 and f["log"][0]["details"]["product"] == "urea"

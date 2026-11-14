@@ -327,6 +327,7 @@ class TaskAnswer(BaseModel):
     postpone_to: str | None = None  # for "later" (default: tomorrow)
     note: str | None = None
     case_id: str | None = None      # a photo case made from this task
+    details: dict | None = None     # water: {how: full|light|unknown}; fertilizer: {product, bags}
 
 
 @app.post("/fields/{field_id}/tasks/{task_id}")
@@ -337,7 +338,7 @@ def answer_task(field_id: str, task_id: str, req: TaskAnswer, user: dict = Depen
     if not cur:
         raise HTTPException(404, "No such task")
     try:
-        rec = tasks.answer(c, task_id, req.answer, req.postpone_to, req.note, req.case_id, cur)
+        rec = tasks.answer(c, task_id, req.answer, req.postpone_to, req.note, req.case_id, cur, req.details)
     except ValueError as e:
         raise HTTPException(422, str(e))
     return {"saved": rec, "tasks": tasks.build(_ctx(field_id, user))}
@@ -442,6 +443,13 @@ def get_photo(field_id: str, user: dict = Depends(current_user)):
     except Exception as e:
         raise HTTPException(503, f"Photo not available right now: {str(e)[:120]}")
     return Response(content=data, media_type=mime, headers={"Cache-Control": "private, max-age=86400"})
+
+
+@app.get("/fields/{field_id}/impact")
+def get_impact(field_id: str, user: dict = Depends(current_user)):
+    """Your harvest: usual, with Bezra, without Bezra, and what the season has cost so far (all estimates)."""
+    from .services import impact
+    return impact.build(_ctx(field_id, user))
 
 
 @app.get("/fields/{field_id}/freshness")
@@ -605,6 +613,8 @@ class SimReq(BaseModel):
     variety: str = "sakha95"
     watering: str = "every"
     year: str = "normal"
+    warming: float = 0.0     # "what if the climate were warmer" (+0 to +3 C on the real season's weather)
+    bezra: bool = False      # follow Bezra's advice (heat-prep and catch-up waterings) on top of the turns
 
 
 @app.post("/sim")

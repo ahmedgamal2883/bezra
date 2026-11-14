@@ -12,13 +12,23 @@ import { LangSwitch } from '@/lib/i18n';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Sim.logic';
+import Field3D, { type Scene3D } from '@/components/Field3D';
+import SeasonChart from '@/components/SeasonChart';
 
 export default function SimScreen() {
   const { fp, id } = useField();
   // The simulator asks the backend for the season that matches the current choices (POST /sim).
   const [req, setReq] = useState<any>({ field_id: id, sow: "2026-10-25", variety: "sakha95", watering: "every", year: "normal" });
-  const sim = useApi("/sim", req);
+  // Phase 3 what-ifs on top of the design's choices: a warmer climate and following Bezra's advice
+  const [extra, setExtra] = useState<{ warming: number; bezra: boolean }>({ warming: 0, bezra: false });
+  const sim = useApi("/sim", { ...req, ...extra });
   const __v = useDC(Logic, { data: sim.data, loading: sim.loading, fieldId: id });
+  const D: any = sim.data;
+  const simField: string | null = id || __v?.req?.field_id || null;  // the field the simulator runs on
+  const mIdx = Math.max(0, ((__v?.steps) || []).findIndex((x: any) => x?.p === 'true'));
+  const step = D?.steps?.[mIdx];
+  const scene3d: Scene3D | null = step ? { heightCm: step.plant_height_cm, stage: step.stage, stress: step.water_stress, heat: step.heat,
+    soil: step.soil_water_pct, rust: !!step.rust, month: Number(step.date.slice(5, 7)), cells: D.cells } : null;
   const reqKey = JSON.stringify(__v.req);
   useEffect(() => { setReq(JSON.parse(reqKey)); }, [reqKey]);
   return (
@@ -198,6 +208,7 @@ export default function SimScreen() {
                     <rect width="1000" height="640" fill="url(#sky)" />
                     {" "}
                   </svg>
+                  {scene3d && simField ? <Field3D fieldId={simField} s={scene3d} /> : null}
                   {" "}
                   <article className="float rise" style={{"--d":"4","position":"absolute","left":"18px","top":"18px","width":"300px","padding":"16px","boxSizing":"border-box","display":"flex","flexDirection":"column","gap":"10px"} as any}>
                     <div className="row sp">
@@ -250,7 +261,7 @@ export default function SimScreen() {
                       </span>
                     </>
                   ) : null}
-                  <div className="float" style={{"position":"absolute","right":"18px","top":"18px","padding":"10px 14px","display":"flex","flexDirection":"column","gap":"6px","fontSize":"12.5px"} as any}>
+                  <div className="float sim-legend" style={{"position":"absolute","right":"18px","top":"18px","padding":"10px 14px","display":"flex","flexDirection":"column","gap":"6px","fontSize":"12.5px"} as any}>
                     <span className="row" style={{"gap":"8px"} as any}>
                       <i style={{"width":"12px","height":"12px","borderRadius":"3px","background":"#3F7D33"} as any} />
                       {"Healthy"}
@@ -301,6 +312,40 @@ export default function SimScreen() {
                     </svg>
                   </button>
                 </div>
+                <section className="card rise sim-more" style={{"--d":"6"} as any}>
+                  <div className="row wrap sp" style={{ gap: '10px' }}>
+                    <h2 className="h2">{"More what-ifs"}</h2>
+                    <span className="pill pv-est">{"Estimated"}</span>
+                  </div>
+                  <div className="sim-ifs">
+                    <div className="col" style={{ gap: '6px' }}>
+                      <span className="sub">{"If the climate were warmer"}</span>
+                      <div role="group" aria-label="Warmer climate" className="seg">
+                        {[0, 1, 2, 3].map((w) => (
+                          <button key={w} type="button" className={'segb press' + (extra.warming === w ? ' on' : '')} aria-pressed={extra.warming === w}
+                            onClick={() => setExtra((e) => ({ ...e, warming: w }))}>{w ? `+${w} °C` : "As it was"}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <label className="inset layer-opt" style={{ cursor: 'pointer' }}>
+                      <input type="checkbox" checked={extra.bezra} onChange={(e) => setExtra((x) => ({ ...x, bezra: e.target.checked }))} />
+                      <span className="col" style={{ gap: '2px' }}>
+                        <b>{"Follow Bezra's advice"}</b>
+                        <span className="sub" style={{ fontSize: '12px' }}>{"A light watering before hot days, and catching up a skipped turn when the soil runs dry."}</span>
+                      </span>
+                    </label>
+                  </div>
+                  {D?.compare ? (
+                    <div className="sim-compare">
+                      <div className={'sim-cmp' + (extra.bezra ? '' : ' on')}><span className="sub">{"Without Bezra"}</span><b>{D.compare.without_bezra_pct}%</b><span className="sub">{D.compare.without_bezra_water_m3.toLocaleString('en-US')} {"m³ water"}</span></div>
+                      <div className={'sim-cmp' + (extra.bezra ? ' on' : '')}><span className="sub">{"With Bezra"}</span><b>{D.compare.with_bezra_pct}%</b><span className="sub">{D.compare.with_bezra_water_m3.toLocaleString('en-US')} {"m³ water"}</span></div>
+                      <div className="sim-cmp diff"><span className="sub">{"Difference"}</span><b>{D.compare.with_bezra_pct - D.compare.without_bezra_pct >= 0 ? '+' : ''}{D.compare.with_bezra_pct - D.compare.without_bezra_pct}%</b><span className="sub">{"of the harvest"}</span></div>
+                    </div>
+                  ) : null}
+                  {extra.warming ? <p className="sub" style={{ margin: 0 }}>{"A warmer season makes the wheat grow faster. If that lets the grain fill before the April heat, the harvest can even go up; with a late sowing or a hot spring it goes down. Try both."}</p> : null}
+                  {D?.weekly?.length ? <SeasonChart weekly={D.weekly} /> : null}
+                  <span className="sub" style={{ fontSize: '12px' }}>{D ? `Weather of the ${D.season_year} season from NASA POWER` + (extra.warming ? `, ${extra.warming} °C warmer every day` : '') + '. Harvest as % of what the field can give.' : ''}</span>
+                </section>
               </div>
               <aside className="col" style={{"gap":"14px"} as any}>
                 <section className="card rise " style={{"--d":"3","gap":"16px"} as any}>

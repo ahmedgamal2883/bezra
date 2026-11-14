@@ -56,8 +56,65 @@ export function Check({ checked, late, disabled, onClick, label }: { checked: bo
   );
 }
 
-export default function TaskRow({ t, today, fid, answer, dName, compact = false }:
-  { t: any; today: string; fid: string; answer?: (t: any, body: any) => Promise<void>; dName?: (s: string) => string; compact?: boolean }) {
+// what the farmer used (a record of what they did, never advice): the planned type comes first
+const FERT_OPTS: [string, string, string][] = [['urea', 'Urea', 'يوريا'], ['ammonium_nitrate', 'Ammonium nitrate', 'نترات نشادر'],
+  ['superphosphate', 'Superphosphate', 'سوبر فوسفات'], ['potassium_sulfate', 'Potassium sulfate', 'سلفات بوتاسيوم'], ['other', 'Something else', 'حاجة تانية']];
+const planned = (title: string) => (/urea/i.test(title) ? 'urea' : /phosphate/i.test(title) ? 'superphosphate' : /potassium/i.test(title) ? 'potassium_sulfate' : 'urea');
+
+export function detailText(t: any, tr: (en: string, ar?: string) => string): string | null {
+  const d = t.answer?.details;
+  if (!d) return null;
+  if (d.how === 'full') return tr('Full turn', 'رية كاملة');
+  if (d.how === 'light') return tr('Light watering', 'رية خفيفة');
+  if (d.how === 'unknown') return tr("Doesn't remember how much", 'مش فاكر الكمية');
+  const f = FERT_OPTS.find((o) => o[0] === d.product);
+  const name = d.product === 'unknown' ? tr("Doesn't remember which", 'مش فاكر النوع') : f ? tr(f[1], f[2]) : null;
+  return [name, d.bags ? tr(`${d.bags} bags`, `${d.bags} شيكارة`) : null].filter(Boolean).join(' · ') || null;
+}
+
+/** After a tick: one optional row of quick answers. Ignoring it is fine ("don't remember"). */
+function QuickDetails({ t, tr, send, close }: { t: any; tr: (en: string, ar?: string) => string; send: (d: any) => Promise<void>; close: () => void }) {
+  const [product, setProduct] = useState(planned(t.title));
+  const [bags, setBags] = useState(0);
+  const chip = (label: string, onClick: () => void, on = false) => (
+    <button type="button" className={'btn sm press' + (on ? '' : ' line')} onClick={onClick}>{label}</button>
+  );
+  if (t.category === 'irrigation') {
+    return (
+      <div className="trow-quick" role="group" aria-label={tr('How much water?', 'رويت قد إيه؟')}>
+        <span className="sub">{tr('How much water?', 'رويت قد إيه؟')}</span>
+        <div className="row wrap" style={{ gap: '6px' }}>
+          {chip(tr('Full turn', 'رية كاملة'), () => send({ how: 'full' }))}
+          {chip(tr('Light', 'خفيفة'), () => send({ how: 'light' }))}
+          {chip(tr("Don't remember", 'مش فاكر'), () => send({ how: 'unknown' }))}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="trow-quick" role="group" aria-label={tr('What did you put?', 'حطيت إيه؟')}>
+      <span className="sub">{tr('What did you put? (optional)', 'حطيت إيه؟ (لو حابب)')}</span>
+      <div className="row wrap" style={{ gap: '6px' }}>
+        {FERT_OPTS.filter((o) => o[0] === product || o[0] === 'other' || o[0] === planned(t.title)).map((o) => chip(tr(o[1], o[2]), () => setProduct(o[0]), product === o[0]))}
+      </div>
+      <div className="row wrap" style={{ gap: '8px', alignItems: 'center' }}>
+        <span className="sub">{tr('Bags', 'شكاير')}</span>
+        <span className="stepper">
+          <button type="button" className="press" aria-label={tr('Fewer bags', 'أقل')} onClick={() => setBags((b) => Math.max(0, b - 1))}>−</button>
+          <b aria-live="polite">{bags || '–'}</b>
+          <button type="button" className="press" aria-label={tr('More bags', 'أكتر')} onClick={() => setBags((b) => Math.min(50, b + 1))}>+</button>
+        </span>
+        {chip(tr('Save', 'حفظ'), () => send({ product, bags: bags || undefined }), true)}
+        {chip(tr("Don't remember", 'مش فاكر'), () => send({ product: 'unknown' }))}
+        <button type="button" className="sub press" style={{ background: 'none', border: 0, cursor: 'pointer', textDecoration: 'underline' }} onClick={close}>{tr('Skip', 'تخطّي')}</button>
+      </div>
+    </div>
+  );
+}
+
+export default function TaskRow({ t, today, fid, answer, dName, compact = false, onTicked }:
+  { t: any; today: string; fid: string; answer?: (t: any, body: any) => Promise<void>; dName?: (s: string) => string; compact?: boolean;
+    onTicked?: (id: string) => void }) {
   const tr = useT();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState('');
@@ -65,11 +122,18 @@ export default function TaskRow({ t, today, fid, answer, dName, compact = false 
   const [msg, setMsg] = useState('');
   const k = CAT[t.category as Cat];
   const canTick = !!answer && !t.auto && t.date <= today && !isDone(t) && t.status !== 'past';
+  const [ask, setAsk] = useState(false);
   const go = async (body: any) => {
     if (!answer) return;
     setBusy(true); setMsg('');
-    try { await answer(t, { ...body, note: note || null }); setOpen(false); } catch (e: any) { setMsg(e.message); } finally { setBusy(false); }
+    try {
+      await answer(t, { ...body, note: note || null });
+      setOpen(false);
+      if (body.answer === 'done' && !body.details && (t.category === 'irrigation' || t.category === 'fertilizer')) { setAsk(true); onTicked?.(t.id); }
+    } catch (e: any) { setMsg(e.message); } finally { setBusy(false); }
   };
+  const sendDetails = async (details: any) => { setAsk(false); await go({ answer: 'done', details }); };
+  const det = detailText(t, tr);
   const when = t.window && dName ? <>{tr('Any day from', 'أي يوم من')} {dName(t.window[0])} {tr('to', 'لـ')} {dName(t.window[1])}</> : null;
   return (
     <div className={'trow' + (isDone(t) ? ' done' : '') + (isLate(t) ? ' late' : '')}>
@@ -81,11 +145,14 @@ export default function TaskRow({ t, today, fid, answer, dName, compact = false 
           <span className="trow-meta">
             <span className={k.chip + ' mini'}><CatIcon cat={t.category} size={12} /></span>
             <span>{tr(k.en, k.ar)}</span>
-            {t.amount ? <><span aria-hidden="true">·</span><span>{t.amount}</span></> : null}
+            {det ? <><span aria-hidden="true">·</span><span>{det}</span></>
+              : t.covered_by ? <><span aria-hidden="true">·</span><span>{tr('Covered by your watering on', 'اتغطت بريتك يوم')} {dName ? dName(t.covered_by) : t.covered_by}</span></>
+              : t.amount && !isDone(t) ? <><span aria-hidden="true">·</span><span>{t.amount}</span></> : null}
           </span>
         </button>
         <StatusBadge t={t} />
       </div>
+      {ask && isDone(t) ? <QuickDetails t={t} tr={tr} send={sendDetails} close={() => setAsk(false)} /> : null}
       {open && !compact ? (
         <div className="trow-more">
           <p className="body">{t.why}</p>
