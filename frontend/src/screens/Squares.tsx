@@ -8,7 +8,8 @@ import { FarmerHeader, Foot } from '@/components/chrome';
 import { useApi } from '@/lib/api';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const COLOR: Record<string, string> = { less: '#F29B1E', normal: '#D9DE9C', greener: '#3E7F35', outside: '#FFFFFF' };
+const COLOR: Record<string, string> = { less: '#F29B1E', normal: '#D9DE9C', greener: '#3E7F35', outside: '#FFFFFF',
+  nonfarm: 'repeating-linear-gradient(45deg,#D6D6D1 0 4px,#B9B9B2 4px 6px)' };
 
 export default function SquaresScreen() {
   const p = useParams();
@@ -55,11 +56,12 @@ export default function SquaresScreen() {
                 <div className="grid keep-cols" style={{ gridTemplateColumns: `repeat(${S.cols}, minmax(0, 72px))`, gap: '4px', justifyContent: 'center' }}>
                   {grid.flat().map((c: any) => (
                     <div key={`${c.r}-${c.c}`} style={{ aspectRatio: '1', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '14px',
-                      background: c.class ? COLOR[c.class] : '#ECECE8', color: c.class === 'greener' ? '#fff' : '#141A16', border: c.class === 'outside' ? '1.5px dashed #CFCFC9' : 0, boxSizing: 'border-box' }}>{c.ndvi == null ? '–' : c.ndvi.toFixed(2)}</div>
+                      background: c.class ? COLOR[c.class] : '#ECECE8', color: c.class === 'greener' ? '#fff' : '#141A16', border: c.class === 'outside' ? '1.5px dashed #CFCFC9' : 0, boxSizing: 'border-box' }}>{c.class === 'nonfarm' ? '' : (c.ndvi == null ? '–' : c.ndvi.toFixed(2))}</div>
                   ))}
                 </div>
                 <span className="row wrap" style={{ gap: '10px', justifyContent: 'center' }}>
-                  {[['less', 'Less green (0.05 below the middle)'], ['normal', 'Normal'], ['greener', 'Greener (0.05 above)'], ...(S.cells.some((c: any) => c.class === 'outside') ? [['outside', 'Outside the field you drew (not counted)']] : [])].map(([k, l]) => (
+                  {[['less', 'Less green (0.05 below the middle)'], ['normal', 'Normal'], ['greener', 'Greener (0.05 above)'], ...(S.cells.some((c: any) => c.class === 'outside') ? [['outside', 'Outside the field you drew (not counted)']] : []),
+                    ...(S.cells.some((c: any) => c.class === 'nonfarm') ? [['nonfarm', 'Not farmland: building, road or water (not counted, no alerts)']] : [])].map(([k, l]) => (
                     <span key={k} className="row tl" style={{ gap: '6px' }}><i style={{ width: '12px', height: '12px', borderRadius: '3px', background: COLOR[k], display: 'inline-block' }} />{l}</span>
                   ))}
                 </span>

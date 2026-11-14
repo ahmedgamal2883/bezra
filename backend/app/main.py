@@ -379,7 +379,8 @@ def get_squares(field_id: str, user: dict = Depends(current_user)):
             "pixel_m": nd.get("pixel_m", 30), "square_m": 30, "rows": g.rows, "cols": g.cols, "field_clear_pct": round(nd["field_clear"] * 100),
             "median": nd["indices"]["ndvi"]["median"], "bounds_lonlat": [round(xs[0], 6), round(ys[0], 6), round(xs[1], 6), round(ys[1], 6)],
             "cells": [{"r": x["r"], "c": x["c"], "ndvi": x["value"], "class": x["class"]} for x in cells],
-            "images_this_season": nd["images_this_season"], "links": links}
+            "images_this_season": nd["images_this_season"], "links": links,
+            "mask_sources": (nd.get("mask") or {}).get("sources", [])}
 
 
 @app.get("/fields/{field_id}/irrigation")

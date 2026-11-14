@@ -22,9 +22,9 @@ def test_missing_square_stays_unclassified():
 def test_where_names_the_corner():
     ne = [{"r": 0, "c": 2}, {"r": 1, "c": 2}]
     sw = [{"r": 3, "c": 0}]
-    assert satellite._where(ne, 4, 3) == "NE corner"
-    assert satellite._where(sw, 4, 3) == "SW corner"
-    assert satellite._where([{"r": 0, "c": 1}], 4, 3) == "North edge"
+    assert satellite._where(ne, 4, 3) == "north-east corner"
+    assert satellite._where(sw, 4, 3) == "south-west corner"
+    assert satellite._where([{"r": 0, "c": 1}], 4, 3) == "north end"
 
 
 def test_grid_is_snapped_to_30m():

@@ -124,12 +124,7 @@ def build(c: Ctx) -> dict:
         from . import satellite
         nd = satellite.ndvi(c)
         spot = nd.get("weak_spot") if nd.get("available") else None
-        WHERE = {"N": "north", "S": "south", "E": "east", "W": "west"}
         if spot and sown:
-            wh = spot["where"]
-            if wh.endswith("corner"):
-                wh = "-".join(WHERE[ch] for ch in wh.split()[0]) + " corner"
-            spot = spot | {"where": wh.lower()}
             warnings.append({"id": "s-spot", "kind": "spot", "level": "Medium", "title": f"The {spot['where'].lower()} looks weaker",
                              "reason": f"{spot['pct_less_green']}% less green than the rest of your field in the last {spot['images']} satellite images "
                                        f"(about {spot['feddan']} feddan). The satellite can't tell why.",

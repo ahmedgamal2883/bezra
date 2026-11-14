@@ -100,7 +100,17 @@ def _scenes_now(c: Ctx, cached_only: bool) -> tuple[str, list[dict]]:
     return source, out
 
 
-def _classify(cells: list[dict], index: str) -> tuple[list[dict], float | None]:
+# Phase 3: a square is "less green" only if it is below the field's own farmland median now AND it has dropped
+# against its own usual place in the field (its history). A square that is always a bit lower (a tree line,
+# a palm, a house garden) is not flagged again every image.
+LESS = 0.05          # below the field median by more than this = less green
+DROP = 0.04          # ... and at least this much lower than the square usually is, relative to the field
+MIN_HISTORY = 2      # previous clear images needed before the history rule applies
+
+
+def classify_cells(cells: list[dict], index: str, history: dict | None = None) -> tuple[list[dict], float | None]:
+    """Pure: class every square against the median of the farmland squares only ("value" None = masked).
+    history: {(r, c): [value - field median, ...]} from previous images of this season."""
     vals = [x[index] for x in cells if x[index] is not None]
     if not vals:
         return [], None
@@ -108,57 +118,111 @@ def _classify(cells: list[dict], index: str) -> tuple[list[dict], float | None]:
     out = []
     for x in cells:
         v = x[index]
-        k = None if v is None else ("less" if v < med - 0.05 else ("greener" if v > med + 0.05 else "normal"))
-        out.append({"r": x["r"], "c": x["c"], "value": v, "class": k})
+        k, usual = None, None
+        if v is not None:
+            rel = v - med
+            past = (history or {}).get((x["r"], x["c"])) or []
+            usual = statistics.median(past) if len(past) >= MIN_HISTORY else None
+            if rel < -LESS and (usual is None or rel - usual < -DROP):
+                k = "less"
+            elif rel > LESS:
+                k = "greener"
+            else:
+                k = "normal"
+        out.append({"r": x["r"], "c": x["c"], "value": v, "class": k,
+                    "usual": None if usual is None else round(usual, 3)})
     return out, round(med, 3)
 
 
-def _where(cells: list[dict], rows: int, cols: int) -> str:
+def _classify(cells: list[dict], index: str, history: dict | None = None) -> tuple[list[dict], float | None]:
+    return classify_cells(cells, index, history)
+
+
+def history_of(scenes: list[dict], index: str = "ndvi") -> dict:
+    """{(r, c): [value - that image's farmland median, ...]} over the given (already masked) images."""
+    h: dict = {}
+    for sc in scenes:
+        vals = [x[index] for x in sc["cells"] if x.get(index) is not None]
+        if len(vals) < 2:
+            continue
+        med = statistics.median(vals)
+        for x in sc["cells"]:
+            if x.get(index) is not None:
+                h.setdefault((x["r"], x["c"]), []).append(x[index] - med)
+    return h
+
+
+# Human zone names (Phase 3): the words a farmer uses. North = bahari, South = qibli in Egyptian Arabic.
+ZONE = {"N": "north end", "S": "south end", "E": "east side", "W": "west side", "M": "middle patch"}
+
+
+def where_name(cells: list[dict], rows: int, cols: int, road: set | None = None) -> str:
+    """Pure: name the place of a group of squares. "road side" when most of them touch a road square."""
+    if road:
+        near = [x for x in cells if any((x["r"] + dr, x["c"] + dc) in road for dr in (-1, 0, 1) for dc in (-1, 0, 1))]
+        if len(near) * 2 > len(cells):
+            return "road side"
     rs = [x["r"] for x in cells]
     cs = [x["c"] for x in cells]
     ns = "N" if max(rs) < rows / 2 else ("S" if min(rs) >= rows / 2 else "")
     we = "W" if max(cs) < cols / 2 - 0.5 else ("E" if min(cs) > cols / 2 - 0.5 else "")
     if ns and we:
-        return f"{ns}{we} corner"
+        return {"NE": "north-east corner", "NW": "north-west corner", "SE": "south-east corner",
+                "SW": "south-west corner"}[ns + we]
     if ns or we:
-        return {"N": "North edge", "S": "South edge", "W": "West side", "E": "East side"}[ns or we]
-    # spread out: name the side its centre leans to
+        return ZONE[ns or we]
     dx = sum(cs) / len(cs) - (cols - 1) / 2
     dy = sum(rs) / len(rs) - (rows - 1) / 2
     if max(abs(dx), abs(dy)) < 0.4:
-        return "Middle"
+        return ZONE["M"]
     if abs(dx) >= abs(dy):
-        return "East side" if dx > 0 else "West side"
-    return "South side" if dy > 0 else "North side"
+        return ZONE["E"] if dx > 0 else ZONE["W"]
+    return ZONE["S"] if dy > 0 else ZONE["N"]
+
+
+def _where(cells: list[dict], rows: int, cols: int) -> str:
+    return where_name(cells, rows, cols)
+
+
+_lc_mem: dict[str, dict] = {}
+_lc_building: set[str] = set()
+
+
+def land_mask(c: Ctx, g) -> dict:
+    """Every square's status (farm / outside / nonfarm) from the drawn field, ESA WorldCover and OpenStreetMap
+    (connectors/landcover.py), plus the sources that answered."""
+    from ..connectors import landcover
+    key = f"{g.key}:{c.f.get('polygon')}"
+    if key in _lc_mem:
+        return _lc_mem[key]
+    # The first look-up downloads land cover (up to ~40 s): do it in the background; until then only the drawing
+    # masks squares. The refresh job (and the next screen load) then has the full mask, cached for 90 days.
+    if key not in _lc_building:
+        _lc_building.add(key)
+        import threading
+
+        def work():
+            try:
+                _lc_mem[key] = landcover.squares(g, c.f.get("polygon"))
+            finally:
+                _lc_building.discard(key)
+        threading.Thread(target=work, daemon=True, name="landcover").start()
+    return landcover.squares(g, c.f.get("polygon"), sources=False)
+
+
+def land_mask_now(c: Ctx) -> dict:
+    """Blocking version for the refresh job: waits for the land-cover sources."""
+    from ..connectors import landcover
+    g = grid(c)
+    key = f"{g.key}:{c.f.get('polygon')}"
+    _lc_mem[key] = landcover.squares(g, c.f.get("polygon"))
+    return _lc_mem[key]
 
 
 def outside_squares(c: Ctx, g) -> set:
-    """Squares whose centre is outside the field the farmer drew: they show the neighbours' land, so they are
-    left out of the field's numbers (median, weak spots, greenness curve). Fields without a drawing keep all."""
-    poly = c.f.get("polygon")
-    if not poly or len(poly) < 3:
-        return set()
-    from rasterio.warp import transform as _tr
-    from ..connectors.grid import SQUARE_M, utm_crs
-    crs = utm_crs(g.lon)
-    left, bottom, right, top = g.bounds_utm(crs)
-    lats, lons = zip(*poly)
-    xs, ys = _tr("EPSG:4326", crs, list(lons), list(lats))
-    pts = list(zip(xs, ys))
-
-    def inside(x, y):
-        hit = False
-        for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]):
-            if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1:
-                hit = not hit
-        return hit
-    out = set()
-    for r in range(g.rows):
-        for col in range(g.cols):
-            cx, cy = left + (col + 0.5) * SQUARE_M, top - (r + 0.5) * SQUARE_M
-            if not inside(cx, cy):
-                out.add((r, col))
-    return out
+    """Squares left out of the field's numbers: mostly outside the drawn field, or not farmland (buildings,
+    roads, water, bare ground). They never raise an alert and are not in the median or the greenness curve."""
+    return {k for k, v in land_mask(c, g)["squares"].items() if v["status"] != "farm"}
 
 
 def _masked(scene: dict, out: set) -> list[dict]:
@@ -172,28 +236,32 @@ def ndvi(c: Ctx) -> dict:
     g = grid(c)
     if not scenes:
         return {"available": False, "source": source, "reason": "No clear image of the field yet"}
-    out = outside_squares(c, g)
-    last = {**scenes[-1], "cells": _masked(scenes[-1], out)}
-    prev = {**scenes[-2], "cells": _masked(scenes[-2], out)} if len(scenes) > 1 else None
+    lm = land_mask(c, g)
+    status = {k: v["status"] for k, v in lm["squares"].items()}
+    out = {k for k, v in status.items() if v != "farm"}
+    masked = [{**sc, "cells": _masked(sc, out)} for sc in scenes]
+    last = masked[-1]
+    prev = masked[-2] if len(masked) > 1 else None
     by_index = {}
     for ix in INDICES:
-        cells, med = _classify(last["cells"], ix)
+        cells, med = _classify(last["cells"], ix, history_of(masked[:-1], ix))
         for x in cells:
-            if (x["r"], x["c"]) in out:
-                x["class"] = "outside"
+            if status.get((x["r"], x["c"]), "farm") != "farm":
+                x["class"] = status[(x["r"], x["c"])]
         by_index[ix] = {"cells": cells, "median": med}
     cells = by_index["ndvi"]["cells"]
     weak = [x for x in cells if x["class"] == "less"]
     if prev:
-        prev_cls = {(x["r"], x["c"]): x["class"] for x in _classify(prev["cells"], "ndvi")[0]}
+        prev_cls = {(x["r"], x["c"]): x["class"] for x in _classify(prev["cells"], "ndvi", history_of(masked[:-2]))[0]}
         weak_both = [x for x in weak if prev_cls.get((x["r"], x["c"])) == "less"]
     else:
         weak_both = []
     med = by_index["ndvi"]["median"]
+    road = {k for k, v in lm["squares"].items() if (v.get("road") or 0) > 0}
     spot = None
     if weak_both:
         mean_weak = statistics.mean(x["value"] for x in weak_both)
-        spot = {"squares": [[x["r"], x["c"]] for x in weak_both], "where": _where(weak_both, g.rows, g.cols),
+        spot = {"squares": [[x["r"], x["c"]] for x in weak_both], "where": where_name(weak_both, g.rows, g.cols, road),
                 "feddan": round(len(weak_both) * g.square_feddan, 2),
                 "pct_less_green": round((med - mean_weak) / med * 100), "images": 2}
     days_ago = (c.today - date.fromisoformat(last["date"])).days
@@ -207,6 +275,9 @@ def ndvi(c: Ctx) -> dict:
         "previous_date": prev["date"] if prev else None,
         "grid": {"rows": g.rows, "cols": g.cols, "square_m": 30},
         "images_this_season": len(scenes),
+        "mask": {"sources": lm["sources"], "nonfarm": sum(v == "nonfarm" for v in status.values()),
+                 "outside": sum(v == "outside" for v in status.values()),
+                 "squares": [{"r": k[0], "c": k[1], **v} for k, v in sorted(lm["squares"].items())]},
     }
 
 

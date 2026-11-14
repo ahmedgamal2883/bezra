@@ -167,6 +167,10 @@ export default function HealthScreen() {
                       <path d="M2.5 0V5" stroke="#000" strokeWidth="1" />
                     </pattern>
                     {" "}
+                    <pattern id="nfhatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                      <rect width="6" height="6" fill="#D6D6D1" />
+                      <path d="M0 0V6" stroke="#9A9A93" strokeWidth="1.6" />
+                    </pattern>
                     <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
                       <rect width="7" height="7" fill="#F29B1E" />
                       <path d="M0 0V7" stroke="#FFFFFF" strokeOpacity=".45" strokeWidth="2.5" />

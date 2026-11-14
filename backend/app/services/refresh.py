@@ -52,6 +52,12 @@ def refresh_field(fid: str) -> dict:
         out["weather"] = f"failed: {str(e)[:80]}"
 
     try:
+        lm = satellite.land_mask_now(c)
+        out["landcover"] = lm["sources"] or "no source answered"
+    except Exception as e:
+        out["landcover"] = f"failed: {str(e)[:80]}"
+
+    try:
         nd = satellite.ndvi(c)
         if nd.get("available"):
             ix = nd["indices"]["ndvi"]

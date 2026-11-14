@@ -69,7 +69,7 @@ export function SeasonSoFar({ data }: { data: any }) {
       {S?.day != null ? (
         <div className="col" style={{ gap: '6px' }}>
           <span className="row sp" style={{ fontSize: '14px' }}>
-            <b>{`Day ${S.day} of about ${S.days}`}</b>
+            <b>{S.days ? `Day ${S.day} of about ${S.days}` : `Day ${S.day}`}</b>
             <span className="tl">{S.days_to_harvest != null ? `${S.days_to_harvest} days to harvest (from ${short(S.harvest_from)})` : ''}</span>
           </span>
           <span style={{ height: '8px', borderRadius: '4px', background: 'var(--inset)', overflow: 'hidden' }}>

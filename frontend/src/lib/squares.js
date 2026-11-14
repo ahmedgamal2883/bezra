@@ -1,6 +1,6 @@
 // The field's 12 squares (3 across, 4 down) from GET /fields/{id}/ndvi, in the shape the V11 map logic uses.
 // NDVI[r][c] = value, KL[r][c] = 0 Less green / 1 Normal / 2 Greener (vs the field median ±0.05, brief §4).
-const K = { less: 0, normal: 1, greener: 2, outside: 3 };  // 3 = outside the field the farmer drew (not coloured)
+const K = { less: 0, normal: 1, greener: 2, outside: 3, nonfarm: 4 };  // 3 = outside the drawn field (not coloured), 4 = not farmland (grey hatch)
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
