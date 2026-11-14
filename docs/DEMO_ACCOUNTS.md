@@ -28,6 +28,18 @@ Every demo account shows a **Demo account** badge.
 - **Not available from real data (so not shown):** a rust-weather alert. NASA POWER daily humidity never met the rust rule
   at this field in either season.
 
+## Hassan's second field (South plot, berseem)
+
+- Sown 20 Oct 2026. **Scripted:** the 7 Nov turn reached only the head of the field; he answered the reminder "not done".
+- The model prices it: berseem is cut for its leaves, so a dry spell costs at any time (FAO-33). Usual harvest
+  30 t green fodder per feddan (typical Delta, to verify with ARC); with Bezra's catch-up 30, without 24.6.
+
+## Show details (My field)
+
+The "Show details" button under the harvest card opens every raw number behind the cards: NASA POWER daily weather
+(max, min, mean, humidity, dew point, rain, ET0, wind, sun), the Open-Meteo forecast, NDVI / NDMI / EVI of every 30 m
+square of the newest pass, the MODIS normal, SMAP, ECOSTRESS, elevation and SoilGrids. `GET /fields/{id}/raw`.
+
 ## Reset right before the pitch
 
 - **Production:** Render dashboard → bezra-api → Manual Deploy (or Restart). The seed runs on every start and restores

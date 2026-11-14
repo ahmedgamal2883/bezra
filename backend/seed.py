@@ -123,6 +123,9 @@ def main(argv: list[str] | None = None) -> None:
             if f["id"] == "north-plot":  # the judges' field: this season's activity + the complete last season
                 import copy
                 f = hassan.last_season(hassan.this_season(copy.deepcopy(f)))
+            elif f["id"] == "south-plot":  # the farmer's side of the berseem season (a turn that did not reach)
+                import copy
+                f = hassan.south_season(copy.deepcopy(f))
             db.save_field(f, u["id"])
 
     # the engineer's approvals and Hassan's earlier Ask Bezra questions (real Gemini answers, saved once)

@@ -17,7 +17,9 @@ export default function HarvestImpact({ id }: { id: string }) {
   if (!I) return null;
   const ard = I.usual.value != null;
   const val = (x: any) => (ard ? `${x.ardeb}` : `${x.pct}%`);
-  const unit = ard ? tr('ardeb / feddan', 'أردب للفدان') : tr('of what the field can give', 'من اللي الأرض تقدر تديه');
+  const fodder = I.usual.unit === 't green fodder per feddan';
+  const unit = !ard ? tr('of what the field can give', 'من اللي الأرض تقدر تديه')
+    : fodder ? tr('tons of green fodder / feddan', 'طن علف أخضر للفدان') : tr('ardeb / feddan', 'أردب للفدان');
   const max = ard ? Math.max(I.usual.value, I.with_bezra.ardeb || 0) : 100;
   const bar = (v: number, cls: string) => <span className={'hbar ' + cls}><i style={{ width: `${Math.max(4, Math.min(100, (v / max) * 100))}%` }} /></span>;
   const same = I.with_bezra.pct === I.without_bezra.pct && !I.without_bezra.trial_range_pct;

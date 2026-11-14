@@ -6,7 +6,8 @@ def test_usual_yield_prefers_the_farmers_own_numbers():
     assert I.usual_yield("wheat", "16, 18 and 20 ardeb")[0] == 18.0
     assert I.usual_yield("wheat", "2, 900")[0] == 18.0          # nonsense numbers ignored: regional average
     assert "Menoufia" in I.usual_yield("wheat", None)[1]
-    assert I.usual_yield("berseem", None)[0] is None
+    assert I.usual_yield("berseem", None)[0] == 30.0          # tons of green fodder, labelled typical
+    assert I.usual_yield("rice", None)[0] is None
 
 
 def test_losses_come_from_the_model_factors():

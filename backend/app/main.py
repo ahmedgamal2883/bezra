@@ -462,6 +462,14 @@ def get_seasons(field_id: str, user: dict = Depends(current_user)):
     return {"seasons": seasons.view(_ctx(field_id, user).f)}
 
 
+@app.get("/fields/{field_id}/raw")
+def get_raw(field_id: str, user: dict = Depends(current_user)):
+    """Show details: the raw numbers Bezra read for this field (NASA POWER, Open-Meteo, satellite squares, MODIS,
+    SMAP, ECOSTRESS, DEM, SoilGrids), each with its source and date."""
+    from .services import rawdata
+    return rawdata.build(_ctx(field_id, user))
+
+
 @app.get("/fields/{field_id}/freshness")
 def get_freshness(field_id: str, user: dict = Depends(current_user)):
     """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""

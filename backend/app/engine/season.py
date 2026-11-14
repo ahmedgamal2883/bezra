@@ -172,7 +172,9 @@ def run(get_day: Callable[[date], dict | None], sow: date, *, crop: str = "wheat
             gap = [x for x in res.days if sk <= x.date < sk + timedelta(days=every)]
             if not gap:
                 continue
-            share = sum(x.stage in SENSITIVE for x in gap) / len(gap)
+            # berseem is cut for its leaves, so every growing day builds the harvest: a dry spell costs at any
+            # time (FAO-33, forage legumes Ky ~1.1 over the whole season), not only in wheat's sensitive stages
+            share = 1.0 if crop == "berseem" else sum(x.stage in SENSITIVE for x in gap) / len(gap)
             rule_f *= 1 - 0.18 * share
             other += 1 - share
         rule_f *= 1 - 0.15 * min(1.0, other / n_turns)

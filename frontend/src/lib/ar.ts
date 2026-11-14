@@ -4,6 +4,9 @@
 /* eslint-disable quotes */
 
 export const EXACT: Record<string, string> = {
+  "Multi-cut berseem, about 30 t green fodder per feddan over the season's cuts (typical Delta, to verify with ARC)": 'برسيم متعدد الحشات، حوالي 30 طن علف أخضر للفدان على حشات الموسم (المعتاد في الدلتا، يتأكد مع مركز البحوث الزراعية)',
+  'Water reached only the head of the field, the mesqa ran out.': 'المية وصلت لأول الأرض بس، المسقى خلصت.',
+  'Water today, as Bezra asks after the missed turn': 'اروي النهارده، زي ما بذرة طلبت بعد الدور الفايت',
   'Yellow leaves. Walked the field. Leaves a bit pale at the tail end.': 'ورق أصفر. لفيت الأرض. الورق باهت شوية في آخرها.',
   "After Bezra's heat warning": 'بعد تنبيه الحر من بذرة',
   'Water turn missed': 'دور ري فايت',

@@ -12,6 +12,7 @@ import Freshness from '@/components/Freshness';
 import TodayTasks from '@/components/TodayTasks';
 import CheckIn from '@/components/CheckIn';
 import HarvestImpact from '@/components/HarvestImpact';
+import RawData from '@/components/RawData';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LVC: Record<string, string> = { Low: 'lv lv-low', Medium: 'lv lv-med', High: 'lv lv-high' };
@@ -128,6 +129,7 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
 
       <SeasonSoFar data={J.data} />
       <HarvestImpact id={id} />
+      <RawData id={id} />
 
       <div className="today-bottom">
         <section className="card rise" style={{ '--d': '4' } as React.CSSProperties} aria-labelledby="next-h">

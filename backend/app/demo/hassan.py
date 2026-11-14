@@ -56,6 +56,15 @@ def this_season(f: dict) -> dict:
     return f
 
 
+def south_season(f: dict) -> dict:
+    """South plot (berseem), the farmer's side: the 7 Nov turn reached only the head of the field (the satellites saw
+    the head wet up) and he answered the reminder "not done". Bezra asks to catch it up; the model prices the gap."""
+    f["task_answers"] = {
+        "turn-2026-11-07": _a("not_done", "2026-11-08T07:30", note="Water reached only the head of the field, the mesqa ran out."),
+    }
+    return f
+
+
 def last_season(f: dict) -> dict:
     """The complete 2025-26 season: real data from last_season.json + what Hassan did and reported."""
     if not ARCHIVE.exists():

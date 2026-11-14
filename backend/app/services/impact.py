@@ -20,7 +20,9 @@ from .context import Ctx
 ARDEB_KG = {"wheat": 150, "maize": 140}
 # regional averages when the farmer has not entered their own (ardeb per feddan)
 REGIONAL = {"wheat": (18.0, "Menoufia wheat average, about 2.7 t per feddan (CAPMAS)"),
-            "maize": (24.0, "Delta maize average, about 3.4 t per feddan (CAPMAS)")}
+            "maize": (24.0, "Delta maize average, about 3.4 t per feddan (CAPMAS)"),
+            "berseem": (30.0, "Multi-cut berseem, about 30 t green fodder per feddan over the season's cuts (typical Delta, to verify with ARC)")}
+UNIT = {"berseem": "t green fodder per feddan"}
 TRIAL = {"rust": (14, 26, "Catching rust early protects about 14 to 26% in bad years (field trials)")}
 
 
@@ -120,8 +122,8 @@ def build(c: Ctx) -> dict:
                 "missed_turn_cost_pct": v["missed_turn_cost_pct"]}
     return {
         "last_season": last,
-        "crop": crop, "unit": "ardeb per feddan" if usual else "% of what the field can give",
-        "usual": {"value": usual, "source": usual_src},
+        "crop": crop, "unit": UNIT.get(crop, "ardeb per feddan") if usual else "% of what the field can give",
+        "usual": {"value": usual, "source": usual_src, "unit": UNIT.get(crop, "ardeb") if usual else None},
         "with_bezra": {"pct": round(w_idx * 100), "ardeb": ardeb(w_idx)},
         "without_bezra": {"pct": round(without_idx * 100), "ardeb": ardeb(without_idx),
                           "trial_range_pct": [round(trial_low, 1), round(trial_high, 1)] if trial_high else None},
