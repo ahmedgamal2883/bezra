@@ -267,7 +267,7 @@ export default function SimScreen() {
                     </span>
                   </div>
                 </section>
-                <div className="card rise" style={{"--d":"5","flexDirection":"row","alignItems":"center","gap":"10px","padding":"10px"} as any}>
+                <div className="card rise sim-steps" style={{"--d":"5","flexDirection":"row","alignItems":"center","gap":"10px","padding":"10px"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"5"} as any} />
                   <button type="button" className="ibtn press" onClick={__v?.back} aria-label="One month back" style={{"background":"var(--inset)","boxShadow":"none"} as any}>
                     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

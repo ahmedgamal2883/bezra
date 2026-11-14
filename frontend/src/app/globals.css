@@ -187,3 +187,27 @@ html[data-demo="0"] .pv-demo{display:none!important}
   .map-legend{left:10px!important;right:10px;bottom:10px!important}
   .map-legend .float{padding:8px 10px!important}
 }
+
+/* ---- Phone pass (rework C): every multi-column layout becomes one column; .keep-cols opts out ---------- */
+@media (max-width:760px){
+  .main{gap:14px}
+  .main .grid:not(.keep-cols),.main .r-stack{grid-template-columns:minmax(0,1fr)!important}
+  .main aside,.main section,.main article{min-width:0;max-width:100%}
+  .main .head{align-items:flex-start}
+  .main .head>.row{flex-wrap:wrap}
+  .main .h1{font-size:34px;letter-spacing:-1px}
+  .hero{min-height:0}
+  .card{padding:16px}
+  .foot{flex-direction:column;align-items:flex-start;gap:6px}
+}
+@media (max-width:760px){
+  .main .row{flex-wrap:wrap}
+  .sim-steps{flex-wrap:wrap}
+  .sim-steps>div:first-child{flex:1 1 100%;min-width:0;overflow-x:auto}
+  .cal-grid{grid-template-columns:78px repeat(24,minmax(0,1fr))!important}
+  .cal-grid span,.cal-grid b{font-size:12px}
+}
+@media (max-width:760px){
+  section[aria-label="Datasets"]{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+  section[aria-label="Datasets"]>div{min-width:680px}
+}

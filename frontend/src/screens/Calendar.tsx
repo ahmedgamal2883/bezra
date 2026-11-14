@@ -160,7 +160,7 @@ export default function CalendarScreen() {
                   </span>
                 </span>
               </div>
-              <div style={{"display":"grid","gridTemplateColumns":"150px repeat(24, minmax(0, 1fr))","rowGap":"14px","columnGap":"0","alignItems":"center"} as any}>
+              <div className="cal-grid" style={{"display":"grid","gridTemplateColumns":"150px repeat(24, minmax(0, 1fr))","rowGap":"14px","columnGap":"0","alignItems":"center"} as any}>
                 <span />
                 <div style={{"gridColumn":"span 24","display":"grid","gridTemplateColumns":"repeat(12, minmax(0, 1fr))"} as any}>
                   <span style={{"fontSize":"12px","fontWeight":"600","color":"var(--muted)","textAlign":"center"} as any}>
