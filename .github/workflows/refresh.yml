@@ -1,5 +1,5 @@
 # Phase 3: wakes the Render server and starts Bezra's data refresh (weather, satellite passes, SMAP, soil estimate).
-# Needs one repository secret: JOBS_TOKEN (same value as JOBS_TOKEN in Render -> Environment).
+# Needs no secret: the server runs a refresh at most every 2 hours. An optional JOBS_TOKEN secret forces a run.
 name: Data refresh
 on:
   schedule:
@@ -29,4 +29,4 @@ jobs:
           JOBS_TOKEN: ${{ secrets.JOBS_TOKEN }}
         run: |
           sleep 240
-          curl -fsS -m 60 -H "Authorization: Bearer $JOBS_TOKEN" https://bezra-api.onrender.com/jobs/refresh | head -c 2000
+          curl -fsS -m 60 https://bezra-api.onrender.com/jobs/refresh

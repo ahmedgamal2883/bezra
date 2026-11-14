@@ -129,6 +129,16 @@ def last_state() -> dict | None:
     return db.kv_get("refresh_state")
 
 
+MIN_GAP_MIN = 120  # without the job token, a refresh starts at most every 2 hours
+
+
+def minutes_since_last() -> float:
+    st = last_state()
+    if not st or not st.get("at"):
+        return float("inf")
+    return (datetime.now() - datetime.fromisoformat(st["at"])).total_seconds() / 60
+
+
 # ---- how old is each number ----------------------------------------------------------------------
 def age_days(day: str | None, today: date | None = None) -> int | None:
     if not day:

@@ -20,13 +20,14 @@ def test_series_upsert_and_freshness(tmp_db):
     assert fr["kinds"]["weather"]["age_days"] == 1 and fr["kinds"]["ndvi"] is None
 
 
-def test_job_needs_token(monkeypatch, tmp_db):
+def test_job_is_throttled_without_token(monkeypatch, tmp_db):
     from app.main import app
     c = TestClient(app)
-    monkeypatch.delenv("JOBS_TOKEN", raising=False)
-    assert c.post("/jobs/refresh").status_code == 401          # no token configured: always refused
     monkeypatch.setenv("JOBS_TOKEN", "s3cret-test")
-    assert c.post("/jobs/refresh", headers={"Authorization": "Bearer wrong"}).status_code == 401
     monkeypatch.setattr(refresh, "start_background", lambda only=None: True)
-    r = c.post("/jobs/refresh", headers={"Authorization": "Bearer s3cret-test"})
+    assert c.post("/jobs/refresh").json()["started"] is True                     # never ran: starts
+    tmp_db.kv_set("refresh_state", {"at": __import__("datetime").datetime.now().isoformat(timespec="minutes")})
+    assert c.post("/jobs/refresh").json()["started"] is False                    # ran just now: refused
+    r = c.post("/jobs/refresh", headers={"Authorization": "Bearer s3cret-test"})  # the token forces a run
     assert r.status_code == 202 and r.json()["started"] is True
+    assert "results" not in c.get("/jobs/refresh").json()                       # status shows no field details

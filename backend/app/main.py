@@ -324,30 +324,33 @@ def get_freshness(field_id: str, user: dict = Depends(current_user)):
 
 
 # ---- scheduled refresh (GitHub Actions) ----------------------------------------------------------
-def _job_auth(request: Request) -> None:
+def _has_job_token(request: Request) -> bool:
     import hmac
     want = os.environ.get("JOBS_TOKEN", "")
     got = request.headers.get("authorization", "").removeprefix("Bearer ").strip()
-    if not want or not hmac.compare_digest(got, want):
-        raise HTTPException(401, "Bad job token")
+    return bool(want) and hmac.compare_digest(got, want)
 
 
 @app.post("/jobs/refresh", status_code=202)
 def jobs_refresh(request: Request):
-    """Called by .github/workflows/refresh.yml. Starts the refresh in the background and returns at once."""
+    """Called by .github/workflows/refresh.yml. Needs no secret: it only re-reads public data, and without the
+    optional JOBS_TOKEN it runs at most once every 2 hours however often it is called."""
     from .services import refresh
-    _job_auth(request)
+    if not _has_job_token(request) and refresh.minutes_since_last() < refresh.MIN_GAP_MIN:
+        return {"started": False, "reason": "refreshed recently", "last": (refresh.last_state() or {}).get("at")}
     started = refresh.start_background()
     return {"started": started, "running": not started, "last": (refresh.last_state() or {}).get("at")}
 
 
 @app.get("/jobs/refresh")
-def jobs_refresh_status(request: Request):
+def jobs_refresh_status():
+    """When the last refresh ran and how each field went (no field details: only counts and errors)."""
     from .services import refresh
-    _job_auth(request)
     st = refresh.last_state() or {}
+    res = st.get("results") or {}
     return {"last": st.get("at"), "seconds": st.get("seconds"), "fields": st.get("fields"),
-            "results": st.get("results")}
+            "failed": sum(1 for v in res.values() if isinstance(v, dict) and ("error" in v or any(
+                isinstance(x, str) and x.startswith("failed") for x in v.values())))}
 
 
 @app.get("/fields/{field_id}/squares")
