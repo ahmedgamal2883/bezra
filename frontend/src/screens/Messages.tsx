@@ -117,7 +117,7 @@ export default function MessagesScreen() {
               </section>
             </aside>
           </div>
-          <Foot note="This conversation is demo data." />
+          <Foot note={demo ? "This conversation is demo data." : "Messages with your engineer."} />
         </main>
       </div>
     </div>

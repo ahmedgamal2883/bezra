@@ -105,7 +105,7 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
   );
 }
 
-export function Foot({ note = 'All numbers on this screen are demo data.' }: { note?: string }) {
+export function Foot({ note = 'Numbers from NASA and ESA satellite and weather data, and from your field.' }: { note?: string }) {
   return (
     <footer className="foot">
       <span>

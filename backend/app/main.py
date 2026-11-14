@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from . import config  # noqa: F401  (loads backend/.env)
 from . import db, fields
 from .chat import bezra
-from .services import alerts, apistatus, irrigation, plan, calendar, cases, engineer, nextseason, satellite, sim, summary
+from .services import alerts, apistatus, irrigation, plan, today, calendar, cases, engineer, nextseason, satellite, sim, summary
 from .services.context import ctx
 
 COOKIE = "bezra_session"
@@ -233,6 +233,12 @@ def get_ndvi(field_id: str, user: dict = Depends(current_user)):
 @app.get("/fields/{field_id}/alerts")
 def get_alerts(field_id: str, user: dict = Depends(current_user)):
     return alerts.build(_ctx(field_id, user))
+
+
+@app.get("/fields/{field_id}/today")
+def get_today(field_id: str, user: dict = Depends(current_user)):
+    """Rework B: everything the new My field -> Today shows, with a detail block per card."""
+    return today.build(_ctx(field_id, user))
 
 
 @app.get("/fields/{field_id}/plan")
