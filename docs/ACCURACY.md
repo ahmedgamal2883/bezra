@@ -23,13 +23,10 @@ Bezra uses day-degrees (base 0 °C): heading at 1300, ripe at 2050 (`backend/app
 
 The same real weather reached 1720–1820 day-degrees by day 95–100 and 2690–2880 by day 150–160.
 
-**Proposed fix (needs your OK and, ideally, an ARC/MALR check):**
-- Heading: 1300 → about 1750
-- Grain filling: 1450 → about 1900
-- Ripe: 2050 → about 2750
-- Scale tillering and stem growth by the same factor.
-
-This moves the harvest window, the heat-risk window and the plan dates. Everything that uses these numbers moves together.
+**Fixed (Rework G):** the thresholds were recalibrated with the engine's own day-length factor on that real weather:
+- tillering 450, stem growth 900, heading 1600, grain filling 1750, ripe 2600.
+- The calendar now gives, for an early-November sowing: heading about 14 Feb and harvest about 10 Apr. A mid-October field is ready about 31 Mar.
+- Still to verify with ARC / MALR.
 
 ## Also found and fixed during the test
 - A field created without a canal-turn date crashed `/summary` and `/journal` (HTTP 500). The fix counts turns from the sowing day (`services/summary.py`). The onboarding screen always sends a date, so real users weren't hit.

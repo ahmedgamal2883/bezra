@@ -11,13 +11,13 @@ def test_et0_matches_fao56_example_18():
     assert abs(et0_pm(21.5, 12.3, 12.0, 2.078, 22.07, 50.80, 100, 187) - 3.9) < 0.15
 
 
-def test_wheat_stage_thresholds_from_brief():
+def test_wheat_stage_thresholds_calibrated_shibin():
     assert crop.stage(100) == "Emerging"
-    assert crop.stage(250) == "Tillering"
-    assert crop.stage(700) == "Stem growth"
-    assert crop.stage(1300) == "Heading"
-    assert crop.stage(1450) == "Grain filling"
-    assert crop.stage(2050) == "Ready to harvest"
+    assert crop.stage(450) == "Tillering"
+    assert crop.stage(900) == "Stem growth"
+    assert crop.stage(1600) == "Heading"
+    assert crop.stage(1750) == "Grain filling"
+    assert crop.stage(2600) == "Ready to harvest"
 
 
 def test_rust_weather_rule():
