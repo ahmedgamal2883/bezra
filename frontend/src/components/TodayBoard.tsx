@@ -9,6 +9,7 @@ import { API, PV } from '@/lib/api';
 import { LogSheet } from '@/components/PlanToday';
 import FieldJournal, { SeasonSoFar, useJournal } from '@/components/FieldJournal';
 import Freshness from '@/components/Freshness';
+import TodayTasks from '@/components/TodayTasks';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LVC: Record<string, string> = { Low: 'lv lv-low', Medium: 'lv lv-med', High: 'lv lv-high' };
@@ -85,6 +86,7 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
         {ready ? <span className={LVC[D.status.level] || 'lv lv-low'} style={{ fontSize: '14px', height: '32px', padding: '0 12px' }}><i />{D.status.text}</span> : <span className="tl">{'Reading your field…'}</span>}
         {ready && D.tracker.due ? <Link href={`/field/${id}/plan`} className="tl press" style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>{D.tracker.text}</Link> : null}
       </div>
+      <TodayTasks id={id} />
       <Freshness id={id} />
 
       <div className="today-top">

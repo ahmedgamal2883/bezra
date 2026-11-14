@@ -315,6 +315,34 @@ def get_journal(field_id: str, user: dict = Depends(current_user)):
     return journal.build(_ctx(field_id, user))
 
 
+@app.get("/fields/{field_id}/tasks")
+def get_tasks(field_id: str, user: dict = Depends(current_user)):
+    """Phase 3: the field calendar + checklist (every dated task, its colour category and status)."""
+    from .services import tasks
+    return tasks.build(_ctx(field_id, user))
+
+
+class TaskAnswer(BaseModel):
+    answer: str                     # done / later / not_done
+    postpone_to: str | None = None  # for "later" (default: tomorrow)
+    note: str | None = None
+    case_id: str | None = None      # a photo case made from this task
+
+
+@app.post("/fields/{field_id}/tasks/{task_id}")
+def answer_task(field_id: str, task_id: str, req: TaskAnswer, user: dict = Depends(current_user)):
+    from .services import tasks
+    c = _ctx(field_id, user)
+    cur = next((t for t in tasks.build(c)["tasks"] if t["id"] == task_id), None)
+    if not cur:
+        raise HTTPException(404, "No such task")
+    try:
+        rec = tasks.answer(c, task_id, req.answer, req.postpone_to, req.note, req.case_id, cur)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"saved": rec, "tasks": tasks.build(_ctx(field_id, user))}
+
+
 @app.get("/fields/{field_id}/freshness")
 def get_freshness(field_id: str, user: dict = Depends(current_user)):
     """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""

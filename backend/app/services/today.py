@@ -42,6 +42,18 @@ def _short(d: date) -> str:
     return f"{d.day} {d.strftime('%b')}"
 
 
+def _likely_cause(c) -> str:
+    """Phase 3 feedback loop: the farmer's checklist answers rank the cause of a weak spot."""
+    try:
+        from .tasks import water_missed_recently
+        d = water_missed_recently(c)
+    except Exception:
+        d = None
+    if d:
+        return f"Likely cause: water. You said the turn on {d} was not done."
+    return "The satellite can't tell why."
+
+
 def build(c: Ctx) -> dict:
     f, w, today = c.f, c.w, c.today
     wheat = f["crop"] == "wheat"
@@ -127,7 +139,7 @@ def build(c: Ctx) -> dict:
         if spot and sown:
             warnings.append({"id": "s-spot", "kind": "spot", "level": "Medium", "title": f"The {spot['where'].lower()} looks weaker",
                              "reason": f"{spot['pct_less_green']}% less green than the rest of your field in the last {spot['images']} satellite images "
-                                       f"(about {spot['feddan']} feddan). The satellite can't tell why.",
+                                       f"(about {spot['feddan']} feddan). " + _likely_cause(c),
                              "how_to_check": HOW_TO_CHECK["spot"], "source": nd.get("source"), "photo": True})
     except Exception:
         pass

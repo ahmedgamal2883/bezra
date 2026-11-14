@@ -49,6 +49,7 @@ export function Mascot({ size = 60, mood = 'happy', sway = true }: { size?: numb
 
 const ICON = {
   field: <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />,
+  tasks: <path d="M4 6h16M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6M8 3v5M16 3v5M8 13l2.5 2.5L16 10" />,
   sim: <path d="M6 4v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v2M18 4v4M6 20v-2M3 7l3-3 3 3M15 7l3-3 3 3" />,
   ask: <path d="M5 18.5V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8.5zM9 9h6M9 12h3" />,
   profile: <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0" />,
@@ -57,7 +58,7 @@ const NavIcon = ({ d }: { d: ReactNode }) => (
   <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{d}</svg>
 );
 
-type Tab = 'field' | 'sim' | 'ask' | 'profile' | null;
+type Tab = 'field' | 'tasks' | 'sim' | 'ask' | 'profile' | null;
 
 // The logged-in farmer header, as on every V11 farmer screen.
 export function FarmerHeader({ active = null }: { active?: Tab }) {
@@ -77,6 +78,7 @@ export function FarmerHeader({ active = null }: { active?: Tab }) {
       </Link>
       <nav aria-label="Main" className="nav">
         {item('field', fp(), 'My field')}
+        {item('tasks', fp('/tasks'), 'My tasks')}
         {item('sim', '/sim', 'Simulator')}
         {item('ask', '/ask', 'Ask Bezra')}
         {item('profile', '/profile', 'Profile')}
