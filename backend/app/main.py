@@ -429,10 +429,10 @@ def get_case(case_id: str, user: dict = Depends(current_user)):
 @app.get("/cases/{case_id}/photo/{n}")
 def get_case_photo(case_id: str, n: int, user: dict = Depends(current_user)):
     _case_ctx(case_id, user)
-    p = cases.photo_path(case_id, n)
+    p = cases.photo(case_id, n)
     if not p:
         raise HTTPException(404, "No photo")
-    return FileResponse(p)
+    return Response(content=p[1], media_type=p[0], headers={"Cache-Control": "private, max-age=86400"})
 
 
 # ---- simulator -----------------------------------------------------------------------------------

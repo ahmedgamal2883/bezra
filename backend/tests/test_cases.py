@@ -18,24 +18,24 @@ class _Ctx:  # minimal field context: no satellite needed for these checks
     today = date(2026, 11, 13)
 
 
-def test_case_goes_to_engineer_without_model(monkeypatch, tmp_path):
-    monkeypatch.setattr(cases, "DIR", tmp_path)
+def test_case_goes_to_engineer_without_model(monkeypatch, tmp_db):
     monkeypatch.setattr(bezra, "available", lambda: False)
     monkeypatch.setattr(cases.satellite, "ndvi", lambda c: {"available": False})
     out = cases.create(_Ctx(), ["data:image/png;base64," + PNG], "Yellow leaves")
     assert out["status"] == "sent_to_engineer" and out["photos"] == 1 and out["seen"] == "Yellow leaves"
-    assert cases.photo_path(out["id"], 0).exists()
+    mime, raw = cases.photo(out["id"], 0)
+    assert mime == "image/png" and raw[1:4] == b"PNG"
+    assert cases.field_of(out["id"]) == "south-plot"
     assert out["follow_up"]["due"] == (__import__("datetime").date.today() + __import__("datetime").timedelta(days=7)).isoformat()
 
 
-def test_bad_inputs_are_refused(tmp_path, monkeypatch):
-    monkeypatch.setattr(cases, "DIR", tmp_path)
+def test_bad_inputs_are_refused(tmp_db):
     with pytest.raises(ValueError):
         cases.create(_Ctx(), [], "")
     with pytest.raises(ValueError):
         cases.create(_Ctx(), ["data:text/html;base64,PGgxPg=="], "")
     with pytest.raises(ValueError):
-        cases.photo_path("../../etc", 0)
+        cases.photo("../../etc", 0)
 
 
 def test_dose_in_ladder_is_caught():

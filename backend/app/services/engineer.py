@@ -5,7 +5,7 @@ Field risk score (brief §4) = the highest of four sub-scores, 0 to 100:
   greenness: weak spot 40 + % less green (max 90); squares that dropped 0.08 since the last image: 60
 Status: >= 70 "Visit first", >= 45 "This week", else "OK".
 Only Hassan's real fields are scored; the other farmers in the design's queue are demo until they sign up.
-Plan approvals are kept in data/approvals.json. The engineer's note can hold doses: it is for the engineer's
+Plan approvals are kept in the database (kv 'approvals'). The engineer's note can hold doses: it is for the engineer's
 records and is never shown by Bezra (rule #3).
 """
 from __future__ import annotations
@@ -24,7 +24,8 @@ LV_SCORE = {"high": 85, "med": 55, "low": 15}
 
 
 def _load() -> dict:
-    return json.loads(APPROVALS.read_text(encoding="utf-8")) if APPROVALS.exists() else {}
+    from .. import db
+    return db.kv_get("approvals", {})
 
 
 def plan_status(field_id: str) -> dict:
@@ -39,8 +40,8 @@ def approve(field_id: str, note: str, approved: bool = True, by: str = "Eng. Mon
         d[field_id] = {"at": datetime.now().isoformat(timespec="minutes"), "by": by, "note": note[:2000]}
     else:
         d.pop(field_id, None)
-    DATA.mkdir(exist_ok=True)
-    APPROVALS.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+    from .. import db
+    db.kv_set("approvals", d)
     _ws.clear()
     return plan_status(field_id)
 

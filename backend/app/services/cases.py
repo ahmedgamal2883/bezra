@@ -2,7 +2,7 @@
 
 Photo -> candidate list (Claude vision) -> if unsure, sent to the engineer -> treatment ladder (prevention ->
 threshold -> official list; the engineer sets any dose) -> follow-up: greenness of that square after 7 days.
-Without a Claude API key the case goes straight to the engineer. Photos are kept in data/cases/ (git-ignored).
+Without a Claude API key the case goes straight to the engineer. Photos and case details are kept in the database (blobs + kv).
 """
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import json
 import os
 import re
 import uuid
+from .. import db
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -56,8 +57,7 @@ def create(c: Ctx, photos: list[str], seen: str = "") -> dict:
     if not photos or len(photos) > MAX_PHOTOS:
         raise ValueError(f"Send 1 to {MAX_PHOTOS} photos")
     cid = uuid.uuid4().hex[:12]
-    d = _path(cid)
-    d.mkdir(parents=True)
+    _path(cid)
     blobs = []
     for i, p in enumerate(photos):
         m = re.match(r"data:(image/(?:jpeg|png|webp));base64,(.+)", p, re.S)
@@ -66,8 +66,7 @@ def create(c: Ctx, photos: list[str], seen: str = "") -> dict:
         raw = base64.b64decode(m.group(2))
         if len(raw) > MAX_BYTES:
             raise ValueError("Photo too large")
-        ext = m.group(1).split("/")[1].replace("jpeg", "jpg")
-        (d / f"photo_{i}.{ext}").write_bytes(raw)
+        db.blob_put(f"case:{cid}:{i}", m.group(1), raw)
         blobs.append((m.group(1), m.group(2)))
     try:
         nd = satellite.ndvi(c)
@@ -79,7 +78,7 @@ def create(c: Ctx, photos: list[str], seen: str = "") -> dict:
             "where": spot["where"] if spot else "Whole field",
             "start_ndvi": _square_ndvi(nd, spot["squares"][0] if spot else None), "start_image": nd.get("date")}
     meta |= _diagnose(c, blobs, seen)
-    (d / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    db.kv_set(f"case:{cid}", meta)
     return get(c, cid)
 
 
@@ -130,7 +129,7 @@ def _diagnose(c: Ctx, blobs, seen: str) -> dict:
 
 
 def get(c: Ctx, cid: str) -> dict:
-    meta = json.loads((_path(cid) / "meta.json").read_text(encoding="utf-8"))
+    meta = _meta(cid)
     created = datetime.fromisoformat(meta["created"]).date()
     due = created + timedelta(days=7)
     follow = {"due": due.isoformat(), "ready": c.today >= due, "change": None, "image": None}
@@ -146,14 +145,18 @@ def get(c: Ctx, cid: str) -> dict:
     return meta | {"follow_up": follow}
 
 
+def _meta(cid: str) -> dict:
+    _path(cid)
+    m = db.kv_get(f"case:{cid}")
+    if m is None:
+        raise FileNotFoundError(cid)
+    return m
+
+
 def field_of(cid: str) -> str:
-    return json.loads((_path(cid) / "meta.json").read_text(encoding="utf-8"))["field_id"]
+    return _meta(cid)["field_id"]
 
 
-def photo_path(cid: str, n: int) -> Path | None:
-    d = _path(cid)
-    for ext in ("jpg", "png", "webp"):
-        p = d / f"photo_{n}.{ext}"
-        if p.exists():
-            return p
-    return None
+def photo(cid: str, n: int) -> tuple[str, bytes] | None:
+    _path(cid)
+    return db.blob_get(f"case:{cid}:{n}")

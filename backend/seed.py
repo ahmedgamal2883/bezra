@@ -75,8 +75,9 @@ def main() -> None:
             return db.user_public(r)
         # On a server (Render) the database starts empty on every restart: fixed passwords come from settings.
         pw = (os.environ.get("ENGINEER_PASSWORD") if role == "engineer" else None) or              (os.environ.get("DEMO_FARMER_PASSWORD") if email == DEMO_EMAIL else None) or secrets.token_urlsafe(9)
+        from_env = pw in (os.environ.get("ENGINEER_PASSWORD"), os.environ.get("DEMO_FARMER_PASSWORD"))
         u = db.create_user(email, name, pw, role, engineer_id)
-        new_pw.append((name, email, pw))
+        new_pw.append((name, email, "(from settings)" if from_env else pw))  # never print a password set in settings
         if email == DEMO_EMAIL and not os.environ.get("DEMO_FARMER_PASSWORD"):
             set_env("DEMO_MODE", "1")
             set_env("DEMO_FARMER_EMAIL", email)
@@ -93,8 +94,8 @@ def main() -> None:
             db.save_field(f, u["id"])
 
     with db.conn() as c:
-        n_users = c.execute("SELECT COUNT(*) FROM users").fetchone()[0]
-        n_fields = c.execute("SELECT COUNT(*) FROM fields").fetchone()[0]
+        n_users = c.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
+        n_fields = c.execute("SELECT COUNT(*) AS n FROM fields").fetchone()["n"]
     print(f"Database ready: {n_users} accounts, {n_fields} fields.")
     if new_pw:
         print("\nNEW PASSWORDS (shown only this once; write them down):")

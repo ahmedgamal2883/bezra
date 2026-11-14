@@ -367,8 +367,9 @@ def _checklist(c: Ctx, tasks: list[dict], nt: date) -> list[dict]:
 # ---- daily job (06:00): re-score every field, remember when it ran and what changed ---------------------
 def _last_run() -> dict | None:
     try:
-        return json.loads(STATE.read_text(encoding="utf-8")).get("last_run")
-    except (OSError, ValueError):
+        from .. import db
+        return (db.kv_get("plan_state") or {}).get("last_run")
+    except Exception:
         return None
 
 
@@ -382,6 +383,6 @@ def daily(ctx_of) -> None:
                 seen[fid] = {"tracker": p["tracker"]["text"], "status": p["status"]["text"], "changed": [x["title"] for x in p["changed"]]}
         except Exception as e:  # one field must not stop the job
             seen[fid] = {"error": str(e)[:120]}
-    STATE.parent.mkdir(exist_ok=True)
-    STATE.write_text(json.dumps({"last_run": {"at": datetime.now().isoformat(timespec="minutes"), "fields": len(seen)},
-                                 "fields": seen}, indent=1), encoding="utf-8")
+    from .. import db
+    db.kv_set("plan_state", {"last_run": {"at": datetime.now().isoformat(timespec="minutes"), "fields": len(seen)},
+                             "fields": seen})

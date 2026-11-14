@@ -127,8 +127,9 @@ APIS = [
 
 def _load() -> dict:
     try:
-        return json.loads(STATE.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+        from .. import db
+        return db.kv_get("api_status") or {}
+    except Exception:
         return {}
 
 
@@ -161,8 +162,11 @@ def report(fresh: bool = False) -> dict:
 
     with ThreadPoolExecutor(8) as ex:
         rows = list(ex.map(run, APIS))
-    STATE.parent.mkdir(exist_ok=True)
-    STATE.write_text(json.dumps(last, indent=1), encoding="utf-8")
+    try:
+        from .. import db
+        db.kv_set("api_status", last)
+    except Exception:
+        pass
     planned = len(rows)
     using = sum(r["status"] != "not_used" for r in rows)
     working = sum(r["status"] == "working" for r in rows)
