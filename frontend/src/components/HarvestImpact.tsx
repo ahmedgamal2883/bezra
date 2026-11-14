@@ -57,6 +57,17 @@ export default function HarvestImpact({ id }: { id: string }) {
           {I.missed.map((m: any) => <div key={m.date} className="inset"><span>{tr('Missed water turn', 'دور ري فايت')} · {m.date}</span><b>−{m.cost_pct}%</b></div>)}
         </div>
       ) : <span className="sub">{tr('Nothing lost so far this season.', 'مفيش خسارة لحد دلوقتي الموسم ده.')}</span>}
+      {I.last_season ? (
+        <div className="col" style={{ gap: '6px' }}>
+          <span className="sub">{tr('Last season', 'الموسم اللي فات')} · {I.last_season.season}</span>
+          <div className="inset"><span>{tr('Harvest you reported', 'المحصول اللي قلته')}</span><b>{I.last_season.reported_ardeb} {tr('ardeb', 'أردب')}</b></div>
+          {I.last_season.heat_prep_gain_pct > 0 ? (
+            <div className="inset" style={{ background: 'var(--green-tint)' }}><span style={{ color: 'var(--green)' }}>{tr("Bezra's heat warning protected", 'تنبيه الحر من بذرة حافظ على')}</span>
+              <b style={{ color: 'var(--green)' }}>+{I.last_season.heat_prep_gain_pct}%{I.last_season.heat_prep_gain_ardeb ? ` · ${I.last_season.heat_prep_gain_ardeb} ${tr('ardeb', 'أردب')}` : ''}</b></div>
+          ) : null}
+          <a href={`/report`} className="sub" style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>{tr('See the whole season report', 'شوف تقرير الموسم كله')}</a>
+        </div>
+      ) : null}
       <span className="sub" style={{ fontSize: '12px' }}><span>{I.usual.source}</span>{' · '}<span>{I.source}</span></span>
     </section>
   );

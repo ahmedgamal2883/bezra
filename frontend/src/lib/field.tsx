@@ -7,7 +7,7 @@ import { API, setDemoAccount } from './api';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type FieldCard = { id: string; num?: string; name: string; crop: string; area_feddan: number; farmer: string; village?: string; governorate?: string; lat: number; lon: number };
-export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin'; engineer_name?: string | null; demo?: boolean };
+export type User = { id: number; email: string; name: string; role: 'farmer' | 'engineer' | 'admin'; engineer_name?: string | null; demo?: boolean; demo_account?: boolean };
 
 type Ctx = { user: User | null; fields: FieldCard[]; loaded: boolean; id: string; setId: (id: string) => void; reload: () => void };
 const C = createContext<Ctx>({ user: null, fields: [], loaded: false, id: '', setId: () => {}, reload: () => {} });

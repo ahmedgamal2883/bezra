@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { FarmerHeader, Foot, BrandMark } from '@/components/chrome';
 import { useApi, PV as PVC } from '@/lib/api';
 import { useField, useUser } from '@/lib/field';
+import { useState } from 'react';
+import PastSeason from '@/components/PastSeason';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LV: Record<string, string> = { Low: 'lv lv-low', Medium: 'lv lv-med', High: 'lv lv-high' };
@@ -19,6 +21,8 @@ export default function ReportScreen() {
   const S = useApi<any>(id ? `/fields/${id}/summary` : null).data;
   const P = useApi<any>(id ? `/fields/${id}/plan` : null, undefined, true).data;
   const ok = useApi<any>(id ? `/plans/${id}` : null, undefined, true).data;
+  const past = useApi<any>(id ? `/fields/${id}/seasons` : null).data?.seasons || [];
+  const [which, setWhich] = useState<string>('now');  // 'now' = this season, else a past season id
   const f = S?.field;
   const row = (k: string, v: any, pill: string, cls: string) => (
     <div className="inset"><span>{k}</span><span className="row" style={{ gap: '6px' }}><b>{v ?? '…'}</b><span className={cls}>{pill}</span></span></div>
@@ -46,7 +50,16 @@ export default function ReportScreen() {
             </div>
           </div>
 
-          <div className="grid r-stack" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', alignItems: 'start' }}>
+          {past.length ? (
+            <div role="group" aria-label="Season" className="seg no-print" style={{ alignSelf: 'flex-start' }}>
+              <button type="button" className={'segb press' + (which === 'now' ? ' on' : '')} onClick={() => setWhich('now')}>{'This season'}</button>
+              {past.map((p: any) => (
+                <button key={p.season} type="button" className={'segb press' + (which === p.season ? ' on' : '')} onClick={() => setWhich(p.season)}>{p.season}</button>
+              ))}
+            </div>
+          ) : null}
+          {which !== 'now' && past.find((p: any) => p.season === which) ? <PastSeason s={past.find((p: any) => p.season === which)} /> : null}
+          <div className="grid r-stack" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)', alignItems: 'start', display: which === 'now' ? undefined : 'none' }}>
             <section className="card rise" style={{ '--d': '2' } as React.CSSProperties}>
               <div className="row" style={{ gap: '10px' }}>
                 <BrandMark />

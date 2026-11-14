@@ -20,7 +20,7 @@ function Hello() {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Card = { type: 'fact' | 'compare' | 'engineer'; title: string; items: { label: string; value: string; highlight: boolean }[]; provenance: string };
-export type Msg = { role: 'user' | 'assistant'; text: string; mood?: string; cards?: Card[]; sources?: string[]; error?: boolean };
+export type Msg = { role: 'user' | 'assistant'; text: string; mood?: string; cards?: Card[]; sources?: string[]; error?: boolean; at?: string };
 
 const MOOD: Record<string, 'happy' | 'worried' | 'neutral'> = { happy: 'happy', proud: 'happy', thinking: 'neutral', concerned: 'worried' };
 const isAr = (t: string) => /[؀-ۿ]/.test(t);
@@ -28,6 +28,24 @@ const isAr = (t: string) => /[؀-ۿ]/.test(t);
 export function useAskChat(fieldId: string, ready: boolean) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
+  // open on the earlier questions and answers for this field (saved by the server)
+  useEffect(() => {
+    if (!fieldId) return;
+    let alive = true;
+    fetch(`${API}/chat/history?field_id=${encodeURIComponent(fieldId)}`, { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((j) => {
+        if (!alive || !j.items?.length) return;
+        const old: Msg[] = [];
+        for (const it of j.items) {
+          old.push({ role: 'user', text: it.q, at: it.at });
+          old.push({ role: 'assistant', text: it.a?.text || '', mood: it.a?.mood, cards: it.a?.cards || [], sources: it.a?.sources || [], at: it.at });
+        }
+        setMsgs((m) => (m.length ? m : old));
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [fieldId]);
   const send = useCallback(
     async (text: string) => {
       const t = text.trim();

@@ -31,7 +31,7 @@ def field(fid, num, name, gov, village, lat, lon, area, crop, variety, sow, mesq
             "log": [{"kind": k, "date": d, "source": "You"} for k, d in log]}
 
 
-# Farmers and their fields. Coordinates are on cropland: checked in checkpoint 5, MODIS greenness peak last winter >= 0.56 at every field.
+# Farmers and their fields, all on Delta cropland (ESA WorldCover: 100% cropland in every square, checked 14 Nov 2026).
 FARMERS = [
     ("hassan@demo.bezra.app", "Hassan Farouk", [FIELDS["north-plot"], FIELDS["south-plot"]]),
     ("samia@demo.bezra.app", "Samia Ibrahim", [field(
@@ -40,23 +40,29 @@ FARMERS = [
     ("ahmed.salah@demo.bezra.app", "Ahmed Salah", [field(
         "ahmed-beheira", "01", "Big field", "Beheira", "Damanhour", 30.9900, 30.4300, 3.0, "wheat", "giza171",
         "2026-11-01", "head", 10, "2026-11-21", [("2026-11-01", 700), ("2026-11-11", 640)])]),
-    ("fathy@demo.bezra.app", "Fathy Nour", [field(
-        "fathy-fayoum", "01", "Home plot", "Fayoum", "Sinnuris", 29.4000, 30.8600, 1.2, "wheat", "giza171",
-        "2026-11-10", "middle", 14, "2026-11-24", [("2026-11-10", 300)])]),
-    ("omkarim@demo.bezra.app", "Om Karim", [field(
-        "omkarim-minya", "01", "River plot", "Minya", "Minya", 28.1500, 30.6600, 0.9, "wheat", "sakha95",
-        "2026-10-28", "head", 10, "2026-11-17", [("2026-10-28", 230), ("2026-11-07", 210)])]),
     ("mahmoud@demo.bezra.app", "Mahmoud Adel", [field(
         "mahmoud-quesna", "01", "East plot", "Menoufia", "Quesna", 30.5600, 31.1400, 2.0, "wheat", "sakha95",
         "2026-11-25", "tail", 10, "2026-12-05", [], prev="cotton")]),
-    ("rajesh@demo.bezra.app", "Rajesh Kumar", [field(
-        "rajesh-haryana", "01", "Canal field", "Haryana, India", "Hisar", 29.2000, 75.7000, 4.0, "wheat", None,
-        "2026-11-12", "middle", 21, "2026-12-03", [("2026-11-12", 900)], prev="rice")]),
-    ("wanjiku@demo.bezra.app", "Wanjiku Mwangi", [field(
-        "wanjiku-kenya", "01", "Shamba", "Uasin Gishu, Kenya", "Eldoret", 0.5500, 35.3000, 1.0, "maize", None,
-        "2026-09-15", "head", 14, "2026-11-20", [("2026-09-15", 250), ("2026-09-25", 200), ("2026-10-09", 220), ("2026-10-24", 260), ("2026-11-06", 300)],
-        prev="beans", log=[("weeding", "2026-10-10")])]),
+    ("ibrahim@demo.bezra.app", "Ibrahim Zaki", [field(
+        "ibrahim-kafr", "01", "Rice-side plot", "Kafr El Sheikh", "Sidi Salem", 31.1500, 30.9300, 2.5, "wheat", "giza171",
+        "2026-10-25", "tail", 10, "2026-11-14", [("2026-10-25", 650), ("2026-11-04", 600)], prev="rice", log=[("fertilizer", "2026-11-03")])]),
+    ("nadia@demo.bezra.app", "Nadia Fouad", [field(
+        "nadia-dakahlia", "01", "Old orchard edge", "Dakahlia", "Mit Ghamr", 30.9800, 31.3700, 1.5, "wheat", "sakha95",
+        "2026-11-08", "middle", 12, "2026-11-20", [("2026-11-08", 380)])]),
+    ("fathy@demo.bezra.app", "Fathy Nour", [field(
+        "fathy-sharqia", "01", "Home plot", "Sharqia", "Zagazig", 30.6500, 31.5500, 1.2, "wheat", "giza171",
+        "2026-10-30", "head", 10, "2026-11-19", [("2026-10-30", 300)])]),
+    ("omkarim@demo.bezra.app", "Om Karim", [field(
+        "omkarim-qalyubia", "01", "River plot", "Qalyubia", "Benha", 30.3800, 31.1800, 0.9, "wheat", "sakha95",
+        "2026-10-28", "head", 10, "2026-11-17", [("2026-10-28", 230), ("2026-11-07", 210)])]),
 ]
+DEMO_DOMAIN = "@demo.bezra.app"
+APPROVALS = {  # the engineer's plan approvals (date + note), as he gave them
+    "north-plot": {"at": "2026-11-02T10:30", "by": "Ahmed Gamal",
+                   "note": "Good start. Catch up the missed turn this week. I will set the nitrogen amount when I visit on Tuesday."},
+    "samia-gharbia": {"at": "2026-11-09T12:00", "by": "Ahmed Gamal", "note": "Plan fine. Watch the tail end of the mesqa."},
+    "ibrahim-kafr": {"at": "2026-11-06T09:15", "by": "Ahmed Gamal", "note": "After rice, keep the first turns light."},
+}
 
 
 def set_env(key: str, value: str) -> None:
@@ -65,44 +71,80 @@ def set_env(key: str, value: str) -> None:
     ENV.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    """Seed (or with --reset: restore) the demo accounts. Safe to run any number of times."""
+    from app.demo import hassan
+    argv = sys.argv[1:] if argv is None else argv
+    reset = "--reset" in argv
     db.init()
     new_pw: list[tuple[str, str, str]] = []
+    env_pw = {ENGINEER[0]: os.environ.get("ENGINEER_PASSWORD"), DEMO_EMAIL: os.environ.get("DEMO_FARMER_PASSWORD")}
 
     def user(email: str, name: str, role: str, engineer_id=None) -> dict:
         r = db.find_user(email)
+        want = env_pw.get(email)
         if r:
+            if want and not db.check_pw(want, r["pw"]):  # the password in settings wins (so it can be changed)
+                db.update_user(r["id"], pw=db.hash_pw(want))
             return db.user_public(r)
-        # On a server (Render) the database starts empty on every restart: fixed passwords come from settings.
-        pw = (os.environ.get("ENGINEER_PASSWORD") if role == "engineer" else None) or              (os.environ.get("DEMO_FARMER_PASSWORD") if email == DEMO_EMAIL else None) or secrets.token_urlsafe(9)
-        from_env = pw in (os.environ.get("ENGINEER_PASSWORD"), os.environ.get("DEMO_FARMER_PASSWORD"))
+        pw = want or secrets.token_urlsafe(12)
         u = db.create_user(email, name, pw, role, engineer_id)
-        new_pw.append((name, email, "(from settings)" if from_env else pw))  # never print a password set in settings
-        if email == DEMO_EMAIL and not os.environ.get("DEMO_FARMER_PASSWORD"):
+        new_pw.append((name, email, "(from settings)" if want else pw))  # never print a password set in settings
+        if email == DEMO_EMAIL and not want:
             set_env("DEMO_MODE", "1")
             set_env("DEMO_FARMER_EMAIL", email)
             set_env("DEMO_FARMER_PASSWORD", pw)
         return u
 
+    # demo accounts that are no longer in the list (and their fields) are removed
+    keep = {e for e, _, _ in FARMERS} | {ENGINEER[0]}
+    with db.conn() as c:
+        old = [r["id"] for r in c.execute("SELECT id, email FROM users").fetchall()
+               if r["email"].endswith(DEMO_DOMAIN) and r["email"] not in keep]
+    for uid in old:
+        db.delete_user(uid)
+
     eng = user(*ENGINEER)
+    hassan_id = None
     for email, name, flist in FARMERS:
         u = user(email, name, "farmer", eng["id"])
-        with db.conn() as c:  # make sure every seeded farmer is assigned to Ahmed
+        if email == DEMO_EMAIL:
+            hassan_id = u["id"]
+        with db.conn() as c:  # every seeded farmer is assigned to the engineer
             c.execute("UPDATE users SET engineer_id=? WHERE id=?", (eng["id"], u["id"]))
+        # fields this demo farmer no longer has (e.g. moved to the Delta) are removed
+        want_ids = {x["id"] for x in flist}
+        with db.conn() as c:
+            stale = [r["id"] for r in c.execute("SELECT id FROM fields WHERE owner_id=?", (u["id"],)).fetchall() if r["id"] not in want_ids]
+        for fid in stale:
+            db.delete_field(fid)
         for f in flist:
             f = {k: v for k, v in f.items() if k not in ("farmer", "owner_id", "engineer_id")}
+            if f["id"] == "north-plot":  # the judges' field: this season's activity + the complete last season
+                import copy
+                f = hassan.last_season(hassan.this_season(copy.deepcopy(f)))
             db.save_field(f, u["id"])
+
+    # the engineer's approvals and Hassan's earlier Ask Bezra questions (real Gemini answers, saved once)
+    approvals = db.kv_get("approvals", {}) or {}
+    for fid in [x["id"] for _, _, fl in FARMERS for x in fl]:
+        approvals.pop(fid, None)
+    approvals.update(APPROVALS)
+    db.kv_set("approvals", approvals)
+    if hassan_id:
+        db.kv_set(f"chat:{hassan_id}:north-plot", hassan.chats())
 
     with db.conn() as c:
         n_users = c.execute("SELECT COUNT(*) AS n FROM users").fetchone()["n"]
         n_fields = c.execute("SELECT COUNT(*) AS n FROM fields").fetchone()["n"]
-    print(f"Database ready: {n_users} accounts, {n_fields} fields.")
+    print(f"Database ready{' (demo accounts restored)' if reset else ''}: {n_users} accounts, {n_fields} fields.")
     if new_pw:
-        print("\nNEW PASSWORDS (shown only this once; write them down):")
+        print()
+        print("NEW PASSWORDS (shown only this once; write them down):")
         for name, email, pw in new_pw:
             print(f"  {name:<16} {email:<30} {pw}")
     else:
-        print("No new accounts; passwords unchanged.")
+        print("No new accounts; passwords follow ENGINEER_PASSWORD / DEMO_FARMER_PASSWORD in settings.")
 
 
 if __name__ == "__main__":

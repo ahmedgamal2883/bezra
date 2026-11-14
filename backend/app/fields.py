@@ -11,7 +11,11 @@ FIELDS: dict[str, dict] = {
         "id": "north-plot", "num": "01", "name": "North plot", "farmer": "Hassan Farouk",
         "village": "Shibin El Kom", "governorate": "Menoufia",
         "lat": 30.55351, "lon": 30.98915,  # farmland 2.3 km west of Shibin El Kom (checked on Sentinel-2)
-        "area_feddan": 2.4, "crop": "wheat", "variety": "sakha95",
+        "area_feddan": 3.0, "crop": "wheat", "variety": "sakha95",
+        # drawn field, 105 x 120 m = 3.0 feddan on cropland (ESA WorldCover: 100% cropland in all 16 squares)
+        "polygon": [[30.554049, 30.988602], [30.554049, 30.989698], [30.552971, 30.989698], [30.552971, 30.988602]], "grid_cols": 4, "grid_rows": 4,
+        "soil_texture": {"label": "Clay loam", "clay": 34.2, "sand": 36.7, "silt": 29.1, "source": "ISRIC SoilGrids 250 m, topsoil 0-5 cm"},
+        "yields": "17, 18.5, 16", "water_kind": "canal", "irrigation": "flood", "pump_flow": 60,
         "sow_date": "2026-10-15", "prev_crop": "maize", "prev_crop_harvest": "2026-12-10",
         "water_source": "Mesqa, tail end", "mesqa_position": "tail", "turn_days": 10,
         "next_turn": "2026-11-19",

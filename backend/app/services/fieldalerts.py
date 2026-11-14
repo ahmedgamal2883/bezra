@@ -271,6 +271,33 @@ def build(c: Ctx) -> dict:
             "voice": "جاي أيام حر. اسقي رية خفيفة قبلها بيوم.",
         })
 
+    # last season's alerts, closed (shown under "Closed", with their real dates)
+    for sea in f.get("seasons") or []:
+        fm = sea.get("farmer") or {}
+        for wv in sea.get("heat_waves", []):
+            if wv.get("warned_days_early") and sea.get("heat_prep_watering"):
+                out.append({"id": f"heat-{wv['start']}", "kind": "heat", "level": "low", "state": "closed", "closed_by": "farmer",
+                            "title": f"Last season: heat from {wv['start']}, warned {wv['warned_days_early']} days before",
+                            "seen": f"{wv['days']} day(s) up to {wv['peak_c']} °C while the grain filled.", "where": None, "sure": "med",
+                            "sure_why": "A forecast issued before the heat.", "causes": [], "ask": [], "evidence": None,
+                            "action": f"You gave a light watering on {sea['heat_prep_watering']}.", "answer": "done",
+                            "source": "Open-Meteo forecast archive + NASA POWER", "provenance": "estimated", "season": sea["season"]})
+                break
+        for sp in sea.get("weak_spots", []):
+            if sp.get("recovered"):
+                out.append({"id": f"spot-{sp['found']}", "kind": "spot", "level": "low", "state": "closed", "closed_by": "recovery",
+                            "title": f"Last season: the {sp['where']} looked weaker", "seen": f"{sp['pct_less_green']}% less green on {sp['found']}; normal again on {sp['recovered']}.",
+                            "where": None, "sure": "med", "sure_why": "", "causes": [], "ask": [], "evidence": None,
+                            "action": fm.get("weak_spot_answer") or "", "answer": None, "source": sea.get("sources", {}).get("images", ""),
+                            "provenance": "satellite", "season": sea["season"]})
+                break
+        for e in sea.get("waterings_seen", [])[:1]:
+            out.append({"id": f"seen-{e['end']}", "kind": "water", "level": "low", "state": "closed", "closed_by": "farmer",
+                        "title": "Last season: a watering seen from space", "seen": f"Between {e['start']} and {e['end']} ({' + '.join(e['signals'])}).",
+                        "where": None, "sure": e["confidence"].lower()[:3] if e["confidence"].lower().startswith("med") else e["confidence"].lower(),
+                        "sure_why": "", "causes": [], "ask": [], "evidence": None, "action": "You confirmed it.",
+                        "answer": "yes", "source": "Sentinel-2 / Sentinel-1", "provenance": "satellite", "season": sea["season"]})
+
     order = {"high": 0, "med": 1, "low": 2}
     out.sort(key=lambda x: (x["state"] == "closed", order[x["level"]]))
     return {"field_id": fid, "date": today.isoformat(), "open": sum(x["state"] == "open" for x in out), "alerts": out,

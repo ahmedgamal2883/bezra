@@ -170,7 +170,8 @@ def build(c: Ctx) -> dict:
                   "governorate": f["governorate"], "crop": fields.CROP_LABEL[f["crop"]],
                   "variety": c.variety.get("label"), "sow_date": f["sow_date"],
                   "area": num(f["area_feddan"], "feddan", "farmer", "You"),
-                  "soil": num(fields.SOIL_LABEL[f["soil"]], None, est, "Default for the Delta until SoilGrids is connected"),
+                  "soil": (num(f["soil_texture"]["label"], None, est, f["soil_texture"]["source"]) if f.get("soil_texture") else
+                           num(fields.SOIL_LABEL.get(f.get("soil"), "Heavy clay"), None, est, "Default for the Delta (no SoilGrids value yet)")),
                   "water_source": num(f["water_source"], None, "farmer", "You"),
                   "turn": num(f"Every {f['turn_days']} days", None, "farmer", "You")},
         "today": today.isoformat(),

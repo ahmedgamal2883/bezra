@@ -1,0 +1,79 @@
+[
+ {
+  "at": "2026-11-03T20:14",
+  "q": "اروي امتى المرة الجاية؟",
+  "a": {
+   "text": "دور المية الجاي عندك يوم الخميس 19 نوفمبر. التربة فيها رطوبة كويسة حالياً (79%)، والرية دي مهمة جداً لمرحلة التفريع وبتحمي حوالي 13% إلى 18% من المحصول.",
+   "mood": "thinking",
+   "cards": [
+    {
+     "type": "fact",
+     "title": "دور المية الجاي: الخميس 19 نوفمبر",
+     "items": [],
+     "provenance": "estimated"
+    }
+   ],
+   "sources": [
+    "FAO-56",
+    "NASA POWER",
+    "Open-Meteo"
+   ]
+  },
+  "model": "gemini-3.5-flash"
+ },
+ {
+  "at": "2026-11-12T08:40",
+  "q": "آخر الأرض لونه باهت من ساعة ما الدور فاتني. ده من العطش؟",
+  "a": {
+   "text": "أيوة يا عم حسن، البياض اللي في آخر الأرض غالباً من دور الري اللي فات اللي تأخر. رطوبة الأرض ككل حوالي 79%، بس الدور الجاي يوم الخميس مهم جداً عشان نعوض الجزئيّة دي.",
+   "mood": "concerned",
+   "cards": [
+    {
+     "type": "fact",
+     "title": "Soil water 79%, next water turn Thursday",
+     "items": [],
+     "provenance": "satellite"
+    },
+    {
+     "type": "engineer",
+     "title": "Ask your engineer",
+     "items": [],
+     "provenance": "none"
+    }
+   ],
+   "sources": [
+    "NASA POWER",
+    "FAO-56"
+   ]
+  },
+  "model": "gemini-3.5-flash-lite"
+ },
+ {
+  "at": "2026-11-13T19:05",
+  "q": "Is this week's weather good for my wheat?",
+  "a": {
+   "text": "The weather this week is friendly for your wheat, Hassan. All risks like heat, water, and rust are low while your wheat is at the tillering stage.",
+   "mood": "happy",
+   "cards": [
+    {
+     "type": "fact",
+     "title": "Soil water 79%, refill at 50%",
+     "items": [],
+     "provenance": "satellite"
+    },
+    {
+     "type": "fact",
+     "title": "Heat, water, and rust risks: Low",
+     "items": [],
+     "provenance": "estimated"
+    }
+   ],
+   "sources": [
+    "NASA POWER",
+    "FAO-56",
+    "Open-Meteo"
+   ]
+  },
+  "model": "gemini-3.5-flash-lite"
+ }
+]

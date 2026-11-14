@@ -96,7 +96,16 @@ def build(c: Ctx) -> dict:
     def ardeb(idx):
         return round(usual * idx, 1) if usual else None
 
+    last = None
+    if f.get("seasons"):
+        from .seasons import view
+        v = view(f)[-1]
+        last = {"season": v["season"], "reported_ardeb": v["harvest_reported_ardeb"], "estimated_ardeb": v["harvest_estimated_ardeb"],
+                "heat_prep_gain_pct": v["heat_prep_gain_pct"],
+                "heat_prep_gain_ardeb": round(usual * v["heat_prep_gain_pct"] / 100, 1) if usual else None,
+                "missed_turn_cost_pct": v["missed_turn_cost_pct"]}
     return {
+        "last_season": last,
         "crop": crop, "unit": "ardeb per feddan" if usual else "% of what the field can give",
         "usual": {"value": usual, "source": usual_src},
         "with_bezra": {"pct": round(w_idx * 100), "ardeb": ardeb(w_idx)},

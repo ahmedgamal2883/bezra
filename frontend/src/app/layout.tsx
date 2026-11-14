@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { ModeProvider } from '@/lib/dc';
 import { FieldProvider } from '@/lib/field';
 import { LangProvider } from '@/lib/i18n';
+import DemoBadge from '@/components/DemoBadge';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <LangProvider initial={lang}>
           <ModeProvider>
-            <FieldProvider>{children}</FieldProvider>
+            <FieldProvider>{children}<DemoBadge /></FieldProvider>
           </ModeProvider>
         </LangProvider>
       </body>

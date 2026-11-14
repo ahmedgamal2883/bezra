@@ -135,7 +135,10 @@ def me(user: dict = Depends(current_user)):
             r = k.execute("SELECT name FROM users WHERE id=?", (user["engineer_id"],)).fetchone()
         eng = r["name"] if r else None
     demo = user["email"] == os.environ.get("DEMO_FARMER_EMAIL", "hassan@demo.bezra.app")
-    return user | {"demo": demo, "engineer_name": eng, "fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
+    demo_account = user["email"].endswith("@demo.bezra.app") or (
+        os.environ.get("DEMO_MODE") == "1" and user["email"] == os.environ.get("ENGINEER_EMAIL", "ahmed@bezra.app"))
+    return user | {"demo": demo, "demo_account": demo_account, "engineer_name": eng,
+                   "fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
 
 
 @app.get("/demo")
@@ -452,6 +455,13 @@ def get_impact(field_id: str, user: dict = Depends(current_user)):
     return impact.build(_ctx(field_id, user))
 
 
+@app.get("/fields/{field_id}/seasons")
+def get_seasons(field_id: str, user: dict = Depends(current_user)):
+    """Past seasons: report numbers and the season's timeline (each event labelled with where it came from)."""
+    from .services import seasons
+    return {"seasons": seasons.view(_ctx(field_id, user).f)}
+
+
 @app.get("/fields/{field_id}/freshness")
 def get_freshness(field_id: str, user: dict = Depends(current_user)):
     """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""
@@ -635,6 +645,28 @@ class ChatReq(BaseModel):
     history: list[dict] = []
 
 
+def _chat_key(uid: int, fid: str) -> str:
+    return f"chat:{uid}:{fid}"
+
+
+def _save_chat(uid: int, fid: str, question: str, answer: dict) -> None:
+    """Keep the last 20 questions and answers per farmer and field, so Ask Bezra opens on the conversation."""
+    try:
+        from datetime import datetime as _dt
+        log = db.kv_get(_chat_key(uid, fid), []) or []
+        log.append({"at": _dt.now().isoformat(timespec="minutes"), "q": question,
+                    "a": {k: answer.get(k) for k in ("text", "mood", "cards", "sources")}})
+        db.kv_set(_chat_key(uid, fid), log[-20:])
+    except Exception:
+        pass
+
+
+@app.get("/chat/history")
+def chat_history(field_id: str, user: dict = Depends(current_user)):
+    c = _ctx(field_id, user)
+    return {"items": db.kv_get(_chat_key(user["id"], c.f["id"]), []) or []}
+
+
 @app.get("/chat/status")
 def chat_status():
     return {"ready": bezra.available(), "model": bezra.model_name()}
@@ -648,7 +680,9 @@ def post_chat(req: ChatReq, user: dict = Depends(current_user)):
     if not req.message.strip() or len(req.message) > 2000:
         raise HTTPException(422, "Empty or too long message")
     try:
-        return bezra.chat(c, req.history, req.message.strip())
+        out = bezra.chat(c, req.history, req.message.strip())
+        _save_chat(user["id"], c.f["id"], req.message.strip(), out)
+        return out
     except anthropic.AuthenticationError:
         raise HTTPException(503, "The Claude API key in backend/.env is not valid")
     except anthropic.RateLimitError:
