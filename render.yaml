@@ -30,3 +30,11 @@ services:
         sync: false
       - key: EARTHDATA_PASSWORD
         sync: false
+      # Phase 3: Supabase Postgres (session pooler URL). Without it the free plan's SQLite is wiped on restart.
+      - key: DATABASE_URL
+        sync: false
+      # Phase 3: shared secret for POST /jobs/refresh (same value as the GitHub repository secret JOBS_TOKEN)
+      - key: JOBS_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

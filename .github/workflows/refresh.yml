@@ -1,0 +1,32 @@
+# Phase 3: wakes the Render server and starts Bezra's data refresh (weather, satellite passes, SMAP, soil estimate).
+# Needs one repository secret: JOBS_TOKEN (same value as JOBS_TOKEN in Render -> Environment).
+name: Data refresh
+on:
+  schedule:
+    - cron: "0 3 * * *"     # 05:00 Cairo: full daily refresh
+    - cron: "0 9,15,21 * * *"  # every 6 hours after that: catch new satellite passes
+  workflow_dispatch: {}      # "Run workflow" button for a manual refresh
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Wake the server (free plan sleeps)
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl -fsS -m 60 https://bezra-api.onrender.com/health && exit 0
+            sleep 20
+          done
+          exit 1
+      - name: Start the refresh
+        env:
+          JOBS_TOKEN: ${{ secrets.JOBS_TOKEN }}
+        run: |
+          curl -fsS -m 60 -X POST -H "Authorization: Bearer $JOBS_TOKEN" https://bezra-api.onrender.com/jobs/refresh
+      - name: Wait and report
+        env:
+          JOBS_TOKEN: ${{ secrets.JOBS_TOKEN }}
+        run: |
+          sleep 240
+          curl -fsS -m 60 -H "Authorization: Bearer $JOBS_TOKEN" https://bezra-api.onrender.com/jobs/refresh | head -c 2000

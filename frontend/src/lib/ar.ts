@@ -4,6 +4,10 @@
 /* eslint-disable quotes */
 
 export const EXACT: Record<string, string> = {
+  'Last update': 'آخر تحديث', 'Satellite image': 'صورة القمر الصناعي', 'Soil moisture (SMAP)': 'رطوبة التربة (SMAP)',
+  'today': 'النهارده', 'yesterday': 'امبارح', 'no data yet': 'لسه مفيش داتا',
+  'Bezra watches heat, water in the soil, rust weather, rain, wind, frost and weak spots in the satellite images every morning, and checks for new satellite images every 6 hours.': 'بذرة بتراقب الحر، والمية في التربة، وجو الصدا، والمطر، والهوا، والصقيع، والحتت الضعيفة في صور القمر الصناعي كل يوم الصبح، وبتدور على صور جديدة كل 6 ساعات.',
+  'Sources': 'المصادر',
   // ---- navigation, header, common ----
   'bezra': 'بذرة', 'Hassan': 'حسن', 'Samia': 'سامية', 'Ahmed': 'أحمد', 'Karim': 'كريم', 'Mahmoud': 'محمود', 'Fathy': 'فتحي',
   'emerging': 'بيطلع', 'tillering': 'التفريع', 'stem growth': 'طلوع الساق', 'heading': 'طلوع السنابل', 'grain filling': 'امتلاء الحبوب', 'later': 'متأخر', 'earlier': 'بدري', 'above': 'فوق', 'under': 'تحت', 'About the same as': 'زي', 'Better than': 'أحسن من', 'Slightly better than': 'أحسن شوية من', 'Slightly below': 'أقل شوية من', 'Below': 'أقل من', 'early': 'أول', 'mid': 'نص', 'late': 'آخر', 'greener': 'أخضر', 'less green': 'أقل خضرة', 'about the same': 'زي ما هي', '°C': '°م', 'growing': 'بيكبر', 'ready to harvest': 'جاهز للحصاد',
@@ -530,7 +534,10 @@ export const PATTERNS: [RegExp, string][] = ([
   [`^Harvest: ([\\d.]+) ardeb per feddan$`, 'الحصاد: $1 أردب للفدان'],
   [`^about (\\d+) m³\\. (.+)$`, 'حوالي $1 م³. $2'],
   [`^Watering seen from space \\((.+) to (.+)\\)$`, 'ري اتشاف من الفضاء ($1 لـ $2)'],
+  [`^2 days ago$`, 'من يومين'],
+  [`^([3-9]|10) days ago$`, 'من $1 أيام'],
   [`^(\\d+) days ago$`, 'من $1 يوم'],
+  [`^(Weather|Satellite image|Soil moisture \\(SMAP\\)): (.+)$`, '$1: $2'],
   [`^squares of (\\d+) m$`, 'مربعات $1 متر'],
   [`^(About the same as|Better than|Slightly better than|Slightly below|Below) (?:a )?normal(?: year)? for (early|mid|late) (\\w+)\\.?$`, '$1 المعتاد في $2 $d3'],
   [`^Good morning, (.+)$`, 'صباح الخير يا $1'],

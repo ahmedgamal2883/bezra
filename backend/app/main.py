@@ -34,14 +34,9 @@ def _daily_alerts_job():
 
     def loop():
         while True:
-            for fid in fields.all_ids():
-                try:
-                    c = ctx(fid)
-                    if c:
-                        alerts.build(c)
-                except Exception as e:  # a failed source must not stop the job
-                    print("daily alerts failed for", fid, e)
-            plan.daily(ctx)  # Phase 2 §C2: re-score every plan, what changed
+            # Fallback only: the server sleeps on Render's free plan, so GitHub Actions calls /jobs/refresh.
+            from .services import refresh
+            refresh.run()
             now = datetime.now()
             nxt = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
             _t.sleep(max(60, (nxt - now).total_seconds()))
@@ -318,6 +313,41 @@ def get_mapframe(field_id: str, user: dict = Depends(current_user)):
 def get_journal(field_id: str, user: dict = Depends(current_user)):
     """Rework F: one timeline of satellite, weather, Bezra's estimates, the farmer's log and the plan."""
     return journal.build(_ctx(field_id, user))
+
+
+@app.get("/fields/{field_id}/freshness")
+def get_freshness(field_id: str, user: dict = Depends(current_user)):
+    """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""
+    from .services import refresh
+    c = _ctx(field_id, user)
+    return refresh.freshness(c.f["id"], c.today)
+
+
+# ---- scheduled refresh (GitHub Actions) ----------------------------------------------------------
+def _job_auth(request: Request) -> None:
+    import hmac
+    want = os.environ.get("JOBS_TOKEN", "")
+    got = request.headers.get("authorization", "").removeprefix("Bearer ").strip()
+    if not want or not hmac.compare_digest(got, want):
+        raise HTTPException(401, "Bad job token")
+
+
+@app.post("/jobs/refresh", status_code=202)
+def jobs_refresh(request: Request):
+    """Called by .github/workflows/refresh.yml. Starts the refresh in the background and returns at once."""
+    from .services import refresh
+    _job_auth(request)
+    started = refresh.start_background()
+    return {"started": started, "running": not started, "last": (refresh.last_state() or {}).get("at")}
+
+
+@app.get("/jobs/refresh")
+def jobs_refresh_status(request: Request):
+    from .services import refresh
+    _job_auth(request)
+    st = refresh.last_state() or {}
+    return {"last": st.get("at"), "seconds": st.get("seconds"), "fields": st.get("fields"),
+            "results": st.get("results")}
 
 
 @app.get("/fields/{field_id}/squares")

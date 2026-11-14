@@ -8,6 +8,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { API, PV } from '@/lib/api';
 import { LogSheet } from '@/components/PlanToday';
 import FieldJournal, { SeasonSoFar, useJournal } from '@/components/FieldJournal';
+import Freshness from '@/components/Freshness';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LVC: Record<string, string> = { Low: 'lv lv-low', Medium: 'lv lv-med', High: 'lv lv-high' };
@@ -84,6 +85,7 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
         {ready ? <span className={LVC[D.status.level] || 'lv lv-low'} style={{ fontSize: '14px', height: '32px', padding: '0 12px' }}><i />{D.status.text}</span> : <span className="tl">{'Reading your field…'}</span>}
         {ready && D.tracker.due ? <Link href={`/field/${id}/plan`} className="tl press" style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>{D.tracker.text}</Link> : null}
       </div>
+      <Freshness id={id} />
 
       <div className="today-top">
         <div className="today-map">
@@ -103,7 +105,7 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
           {ready && !D.warnings.length ? (
             <div className="col" style={{ gap: '8px', color: 'rgba(255,255,255,.82)', fontSize: '14px', lineHeight: 1.5 }}>
               <span>{'Nothing to worry about this week.'}</span>
-              <span style={{ color: 'rgba(255,255,255,.62)' }}>{'Bezra watches heat, water in the soil, rust weather, rain, wind, frost and weak spots in the satellite images every day at 6:00.'}</span>
+              <span style={{ color: 'rgba(255,255,255,.62)' }}>{'Bezra watches heat, water in the soil, rust weather, rain, wind, frost and weak spots in the satellite images every morning, and checks for new satellite images every 6 hours.'}</span>
             </div>
           ) : null}
           {(D?.warnings || []).map((x: any) => (
