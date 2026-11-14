@@ -88,6 +88,36 @@ def _esri():
     _get("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/14/6796/9601")
 
 
+def _worldcover():
+    import httpx
+    from ..connectors.landcover import WC_URL
+    r = httpx.head(WC_URL.format(tile="N30E030"), timeout=15)  # the Delta tile (a public Cloud-Optimised GeoTIFF)
+    r.raise_for_status()
+
+
+def _osm():
+    import httpx
+    from ..connectors.landcover import OVERPASS
+    last = None
+    for url in OVERPASS:
+        try:
+            r = httpx.post(url, data={"data": "[out:json][timeout:10];node(1);out ids;"}, timeout=45,
+                           headers={"User-Agent": "bezra-farm-app/1.0"})
+            r.raise_for_status()
+            return
+        except Exception as e:
+            last = e
+    raise RuntimeError(f"Overpass busy: {last}")
+
+
+def _database():
+    from .. import db
+    with db.conn() as c:
+        c.execute("SELECT 1").fetchone()
+    if db.engine() != "postgres":
+        raise RuntimeError("local SQLite (production uses Supabase Postgres via DATABASE_URL)")
+
+
 def _gemini():
     from ..chat import gemini
     if not gemini.available():
@@ -116,6 +146,9 @@ APIS = [
     ("Google Gemini", "Ask Bezra, photo check (AI model)", _gemini, ""),
     ("Claude API", "Ask Bezra (backup AI model)", _claude, ""),
     ("Esri World Imagery", "Satellite photo maps: onboarding, Today, Engineer", _esri, ""),
+    ("ESA WorldCover 10 m", "Which squares are farmland (buildings, water, bare ground left out)", _worldcover, ""),
+    ("OpenStreetMap (Overpass)", "Roads and buildings left out of the squares", _osm, ""),
+    ("Database (Supabase Postgres)", "Saves fields, tasks, answers and the data history", _database, ""),
     ("Sentinel-1 RTC (ESA, extra)", "Irrigation detection (Beta)", _s1, ""),
     ("NASA GPM IMERG", "Rain that fell", None, "Rain comes from NASA POWER for now"),
     ("NASA SRTM (AppEEARS)", "Slope and low spots", None, "Copernicus DEM used instead (same 30 m)"),

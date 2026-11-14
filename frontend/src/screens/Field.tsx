@@ -12,6 +12,7 @@ import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Field.logic';
+import { useFieldPhoto } from '@/lib/fieldPhoto';
 import TodayBoard from '@/components/TodayBoard';
 
 export default function FieldScreen() {
@@ -23,16 +24,8 @@ export default function FieldScreen() {
   const summary = useApi(`/fields/${id}/summary`);
   const ndvi = useApi(`/fields/${id}/ndvi`);
   const health = useApi(`/fields/${id}/health`);
-  // Real satellite photo under the squares (Esri World Imagery, exported in the field's UTM zone so the
-  // 30 m squares sit on the ground they measure). The grid box is drawn at x 605..765, y 120..340.
-  const frame = useApi(`/fields/${id}/mapframe`).data;
-  let photo: string | null = null, outline: string | null = null;
-  if (frame) {
-    const g = frame.grid, sx = 160 / (g.right - g.left), sy = 220 / (g.top - g.bottom);
-    const L = g.left - 605 / sx, T = g.top + 120 / sy, R = L + 1360 / sx, B = T - 520 / sy;
-    photo = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${L},${B},${R},${T}&bboxSR=${frame.wkid}&imageSR=${frame.wkid}&size=2040,780&format=jpg&f=image`;
-    if (frame.outline) outline = frame.outline.map(([x, y]: number[]) => `${(605 + (x - g.left) * sx).toFixed(1)},${(120 + (g.top - y) * sy).toFixed(1)}`).join(' ');
-  }
+  // Real satellite photo under the squares (lib/fieldPhoto.ts).
+  const { photo, outline } = useFieldPhoto(id);
   const demo = useDemo();
   const __v = useDC(Logic, { demo, data: summary.data, loading: summary.loading, fieldId: id, ndvi: ndvi.data, health: health.data });
   return (
@@ -259,7 +252,7 @@ export default function FieldScreen() {
                     <>
                       {((__v?.cells) || []).map((c: any, i4: number) => (
                         <Fragment key={i4}>
-                          <text x={__s(c?.cx) as any} y={__s(c?.cy) as any} transform={__s(c?.tf) as any} textAnchor="middle" dominantBaseline="central" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill={__s(c?.ink) as any}>
+                          <text x={__s(c?.cx) as any} y={__s(c?.cy) as any} transform={photo ? undefined : (__s(c?.tf) as any)} textAnchor="middle" dominantBaseline="central" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill={__s(c?.ink) as any}>
                             {__s(c?.label)}
                           </text>
                         </Fragment>

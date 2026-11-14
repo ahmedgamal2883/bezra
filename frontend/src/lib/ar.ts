@@ -4,6 +4,13 @@
 /* eslint-disable quotes */
 
 export const EXACT: Record<string, string> = {
+  "It is also the driest corner. The satellite can't tell why, so please go and look.": 'وكمان هي أنشف حتة. القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
+  "It is the lowest part of the field, so water can stay there. The satellite can't tell why, so please go and look.": 'وهي أوطى حتة في الأرض، فالمية ممكن تقف فيها. القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
+  "It is also the driest corner. It is the lowest part of the field, so water can stay there. The satellite can't tell why, so please go and look.": 'وكمان هي أنشف حتة. وهي أوطى حتة في الأرض، فالمية ممكن تقف فيها. القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
+  'This part looks weaker': 'الحتة دي شكلها أضعف',
+  'This corner looks weaker': 'الركن ده شكله أضعف',
+  "The satellite can't tell why, so please go and look.": 'القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
+  'No square was less green than the rest of your field in the last two satellite images. Keep an eye on the corners after each water turn.': 'مفيش مربع كان أقل خضرة من باقي أرضك في آخر صورتين من القمر الصناعي. خلي عينك على الأركان بعد كل رية.',
   'Not enough water': 'مية مش كفاية',
   'Hungry for fertilizer (nitrogen)': 'محتاجة سماد (أزوت)',
   'A leaf disease (like rust)': 'مرض في الورق (زي الصدا)',
@@ -692,6 +699,13 @@ export const PATTERNS: [RegExp, string][] = ([
   [`^(.+)\\. (Wheat|Berseem|Maize|Rice), day (\\d+), (.+)\\.$`, '$d1. $2، يوم $3، $4.'],
   [`^(.+)\\. (Wheat|Berseem|Maize|Rice), sowing in (\\d+) days?\\.$`, '$d1. $2، الزراعة بعد $3 يوم.'],
   [`^Day (\\d+)$`, 'يوم $1'],
+  [`^From the checklist: (.+)$`, 'من قايمة المهام: $1'],
+  [`^(.+), ~([\\d.]+) feddan$`, '$1، حوالي $2 فدان'],
+  [`^It has been (\\d+)% less green than the rest of your field in the last two satellite images\\. (.+)$`, 'بقالها أقل خضرة من باقي أرضك بـ $1% في آخر صورتين من القمر الصناعي. $2'],
+  [`^ It is also the driest corner\\.(.*)$`, ' وكمان هي أنشف حتة.$1'],
+  [`^ It is the lowest part of the field, so water can stay there\\.(.*)$`, ' وهي أوطى حتة في الأرض، فالمية ممكن تقف فيها.$1'],
+  [`^ The satellite can't tell why, so please go and look\\.$`, ' القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.'],
+  [`^Greenness of your field in (\\d+) squares\\. The (.+) is less green\\.$`, 'خضرة أرضك في $1 مربع. $2 أقل خضرة.'],
   [`^The (.+): closed$`, '$1: اتقفلت'],
   [`^(\\d+)% less green than the rest of your field, about ([\\d.]+) feddan, in the last (\\d+) clear satellite images\\.$`, 'أقل خضرة من باقي أرضك بـ $1%، حوالي $2 فدان، في آخر $3 صور واضحة من القمر الصناعي.'],
   [`^(\\d+)% less green, in 2 clear images in a row\\.$`, 'أقل خضرة بـ $1%، في صورتين واضحتين ورا بعض.'],

@@ -14,12 +14,15 @@ import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
 import Logic from './Health.logic';
+import { useFieldPhoto } from '@/lib/fieldPhoto';
 
 export default function HealthScreen() {
   const { fp, id } = useField();
   const health = useApi(`/fields/${id}/health`);
   const demo = useDemo();
   const __v = useDC(Logic, { demo, data: health.data, ndvi: health.data?.ndvi, loading: health.loading, fieldId: id });
+  // Real satellite photo under the squares (same as My field), not the design's drawing.
+  const { photo, outline } = useFieldPhoto(id);
   // "Take a photo" -> POST /cases -> open the case on Diagnose (step 6).
   const router = useRouter();
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -191,6 +194,7 @@ export default function HealthScreen() {
                     {" "}
                   </defs>
                   {" "}
+                  {photo ? <image href={photo} x="0" y="0" width="1360" height="520" preserveAspectRatio="none" /> : (<>
                   <g transform="rotate(-9 680 260)">
                     {" "}
                     <g stroke="#D8D1BA" strokeWidth="1.1" strokeOpacity=".8">
@@ -226,6 +230,7 @@ export default function HealthScreen() {
                   <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#3B6E8F" strokeWidth="10" />
                   {" "}
                   <rect width="1360" height="520" filter="url(#grain)" opacity=".14" style={{"mixBlendMode":"multiply"} as any} />
+                  </>)}
                   {" "}
                   {__v?.dim ? (
                     <>
@@ -233,7 +238,7 @@ export default function HealthScreen() {
                     </>
                   ) : null}
                   {" "}
-                  <g transform="rotate(-9 680 260)">
+                  <g transform={photo ? undefined : "rotate(-9 680 260)"}>
                     {" "}
                     {((__v?.cells) || []).map((c: any, i4: number) => (
                       <Fragment key={i4}>
@@ -245,7 +250,7 @@ export default function HealthScreen() {
                       <>
                         {((__v?.cells) || []).map((c: any, i5: number) => (
                           <Fragment key={i5}>
-                            <text x={__s(c?.cx) as any} y={__s(c?.cy) as any} transform={__s(c?.tf) as any} textAnchor="middle" dominantBaseline="central" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill={__s(c?.ink) as any}>
+                            <text x={__s(c?.cx) as any} y={__s(c?.cy) as any} transform={photo ? undefined : (__s(c?.tf) as any)} textAnchor="middle" dominantBaseline="central" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill={__s(c?.ink) as any}>
                               {__s(c?.label)}
                             </text>
                           </Fragment>
@@ -256,6 +261,7 @@ export default function HealthScreen() {
                     <rect x="605" y="120" width="160" height="220" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeOpacity=".95" />
                     {" "}
                     <rect x="605" y="120" width="160" height="220" fill="none" stroke="#141A16" strokeWidth="2" />
+                    {outline ? <polygon points={outline} fill="none" stroke="#F29B1E" strokeWidth="3" strokeLinejoin="round" strokeDasharray="8 6" /> : null}
                     {" "}
                     {__v.pin ? (
                     <g transform={__v.pin}>
