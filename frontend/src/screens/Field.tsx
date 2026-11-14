@@ -287,6 +287,10 @@ export default function FieldScreen() {
                   </Fragment>
                 ))}
               </div>
+              <Link href={fp("/map")} className="float press map-full">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+                {"Open the full map"}
+              </Link>
               <div className="map-legend" style={{"position":"absolute","left":"18px","bottom":"18px","display":"flex","alignItems":"flex-end","gap":"10px"} as any}>
                 <div className="float map-zoom" style={{"display":"flex","flexDirection":"column","borderRadius":"999px","overflow":"hidden"} as any}>
                   <button type="button" aria-label="Zoom in" className="ghost" style={{"width":"40px","height":"40px","border":"0","background":"transparent","display":"flex","alignItems":"center","justifyContent":"center"} as any}>
@@ -315,7 +319,7 @@ export default function FieldScreen() {
                         ))}
                       </span>
                       <span className="tl">
-                        {__s(__v?.legendNote)}{" "}<Link href={fp("/squares")} style={{ textDecoration: "underline", textUnderlineOffset: "3px", color: "var(--ink)", fontWeight: 600, pointerEvents: "auto" }}>{"Are they real? See the proof"}</Link>{" · "}<Link href={fp("/map")} style={{ textDecoration: "underline", textUnderlineOffset: "3px", color: "var(--ink)", fontWeight: 600, pointerEvents: "auto" }}>{"Open the full map"}</Link>
+                        {__s(__v?.legendNote)}{" "}<Link href={fp("/squares")} style={{ textDecoration: "underline", textUnderlineOffset: "3px", color: "var(--ink)", fontWeight: 600, pointerEvents: "auto" }}>{"Are they real? See the proof"}</Link>
                       </span>
                     </div>
                   </>

@@ -340,3 +340,7 @@ html[dir="rtl"] .flip{transform:scaleX(-1)}
 .layer-opt input{width:18px;height:18px;accent-color:var(--dark);flex:none}
 .legend-ramp{height:10px;border-radius:5px;display:block}
 @media (max-width:760px){.fullmap{height:460px}}
+
+/* "Open the full map" button on the My field and Health maps: top corner, never under another float */
+.map-full{position:absolute;left:18px;top:18px;z-index:4;height:40px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);text-decoration:none}
+@media (max-width:760px){.map-full{top:auto;bottom:auto;left:10px;top:64px;height:36px;font-size:12px}}
