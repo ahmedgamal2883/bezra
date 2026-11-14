@@ -60,16 +60,16 @@
   "2026-04-14"
  ],
  "skipped_turn": "2026-01-14",
- "yield_index": 0.923,
+ "yield_index": 0.945,
  "factors": {
-  "heat": 0.923,
+  "heat": 0.954,
   "length": 1.0,
-  "water": 1.0,
+  "water": 0.991,
   "rust": 1.0,
   "season_days": 161
  },
- "yield_index_without_heat_prep": 0.923,
- "missed_turn_cost_pct": 0.0,
+ "yield_index_without_heat_prep": 0.915,
+ "missed_turn_cost_pct": 0.9,
  "water_mm": 470,
  "hot_days_grain_fill": 2,
  "passes": [

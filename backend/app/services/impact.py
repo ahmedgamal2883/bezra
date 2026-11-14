@@ -51,8 +51,9 @@ def build(c: Ctx) -> dict:
     st = f.get("task_answers") or {}
     usual, usual_src = usual_yield(crop, f.get("yields"))
 
-    def run(irrigate):
-        return season.run(c.w.day, c.sow, crop=crop, variety=c.variety, irrigate=irrigate, every=f["turn_days"], lat=f["lat"])
+    def run(irrigate, skipped=()):
+        return season.run(c.w.day, c.sow, crop=crop, variety=c.variety, irrigate=irrigate, skipped=skipped,
+                          every=f["turn_days"], lat=f["lat"])
 
     turns = _plan_turns(c, _next_turn(c))
     base = run(turns)
@@ -90,8 +91,21 @@ def build(c: Ctx) -> dict:
             d = date.fromisoformat(tid.split("-", 1)[1])
             if d in turns:
                 continue  # watered anyway (or a satellite saw it): nothing was lost
-            cost = max(0.0, (run(turns | {d}).yield_index - w_idx) * 100)
+            # the season with the turn given vs skipped (water balance + the skipped-turn rule for sensitive stages)
+            cost = max(0.0, (run(turns | {d}).yield_index - run(turns, skipped=[d]).yield_index) * 100)
             missed.append({"date": d.isoformat(), "cost_pct": round(cost, 1)})
+
+    # an open "Water as soon as you can" task: with Bezra = he waters today as it asks; without = the turn stays missed
+    open_missed = [date.fromisoformat(m["date"]) for m in missed if m["cost_pct"] > 0]
+    watered_after = [date.fromisoformat(x["date"]) for x in f.get("waterings", [])]
+    open_missed = [d for d in open_missed if not any(w > d for w in watered_after)]
+    if open_missed:
+        catch_up = run(turns | {c.today})
+        stays = run(turns, skipped=open_missed)
+        w_idx, without_idx = catch_up.yield_index, min(without_idx, stays.yield_index)
+        actions.append({"what": "Water today, as Bezra asks after the missed turn", "date": c.today.isoformat(),
+                        "gain_pct": round((catch_up.yield_index - stays.yield_index) * 100, 1),
+                        "how": "Season model: catching the turn up today vs leaving it missed", "pending": True})
 
     def ardeb(idx):
         return round(usual * idx, 1) if usual else None

@@ -82,7 +82,9 @@ def run_one(c: Ctx, sow_md: tuple[int, int], variety: str, watering: str, season
     rule, skipped = _irrigation_rule(sow, c.f["turn_days"], watering)
     get = c.w.shifted(warming, warming) if warming else c.w.historical  # "what if the climate were warmer"
     if bezra:
-        rule = bezra_rule(rule, get, c.f["turn_days"])
+        base_rule, catch = rule, {t + timedelta(days=1) for t in skipped}   # Bezra's "Water as soon as you can"
+        rule = bezra_rule(lambda d, prev: base_rule(d, prev) or d in catch, get, c.f["turn_days"])
+        skipped = set()
     wheat = c.f["crop"] == "wheat"  # the field's own crop; variety traits only apply to wheat
     r = season.run(get, sow, crop=c.f["crop"], variety=fields.VARIETIES[variety] if wheat else None, irrigate=rule, skipped=skipped,
                    every=c.f["turn_days"], lat=c.f["lat"])

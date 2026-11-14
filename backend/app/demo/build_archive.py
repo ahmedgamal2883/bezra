@@ -63,10 +63,12 @@ def build(field: dict) -> dict:
         watered.append(heat_prep)
     watered = sorted(set(watered))
 
-    def run(irrigate):
-        return season.run(w.historical, SOW, crop="wheat", variety=variety, irrigate=set(irrigate), every=every, lat=field["lat"])
-    actual = run(watered)
-    without_prep = run([x for x in watered if x != heat_prep]) if heat_prep else actual
+    def run(irrigate, skip=()):
+        return season.run(w.historical, SOW, crop="wheat", variety=variety, irrigate=set(irrigate), skipped=skip,
+                          every=every, lat=field["lat"])
+    sk = [skipped] if skipped else []
+    actual = run(watered, sk)
+    without_prep = run([x for x in watered if x != heat_prep], sk) if heat_prep else actual
     missed_cost = (run(watered + [skipped]).yield_index - actual.yield_index) if skipped else 0.0
 
     # 4. every clear satellite pass of that season, as the app reads them (real pixels)

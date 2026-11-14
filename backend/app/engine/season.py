@@ -45,6 +45,10 @@ def is_rust_day(r: dict) -> bool:
     return 7 <= r["tmean"] <= 18 and (r["rh"] >= 85 or r["tmean"] - r["dew"] <= 2)
 
 
+WET_DAYS = 2            # a watering within this many days before a hot day counts as "watered"
+HEAT_IF_WATERED = 0.6   # heat damage on a watered crop: 60% of an unwatered one (canopy cooling)
+
+
 def hot_weight(tmax: float) -> float:
     return 1.6 if tmax >= 34 else (1.0 if tmax >= 32 else 0.0)
 
@@ -100,6 +104,7 @@ def run(get_day: Callable[[date], dict | None], sow: date, *, crop: str = "wheat
     rule = irrigate if callable(irrigate) else (lambda d, _y, s=set(irrigate or []): d in s)
     res = Result()
     gdd, dr = 0.0, 0.0
+    last_irr: date | None = sow
     etc_s: dict[str, float] = {}
     eta_s: dict[str, float] = {}
     prev: Day | None = None
@@ -132,6 +137,12 @@ def run(get_day: Callable[[date], dict | None], sow: date, *, crop: str = "wheat
         eta_s[st] = eta_s.get(st, 0) + eta
         res.irrigation_mm += irr
         hot = hot_weight(r["tmax"]) if crop == "wheat" and C.GRAIN_FILL_START <= gdd < C.RIPE + offset else 0.0
+        if irr > 0:
+            last_irr = d
+        if hot and last_irr is not None and (d - last_irr).days <= WET_DAYS:
+            # A crop watered in the last 2 days transpires freely and its canopy runs cooler, so the same heat
+            # does less damage to the grain (field studies on irrigated wheat). Model assumption, labelled Estimated.
+            hot *= HEAT_IF_WATERED
         if hot:
             res.hot_days += 1
             res.hot_weighted += hot
