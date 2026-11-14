@@ -13,7 +13,7 @@ const DESIGN = {
   twins: [['Asyut, Egypt', '91% same weather', ' Sow wheat 1 to 15 November and use heat tolerant varieties.'],
     ['Gezira, Sudan', '84% same weather', ' Short season wheat and watering at night.'],
     ['Hisar, India', '78% same weather', ' Early sowing and two light waterings at the end.']],
-  srcSat: 'pill pv-demo', srcSatL: 'Demo', src40L: '2040: CMIP6',
+  srcSat: 'pill pv-demo', srcSatL: 'Demo', src40L: '2040: Estimated (trend from NASA POWER)',
   foot: 'All numbers on this screen are demo data.',
 };
 
@@ -39,7 +39,7 @@ function fromData(D, demo) {
     w90: win(D.windows['1990s']), wToday: win(t), w40: win(D.windows['2040']),
     pos90: pos(D.windows['1990s']), posToday: pos(t), pos40: pos(D.windows['2040']),
     twins: D.twins.map((x) => [x.name, `${x.similarity}% same weather`, ' ' + x.practice]),
-    srcSat: 'pill pv-sat', srcSatL: 'NASA POWER', src40L: '2040: trend',
+    srcSat: 'pill pv-sat', srcSatL: 'NASA POWER', src40L: '2040: Estimated (trend from NASA POWER)',
     foot: demo ? 'Hot days and sowing windows from NASA POWER 1990-2026. Twin practices and the three plans are Demo.' : 'Hot days, sowing windows and climate twins from NASA POWER 1990-2026.',
   };
 }

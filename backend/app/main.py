@@ -395,6 +395,21 @@ def post_checkin(field_id: str, req: CheckinReq, user: dict = Depends(current_us
     return {"saved": rec, "status": checkin.status(_ctx(field_id, user))}
 
 
+@app.get("/hindcast")
+def get_hindcast():
+    """About page: 'Would Bezra have warned you?' computed on the Menoufia demo field (north-plot) with real
+    NASA POWER history and archived forecasts. Public weather data only; cached."""
+    from .services import hindcast
+    from .services.context import ctx
+    c = ctx(os.environ.get("HINDCAST_FIELD", "north-plot"))
+    if not c:
+        raise HTTPException(404, "Demo field not found")
+    try:
+        return hindcast.run(c)
+    except Exception as e:
+        raise HTTPException(503, f"Hindcast not available: {str(e)[:120]}")
+
+
 @app.get("/fields/{field_id}/freshness")
 def get_freshness(field_id: str, user: dict = Depends(current_user)):
     """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""

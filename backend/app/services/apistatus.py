@@ -8,7 +8,8 @@ from __future__ import annotations
 import json
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
+import threading
+from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -101,7 +102,7 @@ def _osm():
     last = None
     for url in OVERPASS:
         try:
-            r = httpx.post(url, data={"data": "[out:json][timeout:10];node(1);out ids;"}, timeout=45,
+            r = httpx.post(url, data={"data": "[out:json][timeout:10];node(1);out ids;"}, timeout=25,
                            headers={"User-Agent": "bezra-farm-app/1.0"})
             r.raise_for_status()
             return
@@ -166,9 +167,40 @@ def _load() -> dict:
         return {}
 
 
+_bg = threading.Lock()
+
+
 def report(fresh: bool = False) -> dict:
-    if not fresh and _cache.get("t", 0) > time.time() - 300:
-        return _cache["data"]
+    """Never makes a page wait on a slow source: answers with the last result (memory, then the database) and
+    re-checks in the background when it is older than 5 minutes. Only the very first check runs in the request,
+    capped at 20 s (a source still answering then shows as "still checking")."""
+    if not fresh:
+        data = _cache.get("data")
+        if data is None:
+            try:
+                from .. import db
+                data = db.kv_get("api_report")
+                if data:
+                    _cache.update(t=0, data=data)
+            except Exception:
+                data = None
+        if data is not None:
+            if _cache.get("t", 0) < time.time() - 300 and not _bg.locked():
+                threading.Thread(target=_refresh_bg, daemon=True, name="apistatus").start()
+            return data
+    return _compute(cap=20)
+
+
+def _refresh_bg() -> None:
+    if not _bg.acquire(blocking=False):
+        return
+    try:
+        _compute(cap=60)
+    finally:
+        _bg.release()
+
+
+def _compute(cap: float) -> dict:
     last = _load()
 
     def run(item):
@@ -193,8 +225,17 @@ def report(fresh: bool = False) -> dict:
         row["last_success"] = last.get(name)
         return row
 
-    with ThreadPoolExecutor(8) as ex:
-        rows = list(ex.map(run, APIS))
+    ex = ThreadPoolExecutor(8)
+    futs = [ex.submit(run, item) for item in APIS]
+    done_set, _ = wait(futs, timeout=cap)
+    rows = []
+    for item, f in zip(APIS, futs):
+        if f in done_set:
+            rows.append(f.result())
+        else:  # slow source: say so instead of making the page wait
+            rows.append({"name": item[0], "used_for": item[1], "status": "partly", "note": "Still checking (slow to answer)",
+                         "last_success": last.get(item[0])})
+    ex.shutdown(wait=False)
     try:
         from .. import db
         db.kv_set("api_status", last)
@@ -206,4 +247,9 @@ def report(fresh: bool = False) -> dict:
     data = {"checked_at": datetime.now().isoformat(timespec="seconds"), "planned": planned, "using": using,
             "working": working, "summary": f"Using {using} of {planned} planned APIs. Working now: {working}.", "apis": rows}
     _cache.update(t=time.time(), data=data)
+    try:
+        from .. import db
+        db.kv_set("api_report", data)
+    except Exception:
+        pass
     return data

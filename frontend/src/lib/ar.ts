@@ -4,6 +4,14 @@
 /* eslint-disable quotes */
 
 export const EXACT: Record<string, string> = {
+  "Live status of every source. The heat-warning check is computed from real data.": 'حالة كل مصدر دلوقتي. فحص تنبيه الحر محسوب من بيانات حقيقية.',
+  "Answers by Bezra's AI (Google Gemini) from your field's NASA data. Check them with your engineer.": 'الإجابات من ذكاء بذرة الاصطناعي (Google Gemini) من بيانات ناسا لأرضك. راجعها مع المهندس.',
+  "Plan from your field's weather, crop stage and what you logged. Amounts come from your engineer.": 'الخطة من طقس أرضك ومرحلة الزرع واللي سجلته. الكميات من المهندس.',
+  "2040 climate (Demo)": 'جو 2040 (تجريبي)',
+  '2040: Estimated (trend from NASA POWER)': '2040: تقدير (اتجاه من بيانات NASA POWER)',
+  '2040 climate, Estimated (trend from NASA POWER)': 'جو 2040، تقدير (اتجاه من بيانات NASA POWER)',
+  'Planned for the 2040 view. Today the 2040 numbers are a trend from NASA POWER.': 'مخطط له لعرض 2040. دلوقتي أرقام 2040 اتجاه محسوب من بيانات NASA POWER.',
+  'Planned': 'مخطط له',
   "It is also the driest corner. The satellite can't tell why, so please go and look.": 'وكمان هي أنشف حتة. القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
   "It is the lowest part of the field, so water can stay there. The satellite can't tell why, so please go and look.": 'وهي أوطى حتة في الأرض، فالمية ممكن تقف فيها. القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
   "It is also the driest corner. It is the lowest part of the field, so water can stay there. The satellite can't tell why, so please go and look.": 'وكمان هي أنشف حتة. وهي أوطى حتة في الأرض، فالمية ممكن تقف فيها. القمر الصناعي مش بيقدر يقول السبب، فياريت تروح تبص.',
@@ -236,7 +244,7 @@ export const EXACT: Record<string, string> = {
   'Daily heat, humidity, wind, sun, rain since 1981': 'الحرارة والرطوبة والهوا والشمس والمطر كل يوم من 1981',
   '~50 km, daily': '~50 كم، يومي',
   '2 to 3 days': '2 لـ 3 أيام',
-  'Heat, water need, journey, calendar': 'الحر، احتياج المية، الرحلة، المواعيد',
+  'Heat, water need, crop age, calendar, simulator': 'الحر، احتياج المية، عمر الزرع، المواعيد، المحاكي',
   'Future climate to 2050, two scenarios': 'مناخ المستقبل لحد 2050، سيناريوهين',
   '25 km, daily': '25 كم، يومي',
   'Static': 'ثابت',

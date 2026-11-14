@@ -42,7 +42,7 @@ if (E && E.cells[p] && E.cells[p].k !== 'n') {
 }
 const L = D && D.late_prev_crop, ER = D && D.earlier;
 const days = (n) => (n === 0 ? 'less than 5 days' : Math.abs(n) + ' day' + (Math.abs(n) === 1 ? '' : 's')); // the backend sweeps every 5 days
-return { eras, crops, eraLabel: era === 'Today' ? 'today\'s climate' : (era === '2040' ? (D ? '2040 climate (estimated trend)' : '2040 climate (SSP2-4.5)') : 'the 1990s climate'), pickLabel: half(p), heat, loss, stages,
+return { eras, crops, eraLabel: era === 'Today' ? 'today\'s climate' : (era === '2040' ? (D ? '2040 climate, Estimated (trend from NASA POWER)' : '2040 climate (Demo)') : 'the 1990s climate'), pickLabel: half(p), heat, loss, stages,
   live: !!D, pvEst: D ? 'pill pv-est' : 'pill pv-demo', pvEstL: D ? 'Estimated' : 'Demo',
   lateHarvest: L ? L.harvest.replace(/^(\d+) (\w+)$/, (_, d, m) => d + ' ' + ({ Dec: 'December', Nov: 'November', Jan: 'January', Oct: 'October' }[m] || m)) : '10 December',
   lateCost: L ? L.cost_pct + '% of the harvest' : '6% of the harvest',

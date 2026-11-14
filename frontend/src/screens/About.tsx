@@ -1,4 +1,5 @@
 'use client';
+import HindcastCard from '@/components/HindcastCard';
 import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-About.html by scripts/convert-design.mjs (layout and copy 1:1).
@@ -134,7 +135,7 @@ export default function AboutScreen() {
                     {"2 to 3 days"}
                   </span>
                   <span className="tl">
-                    {"Heat, water need, journey, calendar"}
+                    {"Heat, water need, crop age, calendar, simulator"}
                   </span>
                   <span className="pill pv-sat">
                     {"Satellite"}
@@ -154,10 +155,10 @@ export default function AboutScreen() {
                     {"Static"}
                   </span>
                   <span className="tl">
-                    {"Next season and the 2040 calendar"}
+                    {"Planned for the 2040 view. Today the 2040 numbers are a trend from NASA POWER."}
                   </span>
-                  <span className="pill pv-est">
-                    {"Estimated"}
+                  <span className="pill">
+                    {"Planned"}
                   </span>
                 </div>
                 <div className="rise" style={{"--d":"3","display":"grid","gridTemplateColumns":"1.1fr 2fr 1fr 1fr 1.6fr 110px","gap":"12px","alignItems":"center","padding":"12px 14px","borderRadius":"10px","background":"#fff","fontSize":"14px"} as any}>
@@ -433,26 +434,7 @@ export default function AboutScreen() {
                     </div>
                   </div>
                 </section>
-                <section className="card rise tint-s" style={{"--d":"4"} as any}>
-                  <i className="sk " aria-hidden="true" style={{"--d":"4"} as any} />
-                  <h2 className="h2">
-                    {"Would Bezra have warned you?"}
-                  </h2>
-                  <p className="sub">
-                    {"Heat waves at wheat grain fill, using only data from before each one."}
-                  </p>
-                  <span className="row" style={{"alignItems":"baseline","gap":"8px"} as any}>
-                    <b style={{"fontSize":"40px","fontWeight":"600","letterSpacing":"-1.4px"} as any}>
-                      {"4 of 5"}
-                    </b>
-                    <span className="tl">
-                      {"warned 4 to 7 days early"}
-                    </span>
-                  </span>
-                  <span className="pill pv-demo">
-                    {"Demo"}
-                  </span>
-                </section>
+                <HindcastCard />
               </aside>
             </div>
             <ApiStatus />
@@ -461,7 +443,7 @@ export default function AboutScreen() {
                 <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {"Live status of every source. The heat-warning check is computed from real data."}
               </span>
             </footer>
           </main>

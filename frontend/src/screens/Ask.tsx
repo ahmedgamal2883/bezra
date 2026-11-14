@@ -516,7 +516,7 @@ export default function AskScreen() {
                 <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
-                {ready ? "Answers by Claude from your field's NASA data. Check them with your engineer." : "All numbers on this screen are demo data."}
+                {ready ? "Answers by Bezra's AI (Google Gemini) from your field's NASA data. Check them with your engineer." : "All numbers on this screen are demo data."}
                 <AboutLink />
               </span>
             </footer>

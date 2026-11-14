@@ -317,7 +317,7 @@ export default function PlanScreen() {
                 <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
               </span>
               <span>
-                {"All numbers on this screen are demo data."}
+                {demo ? "All numbers on this screen are demo data." : "Plan from your field's weather, crop stage and what you logged. Amounts come from your engineer."}
                 <AboutLink />
               </span>
             </footer>
