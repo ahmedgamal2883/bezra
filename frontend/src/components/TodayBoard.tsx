@@ -10,6 +10,7 @@ import { LogSheet } from '@/components/PlanToday';
 import FieldJournal, { SeasonSoFar, useJournal } from '@/components/FieldJournal';
 import Freshness from '@/components/Freshness';
 import TodayTasks from '@/components/TodayTasks';
+import CheckIn from '@/components/CheckIn';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LVC: Record<string, string> = { Low: 'lv lv-low', Medium: 'lv lv-med', High: 'lv lv-high' };
@@ -87,6 +88,7 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
         {ready && D.tracker.due ? <Link href={`/field/${id}/plan`} className="tl press" style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>{D.tracker.text}</Link> : null}
       </div>
       <TodayTasks id={id} />
+      <CheckIn id={id} onlyIfDue />
       <Freshness id={id} />
 
       <div className="today-top">

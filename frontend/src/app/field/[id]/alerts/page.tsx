@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import AlertsScreen from '@/screens/Alerts';
+import FieldAlertsScreen from '@/screens/FieldAlerts';
 
 export const metadata: Metadata = { title: "Bezra, Alerts" };
 
 export default function Page() {
-  return <AlertsScreen />;
+  return <FieldAlertsScreen />;
 }

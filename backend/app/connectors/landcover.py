@@ -182,6 +182,12 @@ def osm(g: Grid) -> dict:
     return data
 
 
+def cached(g: Grid) -> bool:
+    """True when both land-cover answers for this grid are already on disk (no network needed)."""
+    from .cache import _path
+    return _path(f"worldcover_{g.key}").exists() and _path(f"osm_{g.key}").exists()
+
+
 def squares(g: Grid, polygon: list[list[float]] | None, sources: bool = True) -> dict:
     """Every square's status and why: {(r, c): {"status", "inside", "farm", "built", "road"}} + sources used.
     Each source may fail on its own; a failed source never masks a square. sources=False: the drawing only."""

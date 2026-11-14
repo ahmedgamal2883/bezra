@@ -343,6 +343,58 @@ def answer_task(field_id: str, task_id: str, req: TaskAnswer, user: dict = Depen
     return {"saved": rec, "tasks": tasks.build(_ctx(field_id, user))}
 
 
+@app.get("/fields/{field_id}/field-alerts")
+def get_field_alerts(field_id: str, user: dict = Depends(current_user)):
+    """Phase 3 alerts: what we saw, where, how sure, ranked causes, one action, proof, open/closed."""
+    from .services import fieldalerts
+    return fieldalerts.build(_ctx(field_id, user))
+
+
+class AlertAnswer(BaseModel):
+    answer: str
+    note: str | None = None
+
+
+@app.post("/fields/{field_id}/field-alerts/{alert_id}")
+def answer_field_alert(field_id: str, alert_id: str, req: AlertAnswer, user: dict = Depends(current_user)):
+    from .services import fieldalerts
+    c = _ctx(field_id, user)
+    try:
+        rec = fieldalerts.answer(c, alert_id, req.answer, req.note)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"saved": rec, "alerts": fieldalerts.build(_ctx(field_id, user))}
+
+
+@app.get("/fields/{field_id}/field-alerts/{alert_id}/proof")
+def get_alert_proof(field_id: str, alert_id: str, user: dict = Depends(current_user)):
+    from .services import fieldalerts
+    return fieldalerts.proof(_ctx(field_id, user), alert_id)
+
+
+@app.get("/fields/{field_id}/checkin")
+def get_checkin(field_id: str, user: dict = Depends(current_user)):
+    from .services import checkin
+    return checkin.status(_ctx(field_id, user))
+
+
+class CheckinReq(BaseModel):
+    looks: list[str]
+    note: str | None = None
+    case_id: str | None = None
+
+
+@app.post("/fields/{field_id}/checkin")
+def post_checkin(field_id: str, req: CheckinReq, user: dict = Depends(current_user)):
+    from .services import checkin
+    c = _ctx(field_id, user)
+    try:
+        rec = checkin.save(c, req.looks, req.note, req.case_id)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"saved": rec, "status": checkin.status(_ctx(field_id, user))}
+
+
 @app.get("/fields/{field_id}/freshness")
 def get_freshness(field_id: str, user: dict = Depends(current_user)):
     """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""

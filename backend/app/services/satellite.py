@@ -195,6 +195,9 @@ def land_mask(c: Ctx, g) -> dict:
     key = f"{g.key}:{c.f.get('polygon')}"
     if key in _lc_mem:
         return _lc_mem[key]
+    if landcover.cached(g):  # on disk already: no waiting
+        _lc_mem[key] = landcover.squares(g, c.f.get("polygon"))
+        return _lc_mem[key]
     # The first look-up downloads land cover (up to ~40 s): do it in the background; until then only the drawing
     # masks squares. The refresh job (and the next screen load) then has the full mask, cached for 90 days.
     if key not in _lc_building:

@@ -313,3 +313,21 @@ html[dir="rtl"] .flip{transform:scaleX(-1)}
   .trow-more{padding-inline:12px}
   .cal-day{height:auto;aspect-ratio:1/1;min-height:44px;padding:5px 2px 6px}
 }
+
+/* ---- Phase 3: alerts + weekly check-in (V11 tokens only) ---------------------------------------- */
+.alert-card{gap:14px}
+.alert-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.minimap{display:inline-grid;gap:2px;padding:4px;border-radius:8px;background:var(--inset)}
+.minimap i{display:block;border-radius:3px;background:#D9DE9C}
+.minimap i.on{background:var(--sun);box-shadow:inset 0 0 0 2px var(--ink)}
+.cause{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--inset)}
+.cause-n{width:22px;height:22px;flex:none;border-radius:11px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.do-this{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:12px;background:var(--dark);color:#fff}
+.do-this b{font-size:16px;font-weight:600;line-height:1.4}
+.checkin-note{width:100%;box-sizing:border-box;border:0;border-radius:10px;background:var(--inset);padding:10px 12px;font:inherit;font-size:14px;color:var(--ink);resize:vertical}
+.proof-pair{grid-template-columns:repeat(2,minmax(0,1fr))}
+.proof-grid{display:grid;gap:4px;width:100%;justify-content:center}
+.proof-sq{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.proof-sq.on{box-shadow:0 0 0 3px var(--ink)}
+.proof-sq.masked{background:repeating-linear-gradient(45deg,#D6D6D1 0 4px,#B9B9B2 4px 6px)}
+@media (max-width:760px){.alert-grid{grid-template-columns:1fr}}
