@@ -161,6 +161,7 @@ export default function HealthScreen() {
                 <h2 id="hm-h" className="vh">
                   {"Greenness map"}
                 </h2>
+                <Link href={fp("/map")} className="float press" style={{ position: "absolute", left: "16px", bottom: "16px", zIndex: 3, height: "38px", padding: "0 14px", display: "inline-flex", alignItems: "center", fontSize: "13px", fontWeight: 600 }}>{"Open the full map"}</Link>
                 {" "}
                 <svg role="img" aria-label={__s(__v?.mapLabel) as any} width="100%" height="100%" viewBox="0 0 1360 520" preserveAspectRatio="xMidYMid slice" style={{"position":"absolute","inset":"0"} as any}>
                   {" "}

@@ -4,6 +4,22 @@
 /* eslint-disable quotes */
 
 export const EXACT: Record<string, string> = {
+  'Open the full map': 'افتح الخريطة كاملة',
+  'Full map': 'الخريطة كاملة',
+  'Bezra, Full map': 'بذرة، الخريطة كاملة',
+  'bare': 'أرض فاضية',
+  'dense green': 'خضرة كثيفة',
+  'dry': 'ناشف',
+  'wet': 'مبلول',
+  'lower (m)': 'أوطى (متر)',
+  'higher (m)': 'أعلى (متر)',
+  'Tree cover': 'شجر',
+  'Shrubland': 'شجيرات',
+  'Grassland': 'حشايش',
+  'Cropland': 'أرض زراعية',
+  'Built-up': 'مباني',
+  'Bare / sparse': 'أرض فاضية',
+  'Wetland': 'أرض مبلولة',
   "Live status of every source. The heat-warning check is computed from real data.": 'حالة كل مصدر دلوقتي. فحص تنبيه الحر محسوب من بيانات حقيقية.',
   "Answers by Bezra's AI (Google Gemini) from your field's NASA data. Check them with your engineer.": 'الإجابات من ذكاء بذرة الاصطناعي (Google Gemini) من بيانات ناسا لأرضك. راجعها مع المهندس.',
   "Plan from your field's weather, crop stage and what you logged. Amounts come from your engineer.": 'الخطة من طقس أرضك ومرحلة الزرع واللي سجلته. الكميات من المهندس.',

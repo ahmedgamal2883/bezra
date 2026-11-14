@@ -315,7 +315,7 @@ export default function FieldScreen() {
                         ))}
                       </span>
                       <span className="tl">
-                        {__s(__v?.legendNote)}{" "}<Link href={fp("/squares")} style={{ textDecoration: "underline", textUnderlineOffset: "3px", color: "var(--ink)", fontWeight: 600, pointerEvents: "auto" }}>{"Are they real? See the proof"}</Link>
+                        {__s(__v?.legendNote)}{" "}<Link href={fp("/squares")} style={{ textDecoration: "underline", textUnderlineOffset: "3px", color: "var(--ink)", fontWeight: 600, pointerEvents: "auto" }}>{"Are they real? See the proof"}</Link>{" · "}<Link href={fp("/map")} style={{ textDecoration: "underline", textUnderlineOffset: "3px", color: "var(--ink)", fontWeight: 600, pointerEvents: "auto" }}>{"Open the full map"}</Link>
                       </span>
                     </div>
                   </>

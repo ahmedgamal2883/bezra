@@ -410,6 +410,40 @@ def get_hindcast():
         raise HTTPException(503, f"Hindcast not available: {str(e)[:120]}")
 
 
+@app.get("/fields/{field_id}/layers")
+def get_layers(field_id: str, user: dict = Depends(current_user)):
+    """Full map: the data layers that can be shown, each with its source, date, pixel size and legend."""
+    from .services import layers
+    return layers.meta(_ctx(field_id, user))
+
+
+@app.get("/fields/{field_id}/layers/{name}.png")
+def get_layer_png(field_id: str, name: str, user: dict = Depends(current_user)):
+    from .services import layers
+    c = _ctx(field_id, user)
+    try:
+        data = layers.render(c, name)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+    except Exception as e:
+        raise HTTPException(503, f"Layer not available right now: {str(e)[:120]}")
+    return Response(content=data, media_type="image/png", headers={"Cache-Control": "private, max-age=21600"})
+
+
+@app.get("/fields/{field_id}/photo.jpg")
+def get_photo(field_id: str, user: dict = Depends(current_user)):
+    """The photo under the squares (My field, Health), served and cached by Bezra so it never comes up blank."""
+    from .services import layers
+    c = _ctx(field_id, user)
+    try:
+        data, mime = layers.photo(c)
+    except Exception as e:
+        raise HTTPException(503, f"Photo not available right now: {str(e)[:120]}")
+    return Response(content=data, media_type=mime, headers={"Cache-Control": "private, max-age=86400"})
+
+
 @app.get("/fields/{field_id}/freshness")
 def get_freshness(field_id: str, user: dict = Depends(current_user)):
     """Phase 3: how old each stored number is (weather, satellite pass, SMAP, soil estimate)."""

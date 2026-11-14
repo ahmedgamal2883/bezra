@@ -331,3 +331,12 @@ html[dir="rtl"] .flip{transform:scaleX(-1)}
 .proof-sq.on{box-shadow:0 0 0 3px var(--ink)}
 .proof-sq.masked{background:repeating-linear-gradient(45deg,#D6D6D1 0 4px,#B9B9B2 4px 6px)}
 @media (max-width:760px){.alert-grid{grid-template-columns:1fr}}
+
+/* ---- Full map (data layers in their original pixels) --------------------------------------------- */
+.fullmap-grid{grid-template-columns:minmax(0,1fr) 340px;align-items:start}
+.fullmap{height:640px;background:#D9D6C8}
+.pixelated{image-rendering:pixelated;image-rendering:crisp-edges}
+.layer-opt{justify-content:flex-start;gap:10px;cursor:pointer;min-height:48px}
+.layer-opt input{width:18px;height:18px;accent-color:var(--dark);flex:none}
+.legend-ramp{height:10px;border-radius:5px;display:block}
+@media (max-width:760px){.fullmap{height:460px}}
