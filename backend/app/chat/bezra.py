@@ -16,7 +16,7 @@ import anthropic
 
 from ..services import calendar, sim, summary
 from ..services.context import Ctx
-from . import kb
+from . import gemini, kb
 
 MODEL = "claude-opus-5-5"
 
@@ -117,8 +117,24 @@ DOSE = re.compile(r"\d+(?:[.,]\d+)?\s*(?:kg|kilo|kilogram|g\b|gram|l\b|liter|lit
 INPUT_WORDS = re.compile(r"fertili|nitrogen|urea|pesticide|insecticide|fungicide|spray|سماد|يوريا|نترات|مبيد|رش", re.I)
 
 
-def available() -> bool:
+def _claude() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"))
+
+
+def available() -> bool:
+    """Ask Bezra works with Gemini (GEMINI_API_KEY) or Claude (ANTHROPIC_API_KEY). Gemini is used first."""
+    return gemini.available() or _claude()
+
+
+def model_name() -> str:
+    return gemini.model() if gemini.available() else MODEL
+
+
+def _system(c: Ctx) -> str:
+    return (SYSTEM.replace("Eng. Mona Adel", _engineer_name(c)).replace("Eng. Mona", _engineer_name(c))
+            + f"\nThe farmer is {c.f.get('farmer') or 'the farmer'}. Their engineer is {_engineer_name(c)}. "
+              f"Field: {c.f['name']} ({c.f['crop']}), {c.f.get('village')}, "
+              f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}.")
 
 
 def _summary_brief(c: Ctx) -> dict:
@@ -209,6 +225,8 @@ def _guard(reply: dict) -> dict:
 
 
 def chat(c: Ctx, history: list[dict], message: str) -> dict:
+    if gemini.available():
+        return _guard(gemini.chat(c, history, message, _system(c), TOOLS, run_tool, OUTPUT_SCHEMA))
     client = anthropic.Anthropic()
     messages: list = [{"role": h["role"], "content": h["text"]} for h in history[-12:] if h.get("text")]
     messages.append({"role": "user", "content": message})

@@ -265,7 +265,7 @@ export default function DiagnoseScreen() {
                     {"Estimated"}
                   </span>
                   <span className="pill">
-                    {C ? (C.candidates.length ? "Claude vision, top 3" : "Not checked by Bezra") : "Image model, top 3"}
+                    {C ? (C.candidates.length ? (C.model ? `${String(C.model).replace("gemini-", "Gemini ")} vision, top 3` : "AI vision, top 3") : "Not checked by Bezra") : "Image model, top 3"}
                   </span>
                   <span className={C ? "lv lv-med" : "lv lv-low"}>
                     <i />

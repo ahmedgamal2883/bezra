@@ -427,14 +427,14 @@ class ChatReq(BaseModel):
 
 @app.get("/chat/status")
 def chat_status():
-    return {"ready": bezra.available(), "model": bezra.MODEL}
+    return {"ready": bezra.available(), "model": bezra.model_name()}
 
 
 @app.post("/chat")
 def post_chat(req: ChatReq, user: dict = Depends(current_user)):
     c = _ctx(req.field_id, user)
     if not bezra.available():
-        raise HTTPException(503, "Ask Bezra needs ANTHROPIC_API_KEY in backend/.env")
+        raise HTTPException(503, "Ask Bezra needs GEMINI_API_KEY or ANTHROPIC_API_KEY in backend/.env")
     if not req.message.strip() or len(req.message) > 2000:
         raise HTTPException(422, "Empty or too long message")
     try:
@@ -447,6 +447,8 @@ def post_chat(req: ChatReq, user: dict = Depends(current_user)):
         raise HTTPException(503, "Can't reach the Claude API. Check the internet connection.")
     except anthropic.APIStatusError as e:
         raise HTTPException(502, f"Claude API error {e.status_code}")
+    except RuntimeError as e:  # Gemini
+        raise HTTPException(502, str(e)[:120])
 
 
 @app.get("/sources")

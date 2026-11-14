@@ -88,6 +88,13 @@ def _esri():
     _get("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/14/6796/9601")
 
 
+def _gemini():
+    from ..chat import gemini
+    if not gemini.available():
+        raise RuntimeError("needs GEMINI_API_KEY")
+    _get(f"{gemini.API}/{gemini.model()}", headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
+
+
 def _claude():
     if not (os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
         raise RuntimeError("needs ANTHROPIC_API_KEY")
@@ -106,7 +113,8 @@ APIS = [
     ("NASA SMAP L4 (AppEEARS)", "Root-zone moisture (Details)", _appeears_layer("smap"), ""),
     ("NASA ECOSTRESS (AppEEARS)", "Crop surface temperature (Details)", _appeears_layer("ecostress"), ""),
     ("Copernicus DEM GLO-30", "Slope and low spots", _dem, ""),
-    ("Claude API", "Ask Bezra, photo check", _claude, ""),
+    ("Google Gemini", "Ask Bezra, photo check (AI model)", _gemini, ""),
+    ("Claude API", "Ask Bezra (backup AI model)", _claude, ""),
     ("Esri World Imagery", "Satellite photo maps: onboarding, Today, Engineer", _esri, ""),
     ("Sentinel-1 RTC (ESA, extra)", "Irrigation detection (Beta)", _s1, ""),
     ("NASA GPM IMERG", "Rain that fell", None, "Rain comes from NASA POWER for now"),

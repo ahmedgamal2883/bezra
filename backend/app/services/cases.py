@@ -97,7 +97,19 @@ def _diagnose(c: Ctx, blobs, seen: str) -> dict:
     if not bezra.available():
         return {"status": "sent_to_engineer", "reason": "no_model", "candidates": [], "why": "", "ladder": [], "photo_tip": ""}
     import anthropic
+    from ..chat import gemini
     crop = fields.CROP_LABEL[c.f["crop"]]
+    if gemini.available():
+        try:
+            out = gemini.diagnose(VISION_SYSTEM, VISION_SCHEMA, list(blobs),
+                                  f"Crop: {crop}, sown {c.f['sow_date']}, today {c.today}. Farmer says: {seen or 'nothing'}. What might this be?")
+        except Exception as e:
+            return {"status": "sent_to_engineer", "reason": f"model_error {str(e)[:60]}", "candidates": [], "why": "", "ladder": [], "photo_tip": ""}
+        out.setdefault("candidates", []); out.setdefault("ladder", []); out.setdefault("why", ""); out.setdefault("photo_tip", "")
+        out["ladder"] = [s for s in out["ladder"] if not bezra.DOSE.search(s.get("title", "") + " " + s.get("text", ""))][:4]
+        out["candidates"] = sorted(out["candidates"], key=lambda x: -x.get("pct", 0))[:3]
+        sure = bool(out["candidates"]) and out["candidates"][0]["pct"] >= 70
+        return out | {"status": "predicted" if sure else "sent_to_engineer", "reason": "" if sure else "unsure", "model": gemini.model()}
     content = [{"type": "image", "source": {"type": "base64", "media_type": mt, "data": b64}} for mt, b64 in blobs]
     content.append({"type": "text", "text": f"Crop: {crop}, sown {c.f['sow_date']}, today {c.today}. "
                                             f"Farmer says: {seen or 'nothing'}. What might this be?"})
