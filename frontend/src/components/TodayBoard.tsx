@@ -85,7 +85,7 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
   return (
     <div className="col today" style={{ gap: '14px' }}>
       {/* one sentence: are you on plan? */}
-      <div className="row wrap rise" style={{ '--d': '1', gap: '10px', alignItems: 'center' } as React.CSSProperties}>
+      <div data-tour="status" data-ready={ready ? '' : undefined} className="row wrap rise" style={{ '--d': '1', gap: '10px', alignItems: 'center' } as React.CSSProperties}>
         {ready ? <span className={LVC[D.status.level] || 'lv lv-low'} style={{ fontSize: '14px', height: '32px', padding: '0 12px' }}><i />{D.status.text}</span> : <span className="tl">{'Reading your field…'}</span>}
         {ready && D.tracker.due ? <Link href={`/field/${id}/plan`} className="tl press" style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>{D.tracker.text}</Link> : null}
       </div>
@@ -114,8 +114,8 @@ export default function TodayBoard({ id, map, details }: { id: string; map: Reac
               <span style={{ color: 'rgba(255,255,255,.62)' }}>{'Bezra watches heat, water in the soil, rust weather, rain, wind, frost and weak spots in the satellite images every morning, and checks for new satellite images every 6 hours.'}</span>
             </div>
           ) : null}
-          {(D?.warnings || []).map((x: any) => (
-            <Link key={x.id} href={fp(x.id)} className="warn press">
+          {(D?.warnings || []).map((x: any, i: number) => (
+            <Link key={x.id} href={fp(x.id)} className="warn press" data-tour={i === 0 ? 'alert' : undefined}>
               <span className="row sp" style={{ gap: '8px' }}>
                 <span className="row" style={{ gap: '8px', alignItems: 'center' }}><Icon k={x.kind} /><b style={{ fontSize: '15px' }}>{x.title}</b></span>
                 <span className={LVC[x.level]}><i />{x.level}</span>

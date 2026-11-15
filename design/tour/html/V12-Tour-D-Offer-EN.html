@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bezra tour, Desktop offer, English</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>.static .rise,.static .fade,.static .pop,.static .grow,.static .growx,.static .tabs a[aria-current=page]::after{animation:none!important}
+.static .draw{animation:none!important;stroke-dashoffset:0}
+.static .sk:not(.hold){display:none}
+x-dc{display:block}
+</style>
+<script>(function(){
+window.DCLogic = class { constructor(p){ this.props = p || {}; } setState(o){ Object.assign(this.state, o); if (this.__render) this.__render(); } };
+function get(ctx, path){ return path.split('.').reduce(function(o,k){ return o==null?undefined:o[k]; }, ctx); }
+function sub(str, ctx){ return str.replace(/\{\{([^}]+)\}\}/g, function(_,p){ var v=get(ctx,p.trim()); return v==null||typeof v==='function'?'':String(v); }); }
+function walk(node, ctx, out){
+  Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+    if (ch.nodeType===3){ out.appendChild(document.createTextNode(sub(ch.textContent, ctx))); return; }
+    if (ch.nodeType!==1) return;
+    var tag=ch.tagName.toLowerCase();
+    if (tag==='sc-for'){ var m=ch.getAttribute('list').match(/\{\{(.+)\}\}/); var list=get(ctx,m[1].trim())||[]; var as=ch.getAttribute('as');
+      list.forEach(function(item){ var c=Object.create(ctx); c[as]=item; walk(ch,c,out); }); return; }
+    if (tag==='sc-if'){ var m2=ch.getAttribute('value').match(/\{\{(.+)\}\}/); if (get(ctx,m2[1].trim())) walk(ch,ctx,out); return; }
+    var el = ch.namespaceURI==='http://www.w3.org/2000/svg' ? document.createElementNS(ch.namespaceURI, ch.tagName) : document.createElement(ch.tagName);
+    Array.prototype.slice.call(ch.attributes).forEach(function(a){
+      if (/^on/i.test(a.name)){ var mm=a.value.match(/\{\{(.+)\}\}/); var fn=mm&&get(ctx,mm[1].trim()); if (typeof fn==='function') el.addEventListener(a.name.slice(2).toLowerCase(), function(e){ fn(e); }); return; }
+      el.setAttribute(a.name, sub(a.value, ctx)); });
+    walk(ch, ctx, el); out.appendChild(el);
+  });
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var x=document.querySelector('x-dc');
+  var h=x.querySelector('helmet'); if(h){ document.head.insertAdjacentHTML('beforeend', h.innerHTML); h.remove(); }
+  var tpl=document.createElement('div'); tpl.innerHTML=x.innerHTML;
+  var js=document.querySelector('script[data-dc-script]').textContent;
+  var C=new Function(js+';return Component;')(); var c=new C({details:false}); var first=true;
+  c.__render=function(){ if(!first) document.documentElement.classList.add('static'); first=false; var v=c.renderVals(); x.innerHTML=''; walk(tpl, v, x); };
+  c.__render();
+});
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E4E5E0;--shell:#F4F4F1;--card:#FFFFFF;--inset:#F4F4F1;--line:#E8E8E3;--ink:#141A16;--ink2:#3D4440;--muted:#6A716C;--faint:#8B918C;--dark:#17251C;--sun:#F29B1E;--sun-tint:#FFF4E3;--water:#2F6FA8;--water-tint:#E8F1F9;--green:#1F4A33;--green-tint:#E4EFE7;--risk:#C2412A;--risk-tint:#FBE6E1;--r-card:12px;--r-float:20px;--r-hero:24px;--ease:cubic-bezier(.16,1,.3,1)}
+body{margin:0;background:var(--bg)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance}
+button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--sun);color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--sun);outline-offset:3px}
+.root{min-height:100vh;box-sizing:border-box;padding:14px;background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.shell{min-height:calc(100vh - 28px);box-sizing:border-box;border-radius:30px;background:var(--shell);box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 0 0 1px rgba(20,26,22,.04);padding:0 28px 28px}
+.top{height:84px;display:flex;align-items:center;gap:20px}
+.brand{flex:1 1 0;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;letter-spacing:-.6px}
+.nav{display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:#E9E9E5}
+.nav a{height:40px;padding:0 16px 0 12px;border-radius:999px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink2);transition:background-color .18s ease,color .18s ease}
+.nav a:hover{background:#DFDFDA}
+.nav a[aria-current=page]{background:var(--dark);color:#fff}
+.tools{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.seg{height:44px;padding:4px;box-sizing:border-box;border-radius:22px;background:#E9E9E5;display:flex;gap:2px}
+.segb{height:36px;padding:0 16px;border:0;border-radius:18px;font-size:14px;font-weight:600;background:transparent;color:var(--muted);transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.segb.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(20,26,22,.14)}
+.ibtn{position:relative;width:44px;height:44px;border:0;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dot{position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:4px;background:var(--sun);box-shadow:0 0 0 2px #fff}
+.who{height:44px;padding:0 14px 0 4px;box-sizing:border-box;border-radius:22px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);display:flex;align-items:center;gap:10px;white-space:nowrap}
+.av{width:36px;height:36px;border-radius:18px;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.who b{display:block;font-size:14px;font-weight:600}.who small{display:block;font-size:12px;color:var(--muted)}
+.main{display:flex;flex-direction:column;gap:18px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding:6px 4px 2px}
+.eyebrow{font-size:15px;color:var(--muted)}
+.h1{font-size:44px;line-height:1;font-weight:600;letter-spacing:-1.6px}
+.h2{font-size:16px;font-weight:600}
+.h3{font-size:22px;line-height:1.15;font-weight:600;letter-spacing:-.5px}
+.sub{font-size:14px;color:var(--muted);line-height:1.45}
+.body{font-size:14px;line-height:1.5;color:var(--ink2)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 4px}
+.tabs a{position:relative;height:44px;padding:0 14px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);transition:color .18s ease}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current=page]{color:var(--ink)}
+.tabs a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2.5px;border-radius:2px;background:var(--ink);animation:tabIn .5s var(--ease) both}
+.card{position:relative;padding:18px;border-radius:var(--r-card);background:var(--card);box-shadow:0 1px 2px rgba(20,26,22,.05);display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.dk{background:var(--dark);color:#fff}
+.card.tint-w{background:var(--water-tint);box-shadow:none}
+.card.tint-s{background:var(--sun-tint);box-shadow:none}
+.float{border-radius:var(--r-float);background:rgba(255,255,255,.92);backdrop-filter:blur(14px);box-shadow:0 18px 40px -22px rgba(20,26,22,.55)}
+.hero{position:relative;border-radius:var(--r-hero);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px}
+.sp{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.col{display:flex;flex-direction:column}
+.grid{display:grid;gap:14px}
+.inset{min-height:38px;padding:8px 12px;box-sizing:border-box;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.inset span:first-child{color:var(--muted)}.inset b{font-weight:600}
+.chip{width:32px;height:32px;border-radius:10px;background:var(--inset);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chip.w{background:var(--water-tint);color:var(--water)}.chip.s{background:var(--sun-tint);color:#B4660B}.chip.g{background:var(--green-tint);color:var(--green)}.chip.r{background:var(--risk-tint);color:var(--risk)}
+.num{font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1}
+.num small,.unit{font-size:14px;font-weight:500;color:var(--faint);letter-spacing:0}
+.pill{height:22px;padding:0 9px;box-sizing:border-box;border-radius:11px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--inset);color:var(--muted)}
+.pv-sat{background:var(--green-tint);color:var(--green)}.pv-est{background:#FBEBD2;color:#7A4A0B}.pv-farm{background:#ECECE8;color:var(--ink2)}.pv-agro{background:#DDEFE3;color:#1E5B36}.pv-meas{background:var(--water-tint);color:#1D4F73}.pv-demo{background:#FFF7E3;color:#7A5A12;box-shadow:inset 0 0 0 1px #E2BE6A;border:0}
+.lv{height:24px;padding:0 10px 0 8px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.lv i{width:7px;height:7px;border-radius:4px;display:block}
+.lv-low{background:var(--green-tint);color:var(--green)}.lv-low i{background:#2E8B4A}
+.lv-med{background:var(--sun-tint);color:#8A4E06}.lv-med i{background:var(--sun)}
+.lv-high{background:var(--risk-tint);color:#8F2A17}.lv-high i{background:var(--risk)}
+.btn{height:46px;padding:0 20px;border:0;border-radius:23px;background:var(--dark);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn.sun{background:var(--sun);color:var(--ink)}
+.btn.soft{background:var(--inset);color:var(--ink)}
+.btn.line{background:transparent;box-shadow:inset 0 0 0 1.5px #D3D5CF;color:var(--ink)}
+.btn.sm{height:38px;padding:0 14px;font-size:13px}
+.btn.cta{padding:0 6px 0 18px;justify-content:space-between}
+.ar{width:34px;height:34px;border-radius:17px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink)}
+.btn.sun .ar,.btn.soft .ar{background:#fff}.btn:not(.sun):not(.soft):not(.line) .ar{background:var(--sun)}
+.press{transition:transform .14s var(--ease),background-color .16s ease,box-shadow .16s ease,opacity .16s ease}
+.press:active{transform:scale(.97)}
+.ghost:hover{background:#ECECE8}
+.lift{transition:transform .22s var(--ease),box-shadow .22s ease}
+.lift:hover{transform:translateY(-2px);box-shadow:0 12px 28px -16px rgba(20,26,22,.38)}
+.ar svg{transition:transform .22s var(--ease)}
+.cta:hover .ar svg,.lift:hover .ar svg{transform:translate(2px,-2px)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:6px 4px 0;font-size:13px;color:var(--muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tl{font-size:12px;color:var(--muted)}
+.ar-t{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',sans-serif}
+/* motion: entrance */
+.rise{animation:rise .7s var(--ease) both;animation-delay:calc(var(--d,0) * 70ms + 120ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes tabIn{from{transform:scaleX(.2);opacity:0}to{transform:none;opacity:1}}
+/* skeleton: shaped like the card, shimmers, then hands over */
+.sk{position:absolute;inset:0;z-index:4;border-radius:inherit;background:var(--card);pointer-events:none;overflow:hidden;animation:skOut .5s ease both;animation-delay:calc(var(--d,0) * 90ms + 900ms)}
+.sk::before{content:"";position:absolute;inset:18px;background:linear-gradient(#EDEDE9,#EDEDE9) 0 0/38% 12px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 26px/64% 26px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 68px/88% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 88px/72% 10px no-repeat,linear-gradient(#EDEDE9,#EDEDE9) 0 108px/52% 10px no-repeat;border-radius:6px}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.8) 50%,rgba(255,255,255,0) 70%);background-size:220% 100%;animation:shim 1.15s linear infinite}
+.dk>.sk{background:var(--dark)}.dk>.sk::before{filter:invert(1) brightness(.35)}.dk>.sk::after{background-image:linear-gradient(100deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.08) 50%,rgba(255,255,255,0) 70%)}
+.tint-w>.sk{background:var(--water-tint)}.tint-s>.sk{background:var(--sun-tint)}
+.sk.hold{animation:none}
+.sk.map{background:#D9D6C8}.sk.map::before{display:none}
+@keyframes skOut{to{opacity:0;visibility:hidden}}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+/* motion: charts */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s var(--ease) forwards;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes draw{to{stroke-dashoffset:0}}
+.grow{transform-box:fill-box;transform-origin:50% 100%;animation:grow .8s var(--ease) both;animation-delay:calc(var(--i,0) * 16ms + 1000ms)}
+.growx{transform-origin:0 50%;animation:growx .9s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms + 1000ms)}
+@keyframes grow{from{transform:scaleY(0)}}
+@keyframes growx{from{transform:scaleX(0)}}
+.pop{transform-box:fill-box;transform-origin:center;animation:pop .6s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms + 1100ms)}
+@keyframes pop{from{transform:scale(0);opacity:0}}
+.fade{animation:fade .8s ease both;animation-delay:calc(var(--d,0) * 90ms + 1000ms)}
+@keyframes fade{from{opacity:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3);opacity:0}}
+.sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4.8s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.blink{animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.typing i{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:3px;background:var(--faint);animation:typ 1.2s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes typ{0%,60%,100%{transform:none;opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+@media (prefers-reduced-motion: reduce){.rise,.draw,.grow,.growx,.pop,.fade,.tabs a[aria-current=page]::after{animation:none!important;stroke-dashoffset:0}.sk{display:none}.sk.hold{display:block}.sk::after,.pulse,.sway,.blink,.typing i{animation:none!important}.lift,.press{transition:none}.lift:hover{transform:none}}
+
+.tr{min-height:100vh;box-sizing:border-box;background:var(--shell);color:var(--ink);font-family:'IBM Plex Sans Arabic','Hanken Grotesk',system-ui,sans-serif;font-variant-numeric:tabular-nums;position:relative}
+.tr[lang=en]{font-family:'Hanken Grotesk',system-ui,sans-serif}
+.m{max-width:420px;margin:0 auto;padding:0 16px 96px}
+.mtop{height:60px;display:flex;align-items:center;justify-content:space-between}
+.tgt{position:relative;border-radius:14px;transition:box-shadow .35s ease}
+.spot{z-index:50;box-shadow:0 0 0 4px var(--sun),0 0 0 9999px rgba(20,26,22,.58);background:var(--shell)}
+.task{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.box{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px #C9CCC5;background:#fff;display:flex;align-items:center;justify-content:center;border:0;padding:0}
+.box.on{background:var(--green);box-shadow:none;color:#fff}
+.mnav{position:fixed;left:0;right:0;bottom:0;z-index:20;height:72px;background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding:0 8px;backdrop-filter:blur(10px)}
+.mnav a{flex:1;max-width:90px;height:56px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;color:var(--muted)}
+.mnav a[aria-current=page]{color:var(--ink)}
+.mnav a[aria-current=page] svg{color:var(--green)}
+.coach{z-index:80;width:min(340px,calc(100vw - 24px));box-sizing:border-box;padding:16px;border-radius:20px;background:#fff;color:var(--ink);box-shadow:0 24px 60px -20px rgba(20,26,22,.55);display:flex;flex-direction:column;gap:12px;text-align:start;animation:coachIn .42s var(--ease) both}
+@keyframes coachIn{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.coach .say{font-size:17px;line-height:1.55;font-weight:600}
+.tr[lang=en] .coach .say{font-size:16px;line-height:1.4}
+.dots{display:flex;gap:5px}.dots i{width:6px;height:6px;border-radius:3px;background:#D5D7D1;transition:width .3s var(--ease),background-color .3s}
+.dots i.on{width:18px;background:var(--ink)}
+.skip{border:0;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:8px 4px;cursor:pointer}
+.lst{width:40px;height:40px;border-radius:20px;border:0;background:var(--inset);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink)}
+.lst.on{background:var(--sun)}
+.bars{display:flex;gap:2px;align-items:center;height:14px}.bars i{width:3px;border-radius:2px;background:var(--ink);animation:typ .9s ease-in-out infinite}
+.bars i:nth-child(2){animation-delay:.12s}.bars i:nth-child(3){animation-delay:.24s}
+/* mobile docking */
+.tr:not(.d) .coach{position:fixed;left:50%;transform:translateX(-50%);animation-name:coachInM}
+@keyframes coachInM{from{opacity:0;transform:translate(-50%,8px)}}
+.tr:not(.d) .dock-b{bottom:88px}.tr:not(.d) .dock-t{top:14px}.tr:not(.d) .dock-nav{bottom:86px}
+/* desktop docking beside the target */
+.d .coach{position:absolute}
+.d .side{top:0;inset-inline-start:calc(100% + 18px)}
+.d .side-s{top:0;inset-inline-end:calc(100% + 18px)}
+.d .below{top:calc(100% + 14px);inset-inline-start:0}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;margin:0 auto;max-width:440px;box-sizing:border-box;padding:20px 20px 24px;border-radius:24px 24px 0 0;background:#fff;box-shadow:0 -20px 60px -20px rgba(20,26,22,.45);display:flex;flex-direction:column;gap:14px;animation:sheetIn .5s var(--ease) both}
+.d .sheet{bottom:24px;border-radius:24px;inset-inline-start:auto;inset-inline-end:24px;left:auto;right:auto;width:400px}
+.tr[dir=rtl].d .sheet{left:24px}.tr[dir=ltr].d .sheet{right:24px}
+@keyframes sheetIn{from{opacity:0;transform:translateY(24px)}}
+.scrim{position:fixed;inset:0;z-index:85;background:rgba(20,26,22,.28);animation:fade .4s ease both}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:90;width:min(360px,calc(100vw - 24px));box-sizing:border-box;padding:12px 12px 12px 16px;border-radius:16px;background:var(--dark);color:#fff;display:flex;align-items:center;gap:10px;font-size:14px;line-height:1.45;animation:coachInM .45s var(--ease) both}
+.corner{position:fixed;bottom:86px;inset-inline-end:14px;z-index:30;width:52px;height:52px;border-radius:26px;background:var(--dark);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px -12px rgba(20,26,22,.6)}
+.corner.settle{animation:settle .9s var(--ease) both}
+@keyframes settle{from{transform:translate(-120px,-260px) scale(2.2)}}
+.d .corner{bottom:24px}
+.tip{position:relative;padding:14px;border-radius:16px;background:var(--dark);color:#fff;display:flex;gap:10px;align-items:flex-start;animation:coachIn .5s var(--ease) both}
+.tip::after{content:"";position:absolute;bottom:-7px;inset-inline-start:40px;width:14px;height:14px;background:var(--dark);transform:rotate(45deg);border-radius:3px}
+@media (prefers-reduced-motion: reduce){.coach,.m .coach,.sheet,.toast,.tip,.corner.settle{animation:fade .2s ease both!important}.tgt{transition:none}.bars i{animation:none}}
+</style>
+</helmet>
+<div class="tr d" dir="{{dir}}" lang="{{lang}}" style="padding: 14px;"><div class="shell" style="padding: 0 32px 32px;"><header class="top"><span class="brand" style="font-family: Hanken Grotesk, sans-serif;"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><rect width="34" height="34" rx="11" fill="#17251C"/><ellipse cx="17" cy="17" rx="13" ry="4.8" fill="none" stroke="#F29B1E" stroke-width="1.8" transform="rotate(-24 17 17)"/><path d="M17 8c3.4 3.2 4.8 6.4 4.8 9.2a4.8 4.8 0 0 1-9.6 0c0-2.8 1.4-6 4.8-9.2z" fill="#FFFFFF"/></svg>bezra</span><nav class="nav" aria-label="Main" style="font-family: inherit;"><a href="#" class="{{n0}}" aria-current="{{cur0}}" style="position: relative;"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20"/></svg><span>{{L.nav0}}</span></a><a href="#" class="{{n1}}" aria-current="{{cur1}}" style="position: relative;"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v2M18 4v4M6 20v-2M3 7l3-3 3 3M15 7l3-3 3 3"/></svg><span>{{L.nav1}}</span><sc-if value="{{is5}}" hint-placeholder-val="{{false}}"><div class="coach below" role="dialog" aria-modal="false" aria-labelledby="say5"><div class="row sp"><span class="row" style="gap: 8px;"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="tl" style="font-weight: 600;">{{L.stepN}}</span></span><button type="button" class="skip" onClick="{{skipIt}}">{{L.skip}}</button></div><div class="row" style="gap: 10px; align-items: flex-start;"><p id="say5" class="say" style="flex: 1;">{{L.say}}</p><button type="button" class="{{lstCls}}" onClick="{{listen}}" aria-label="{{L.listen}}" aria-pressed="{{speaking}}"><sc-if value="{{speaking}}" hint-placeholder-val="{{false}}"><span class="bars" aria-hidden="true"><i style="height: 8px;"></i><i style="height: 14px;"></i><i style="height: 10px;"></i></span></sc-if><sc-if value="{{quiet}}" hint-placeholder-val="{{true}}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></sc-if></button></div><div class="row sp"><span class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><i class="{{d}}"></i></sc-for></span><span class="row" style="gap: 6px;"><sc-if value="{{hasBack}}" hint-placeholder-val="{{false}}"><button type="button" class="btn soft sm press" onClick="{{back}}">{{L.back}}</button></sc-if><button type="button" class="btn sm press" onClick="{{next}}" autofocus style="min-width: 88px; height: 44px;">{{L.next}}</button></span></div></div></sc-if></a><a href="#" class="{{n2}}" aria-current="{{cur2}}" style="position: relative;"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8.5zM9 9h6M9 12h3"/></svg><span>{{L.nav2}}</span><sc-if value="{{is6}}" hint-placeholder-val="{{false}}"><div class="coach below" role="dialog" aria-modal="false" aria-labelledby="say6"><div class="row sp"><span class="row" style="gap: 8px;"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="tl" style="font-weight: 600;">{{L.stepN}}</span></span><button type="button" class="skip" onClick="{{skipIt}}">{{L.skip}}</button></div><div class="row" style="gap: 10px; align-items: flex-start;"><p id="say6" class="say" style="flex: 1;">{{L.say}}</p><button type="button" class="{{lstCls}}" onClick="{{listen}}" aria-label="{{L.listen}}" aria-pressed="{{speaking}}"><sc-if value="{{speaking}}" hint-placeholder-val="{{false}}"><span class="bars" aria-hidden="true"><i style="height: 8px;"></i><i style="height: 14px;"></i><i style="height: 10px;"></i></span></sc-if><sc-if value="{{quiet}}" hint-placeholder-val="{{true}}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></sc-if></button></div><div class="row sp"><span class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><i class="{{d}}"></i></sc-for></span><span class="row" style="gap: 6px;"><sc-if value="{{hasBack}}" hint-placeholder-val="{{false}}"><button type="button" class="btn soft sm press" onClick="{{back}}">{{L.back}}</button></sc-if><button type="button" class="btn sm press" onClick="{{next}}" autofocus style="min-width: 88px; height: 44px;">{{L.next}}</button></span></div></div></sc-if></a><a href="#" class="{{n3}}" aria-current="{{cur3}}" style="position: relative;"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0"/></svg><span>{{L.nav3}}</span></a></nav><div class="tools"><span class="ibtn"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></svg><span class="dot"></span></span><span class="who"><span class="av" style="font-family: Hanken Grotesk, sans-serif;">HF</span><span><b>{{L.pName}}</b></span></span></div></header><p class="tl" style="font-size: 14px; padding: 10px 4px 14px;">{{L.hello}}</p><div class="grid" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 40px; align-items: start;"><div class="col" style="gap: 18px;"><section class="{{c1}}" style="padding: 8px;"><sc-if value="{{is1}}" hint-placeholder-val="{{false}}"><div class="coach side" role="dialog" aria-modal="false" aria-labelledby="say1"><div class="row sp"><span class="row" style="gap: 8px;"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="tl" style="font-weight: 600;">{{L.stepN}}</span></span><button type="button" class="skip" onClick="{{skipIt}}">{{L.skip}}</button></div><div class="row" style="gap: 10px; align-items: flex-start;"><p id="say1" class="say" style="flex: 1;">{{L.say}}</p><button type="button" class="{{lstCls}}" onClick="{{listen}}" aria-label="{{L.listen}}" aria-pressed="{{speaking}}"><sc-if value="{{speaking}}" hint-placeholder-val="{{false}}"><span class="bars" aria-hidden="true"><i style="height: 8px;"></i><i style="height: 14px;"></i><i style="height: 10px;"></i></span></sc-if><sc-if value="{{quiet}}" hint-placeholder-val="{{true}}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></sc-if></button></div><div class="row sp"><span class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><i class="{{d}}"></i></sc-for></span><span class="row" style="gap: 6px;"><sc-if value="{{hasBack}}" hint-placeholder-val="{{false}}"><button type="button" class="btn soft sm press" onClick="{{back}}">{{L.back}}</button></sc-if><button type="button" class="btn sm press" onClick="{{next}}" autofocus style="min-width: 88px; height: 44px;">{{L.next}}</button></span></div></div></sc-if><h1 style="font-size: 44px; line-height: 1.15; font-weight: 600; letter-spacing: -.5px;">{{L.status}}</h1><p class="sub" style="font-size: 17px; margin-top: 6px;">{{L.statusSub}}</p></section><section class="{{c2}}" style="padding: 8px;"><sc-if value="{{is2}}" hint-placeholder-val="{{false}}"><div class="coach side" role="dialog" aria-modal="false" aria-labelledby="say2"><div class="row sp"><span class="row" style="gap: 8px;"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="tl" style="font-weight: 600;">{{L.stepN}}</span></span><button type="button" class="skip" onClick="{{skipIt}}">{{L.skip}}</button></div><div class="row" style="gap: 10px; align-items: flex-start;"><p id="say2" class="say" style="flex: 1;">{{L.say}}</p><button type="button" class="{{lstCls}}" onClick="{{listen}}" aria-label="{{L.listen}}" aria-pressed="{{speaking}}"><sc-if value="{{speaking}}" hint-placeholder-val="{{false}}"><span class="bars" aria-hidden="true"><i style="height: 8px;"></i><i style="height: 14px;"></i><i style="height: 10px;"></i></span></sc-if><sc-if value="{{quiet}}" hint-placeholder-val="{{true}}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></sc-if></button></div><div class="row sp"><span class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><i class="{{d}}"></i></sc-for></span><span class="row" style="gap: 6px;"><sc-if value="{{hasBack}}" hint-placeholder-val="{{false}}"><button type="button" class="btn soft sm press" onClick="{{back}}">{{L.back}}</button></sc-if><button type="button" class="btn sm press" onClick="{{next}}" autofocus style="min-width: 88px; height: 44px;">{{L.next}}</button></span></div></div></sc-if><h2 class="h2" style="padding-bottom: 6px;">{{L.todayT}}</h2><div class="task"><button type="button" class="{{box1}}" onClick="{{tick1}}" aria-label="{{L.t1}}" aria-pressed="{{ticked1}}"><sc-if value="{{ticked1b}}" hint-placeholder-val="{{false}}"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></sc-if></button><div class="row sp wrap" style="gap: 10px;"><div class="col" style="gap: 4px;"><b style="font-size: 16px; font-weight: 600;">{{L.t1}}</b><span class="tl" style="color: var(--green);">{{L.t1b}}</span></div><button type="button" class="btn press" style="height: 48px;">{{L.t1a}}</button></div></div><div class="task"><span class="box" aria-hidden="true"></span><div class="col" style="gap: 4px;"><b style="font-size: 16px; font-weight: 600;">{{L.t2}}</b><span class="tl" style="color: var(--green);">{{L.t2b}}</span></div></div></section><section class="{{c4}}" style="padding: 14px 8px; border-top: 1px solid var(--line);"><sc-if value="{{is4}}" hint-placeholder-val="{{false}}"><div class="coach side" role="dialog" aria-modal="false" aria-labelledby="say4"><div class="row sp"><span class="row" style="gap: 8px;"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="tl" style="font-weight: 600;">{{L.stepN}}</span></span><button type="button" class="skip" onClick="{{skipIt}}">{{L.skip}}</button></div><div class="row" style="gap: 10px; align-items: flex-start;"><p id="say4" class="say" style="flex: 1;">{{L.say}}</p><button type="button" class="{{lstCls}}" onClick="{{listen}}" aria-label="{{L.listen}}" aria-pressed="{{speaking}}"><sc-if value="{{speaking}}" hint-placeholder-val="{{false}}"><span class="bars" aria-hidden="true"><i style="height: 8px;"></i><i style="height: 14px;"></i><i style="height: 10px;"></i></span></sc-if><sc-if value="{{quiet}}" hint-placeholder-val="{{true}}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></sc-if></button></div><div class="row sp"><span class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><i class="{{d}}"></i></sc-for></span><span class="row" style="gap: 6px;"><sc-if value="{{hasBack}}" hint-placeholder-val="{{false}}"><button type="button" class="btn soft sm press" onClick="{{back}}">{{L.back}}</button></sc-if><button type="button" class="btn sm press" onClick="{{next}}" autofocus style="min-width: 88px; height: 44px;">{{L.next}}</button></span></div></div></sc-if><div class="row" style="gap: 12px;"><span class="chip r" style="width: 40px; height: 40px; border-radius: 12px;"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 15-14 0 9-6 14-13 14M5 19c3-4 6-6.5 9-8M10 12h.01M14 9h.01M13 14h.01"/></svg></span><div class="col" style="flex: 1; gap: 2px;"><b style="font-size: 16px; font-weight: 600;">{{L.alertT}}</b><span class="tl">{{L.alertSub}}</span></div><span class="lv lv-med"><i></i>{{L.med}}</span><span class="lst"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></span></div></section></div><section class="{{c3}}"><sc-if value="{{is3}}" hint-placeholder-val="{{false}}"><div class="coach side-s" role="dialog" aria-modal="false" aria-labelledby="say3"><div class="row sp"><span class="row" style="gap: 8px;"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span class="tl" style="font-weight: 600;">{{L.stepN}}</span></span><button type="button" class="skip" onClick="{{skipIt}}">{{L.skip}}</button></div><div class="row" style="gap: 10px; align-items: flex-start;"><p id="say3" class="say" style="flex: 1;">{{L.say}}</p><button type="button" class="{{lstCls}}" onClick="{{listen}}" aria-label="{{L.listen}}" aria-pressed="{{speaking}}"><sc-if value="{{speaking}}" hint-placeholder-val="{{false}}"><span class="bars" aria-hidden="true"><i style="height: 8px;"></i><i style="height: 14px;"></i><i style="height: 10px;"></i></span></sc-if><sc-if value="{{quiet}}" hint-placeholder-val="{{true}}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></sc-if></button></div><div class="row sp"><span class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><i class="{{d}}"></i></sc-for></span><span class="row" style="gap: 6px;"><sc-if value="{{hasBack}}" hint-placeholder-val="{{false}}"><button type="button" class="btn soft sm press" onClick="{{back}}">{{L.back}}</button></sc-if><button type="button" class="btn sm press" onClick="{{next}}" autofocus style="min-width: 88px; height: 44px;">{{L.next}}</button></span></div></div></sc-if><div style="position: relative; height: 420px; border-radius: 24px; overflow: hidden; background: #D9D6C8;"><svg viewBox="40 0 280 168" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="360" height="168" fill="#9AA36B"/><rect x="-40" y="-20" width="46" height="220" fill="#8C9C5A" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><rect x="6" y="-20" width="30" height="220" fill="#5A7A3C" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><rect x="36" y="-20" width="54" height="220" fill="#B1A584" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><rect x="90" y="-20" width="40" height="220" fill="#628342" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><rect x="230" y="-20" width="34" height="220" fill="#95A463" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><rect x="264" y="-20" width="60" height="220" fill="#A39878" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><rect x="324" y="-20" width="70" height="220" fill="#4E6E36" stroke="#D8D1BA" stroke-width="1" transform="rotate(-9 180 84)"/><g transform="rotate(-9 180 84)"><rect x="130" y="16" width="100" height="136" fill="#7E8E4E"/><rect x="130.0" y="16.0" width="33.3" height="34" fill="#D9DE9C" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="163.3" y="16.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="196.7" y="16.0" width="33.3" height="34" fill="#F2B84B" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="130.0" y="50.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="163.3" y="50.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="196.7" y="50.0" width="33.3" height="34" fill="#D9DE9C" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="130.0" y="84.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="163.3" y="84.0" width="33.3" height="34" fill="#D9DE9C" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="196.7" y="84.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="130.0" y="118.0" width="33.3" height="34" fill="#D9DE9C" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="163.3" y="118.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="196.7" y="118.0" width="33.3" height="34" fill="#3E7F35" fill-opacity=".85" stroke="#fff" stroke-opacity=".6"/><rect x="130" y="16" width="100" height="136" fill="none" stroke="#fff" stroke-width="4"/><rect x="130" y="16" width="100" height="136" fill="none" stroke="#141A16" stroke-width="1.5"/><circle cx="213" cy="33" r="6" fill="#F29B1E" stroke="#fff" stroke-width="2.5"/></g><path d="M-10 160C100 150 220 166 370 150" stroke="#3B6E8F" stroke-width="7" fill="none"/></svg></div><div class="row sp" style="padding: 10px 4px 0;"><b style="font-size: 15px; font-weight: 600;">{{L.mapT}}</b><span class="pill pv-sat">{{L.mapAge}}</span></div></section></div></div><sc-if value="{{offer}}" hint-placeholder-val="{{false}}"><div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="offerq"><div class="row" style="gap: 12px;"><svg aria-hidden="true" width="60" height="60" viewBox="0 0 60 60"><g class="sway"><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><div class="col" style="gap: 4px; flex: 1;"><h2 id="offerq" style="font-size: 21px; line-height: 1.35; font-weight: 600;">{{L.offerQ}}</h2><span class="tl" style="font-size: 14px;">{{L.offerSub}}</span></div></div><button type="button" class="btn press" onClick="{{startTour}}" autofocus style="height: 52px; font-size: 16px;">{{L.start}}</button><button type="button" class="skip" onClick="{{skipIt}}" style="align-self: center;">{{L.skip}}</button></div></sc-if><sc-if value="{{done}}" hint-placeholder-val="{{false}}"><div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="donet" style="align-items: center; text-align: center;"><svg aria-hidden="true" width="84" height="84" viewBox="0 0 60 60"><g class="sway"><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M24 36q6 7 12 0z" fill="#3A2A10"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><h2 id="donet" style="font-size: 26px; font-weight: 600;">{{L.doneT}}</h2><p class="sub" style="font-size: 15px;">{{L.doneSub}}</p><button type="button" class="btn press" onClick="{{finish}}" autofocus style="height: 52px; font-size: 16px; align-self: stretch;">{{L.go}}</button></div></sc-if><sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast" role="status"><svg aria-hidden="true" width="32" height="32" viewBox="0 0 60 60"><g class=""><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg><span style="flex: 1;">{{L.skipped}}</span><button type="button" class="btn sun sm press" onClick="{{startTour}}" style="height: 40px;">{{L.replay}}</button></div></sc-if><sc-if value="{{corner}}" hint-placeholder-val="{{false}}"><a href="#" class="{{cornerCls}}" aria-label="Ask Bezra"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 60 60"><g class="sway"><path d="M30 13C25 4 16 4 12 7c4 6 11 8 18 6z" fill="#5E9A45"/><path d="M30 13c4-9 13-11 18-8-3 7-11 10-18 8z" fill="#3E7F35"/><path d="M30 13v6" stroke="#3E7F35" stroke-width="2.4" stroke-linecap="round"/><path d="M30 18c11 0 18 10 18 21 0 9-8 16-18 16s-18-7-18-16c0-11 7-21 18-21z" fill="#E9BE62"/><path d="M19 30c2-6 6-9 11-10" stroke="#F6DDA0" stroke-width="3" fill="none" stroke-linecap="round"/><g class="blink" style="transform-origin:30px 31px"><circle cx="24.5" cy="31" r="2.6" fill="#3A2A10"/><circle cx="35.5" cy="31" r="2.6" fill="#3A2A10"/></g><path d="M25 37q5 5 10 0" stroke="#3A2A10" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="20" cy="37" r="2.4" fill="#E58E52" opacity=".45"/><circle cx="40" cy="37" r="2.4" fill="#E58E52" opacity=".45"/></g></svg></a></sc-if></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"lang": {"editor": "string", "default": "en"}, "$preview": {"width": 1440, "height": 900}}'>
+class Component extends DCLogic {
+constructor(props) { super(props); this.state = Object.assign({ mode: null }, { lang: 'en', phase: 'offer', step: 1, speak: false, t1: false, tipGone: false }); }
+renderVals() {
+const S = this.state, set = (o) => this.setState(o);
+const details = (S.mode ?? (this.props.details ? 'details' : 'simple')) === 'details';
+const base = { details, simple: !details, segS: 'segb press' + (details ? '' : ' on'), segD: 'segb press' + (details ? ' on' : ''), isS: String(!details), isD: String(details), pickS: () => set({ mode: 'simple' }), pickD: () => set({ mode: 'details' }) };
+const extra = (() => { 
+const scene = (o) => {
+const s = o.scale || 4.2, ox = o.ox || 500, oy = o.oy || 170, C = .866, Sn = .5;
+const P = (x, y, z) => (ox + (x - y) * C * s).toFixed(1) + ',' + (oy + (x + y) * Sn * s - z * s).toFixed(1);
+const poly = (pts) => pts.join(' ');
+let a = 4242; const rnd = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const pal = ['#8C9C5A', '#95A463', '#5A7A3C', '#628342', '#B1A584', '#BCB192', '#A39878', '#7D725D', '#688947', '#4E6E36'];
+const ground = [];
+let x = -90;
+while (x < 150) { const w = 7 + rnd() * 14; let y = -80; while (y < 170) { const h = 14 + rnd() * 40; const inField = x + w > -1 && x < 61 && y + h > -1 && y < 81; const inCanal = y < 100 && y + h > 92; if (!inField) { const y0 = inCanal && y < 92 ? y : y, y1 = Math.min(y + h, inCanal ? 92 : y + h); if (y1 > y0 && !(y0 >= 92 && y0 < 100)) ground.push({ pts: poly([P(x, y0, 0), P(x + w, y0, 0), P(x + w, y1, 0), P(x, y1, 0)]), fill: pal[Math.floor(rnd() * pal.length)] }); } y += h; } x += w; }
+const canal = poly([P(-90, 92, 0), P(150, 92, 0), P(150, 100, 0), P(-90, 100, 0)]);
+const road = poly([P(-6, -80, .05), P(-2, -80, .05), P(-2, 92, .05), P(-6, 92, .05)]);
+const STG = [[.5, '#9DB36A'], [2.2, '#6FA04A'], [3.6, '#5E9842'], [6, '#4E8A3A'], [8.5, '#3F7D33'], [9, '#93A644'], [8.6, '#D8BE6A']];
+const mix = (c1, c2, t) => { const p = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); const A = p(c1), B = p(c2); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+const m = o.month, st = STG[m];
+const cells = [];
+for (let i = 0; i < 6; i++) for (let j = 0; j < 8; j++) cells.push({ i, j });
+cells.sort((p, q) => (p.i + p.j) - (q.i + q.j));
+const prisms = [];
+cells.forEach(({ i, j }) => {
+const dry = (i >= 4 && j <= 2) ? .55 : ((i + j * 7) % 5) * .04;
+let stress = m >= 2 ? Math.min(1, dry * o.water + (m >= 5 ? o.heat : 0) + (m >= 3 && o.rust && (i * 3 + j) % 7 === 0 ? .35 : 0)) : 0;
+const jit = ((i * 7 + j * 13) % 9) / 9;
+const z = Math.max(.35, st[0] * (1 - stress * .32) * (.9 + jit * .16));
+const top = mix(mix(st[1], '#2E6B2A', jit * .18), m >= 6 ? '#B89A4A' : '#CDBB6E', Math.min(.75, stress * .7));
+const x0 = i * 10, x1 = x0 + 10, y0 = j * 10, y1 = y0 + 10;
+const rows = [2.5, 5, 7.5].map((d) => P(x0 + d, y0 + .6, z) + ' ' + P(x0 + d, y1 - .6, z)).join(' M');
+prisms.push({ top: poly([P(x0, y0, z), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)]), r: poly([P(x1, y0, 0), P(x1, y1, 0), P(x1, y1, z), P(x1, y0, z)]), f: poly([P(x0, y1, 0), P(x1, y1, 0), P(x1, y1, z), P(x0, y1, z)]),
+c: top, cr: mix(top, '#1A2414', .28), cf: mix(top, '#1A2414', .42), rows: 'M' + rows, rust: o.rust && m >= 3 && m <= 4 && (i * 3 + j) % 7 === 0, rx: P(x0 + 5, y0 + 5, z).split(',')[0], ry: P(x0 + 5, y0 + 5, z).split(',')[1] });
+});
+const soil = poly([P(0, 0, 0), P(60, 0, 0), P(60, 80, 0), P(0, 80, 0)]);
+const edgeR = poly([P(60, 0, 0), P(60, 80, 0), P(60, 80, -1.2), P(60, 0, -1.2)]), edgeF = poly([P(0, 80, 0), P(60, 80, 0), P(60, 80, -1.2), P(0, 80, -1.2)]);
+const wet = o.wet ? poly([P(.5, .5, .1), P(59.5, .5, .1), P(59.5, 79.5, .1), P(.5, 79.5, .1)]) : '';
+const tag = P(60, 0, 12).split(',');
+return { ground, canal, road, prisms, soil, edgeR, edgeF, wet, tagX: tag[0], tagY: tag[1] };
+};
+
+const lang = this.props.lang || S.lang;
+const T = {"ar": {"offerQ": "تحب أوريك بذرة في دقيقة؟", "offerSub": "٧ خطوات قصيرة على شاشاتك أنت.", "start": "ابدأ الجولة", "skip": "تخطّي", "next": "التالي", "back": "رجوع", "listen": "اسمع", "steps": ["ده حال أرضك النهارده في جملة واحدة.", "كل يوم مهمة أو اتنين. علّم عليها لما تخلص.", "أرضك من الفضاء. المربع الأصفر يعني روح بص عليه.", "لما حاجة تيجي، بنقولك قبلها. وتقدر تسمعها.", "جرّب قبل ما تزرع، من غير ما تخسر حاجة.", "أي حاجة مش فاهمها؟ اسألني.", "كل ما تكمّل بياناتك، النصايح تبقى أدق."], "doneT": "خلاص كده! 🌱", "doneSub": "أنا هنا في الركن لو احتجتني.", "go": "ابدأ", "of": "من", "skipped": "تمام. الجولة موجودة في حسابك لو حبيت تشوفها.", "replay": "اعرض الجولة", "replayRow": "اعرض الجولة تاني", "replaySub": "دقيقة واحدة، ٧ خطوات", "tip": "جرّب هنا: غيّر ميعاد الزراعة وشوف أرضك وهي بتكبر.", "gotIt": "فهمت", "hello": "صباح الخير يا حسن · السبت ١٥ نوفمبر", "status": "أنت ماشي على الخطة.", "statusSub": "الري الجاي يوم الخميس.", "todayT": "مهام النهارده", "t1": "اروي يوم الخميس، حوالي ٣٠٠ م³", "t1b": "بيحمي حوالي ٨–١٢٪ من محصولك", "t1a": "رويت", "t2": "لف في الأرض وبص على الورق", "t2b": "تلحق الصدأ بدري لو ظهر", "t2a": "تمام", "mapT": "أرضك من القمر الصناعي", "mapAge": "قمر صناعي · من ٤ أيام", "mapNote": "الركن ده أضعف من باقي الأرض", "alertT": "الجو مناسب للصدأ الأسبوع ده", "alertSub": "٤ ليالي من آخر ٧ كان فيها شبورة.", "med": "متوسط", "nav": ["أرضي", "المحاكي", "اسأل بذرة", "حسابي"], "pName": "حسن فاروق", "pSub": "مزارع · شبين الكوم، المنوفية", "accT": "دقة النصايح", "accV": "متوسطة", "accHint": "ضيف الصنف ومحصول السنين اللي فاتت", "rows": ["بيانات الأرض", "اللغة والتنبيهات", "المهندس بتاعك"], "simT": "جرّب موسمك", "simSub": "الموسم الجاي · مفيش حاجة بتتغير في أرضك", "sow": "ميعاد الزراعة", "sows": ["٢٥ أكتوبر", "١٥ نوفمبر", "١ ديسمبر"]}, "en": {"offerQ": "Want a one-minute tour of Bezra?", "offerSub": "7 short steps, on your own screens.", "start": "Start the tour", "skip": "Skip", "next": "Next", "back": "Back", "listen": "Listen", "steps": ["This is your field today, in one sentence.", "One or two tasks a day. Tick them when done.", "Your field from space. A yellow square means go look.", "We warn you before trouble comes. Tap to listen.", "Try it here before you plant.", "Don't understand something? Ask me.", "The more you fill in, the better the advice."], "doneT": "All set! 🌱", "doneSub": "I'll be in the corner if you need me.", "go": "Start", "of": "of", "skipped": "OK. You can watch the tour any time from Profile.", "replay": "Show the tour", "replayRow": "Show the tour again", "replaySub": "One minute, 7 steps", "tip": "Try it here: change the sowing date and watch your field grow.", "gotIt": "Got it", "hello": "Good morning, Hassan · Saturday 15 November", "status": "You're on plan.", "statusSub": "Next watering is Thursday.", "todayT": "Today", "t1": "Water on Thursday, about 300 m³", "t1b": "Protects about 8–12% of your harvest", "t1a": "I watered", "t2": "Walk the field and check the leaves", "t2b": "Catch rust early if it shows up", "t2a": "Done", "mapT": "Your field from space", "mapAge": "Satellite · 4 days ago", "mapNote": "This corner is weaker than the rest", "alertT": "Rust weather this week", "alertSub": "4 of the last 7 nights were foggy.", "med": "Medium", "nav": ["My field", "Simulator", "Ask Bezra", "Profile"], "pName": "Hassan Farouk", "pSub": "Farmer · Shibin El Kom, Menoufia", "accT": "Advice accuracy", "accV": "Medium", "accHint": "Add your variety and past harvests", "rows": ["Field details", "Language and alerts", "Your engineer"], "simT": "Try your season", "simSub": "Next season · nothing changes on your real field", "sow": "Sowing date", "sows": ["25 Oct", "15 Nov", "1 Dec"]}};
+const L0 = T[lang];
+const n = S.step, ph = S.phase, tour = ph === 'tour';
+const toAr = (s) => lang === 'ar' ? String(s).replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]) : String(s);
+const L = Object.assign({}, L0, { say: tour && n >= 1 && n <= 7 ? L0.steps[n - 1] : '', stepN: toAr(n) + ' ' + L0.of + ' ' + toAr(7), nav0: L0.nav[0], nav1: L0.nav[1], nav2: L0.nav[2], nav3: L0.nav[3] });
+const out = { L, lang, dir: lang === 'ar' ? 'rtl' : 'ltr', rows: L0.rows };
+for (let k = 1; k <= 7; k++) { out['is' + k] = tour && n === k; out['c' + k] = 'tgt' + (tour && n === k ? ' spot' : ''); }
+const view = ph === 'replay' || (tour && n === 7) ? 'profile' : (ph === 'tip' ? 'sim' : 'today');
+out.vToday = view === 'today'; out.vProfile = view === 'profile'; out.vSim = view === 'sim';
+const navOn = view === 'profile' ? 3 : (view === 'sim' ? 1 : 0);
+for (let k = 0; k < 4; k++) { out['cur' + k] = navOn === k ? 'page' : 'false'; out['n' + k] = (k === 1 && tour && n === 5) || (k === 2 && tour && n === 6) ? 'tgt spot' : ''; }
+out.cR = ph === 'replay' ? 'tgt spot' : 'tgt';
+out.dots = [1, 2, 3, 4, 5, 6, 7].map((k) => k === n ? 'on' : '');
+out.hasBack = n > 1; out.speaking = !!S.speak; out.quiet = !S.speak; out.lstCls = 'lst press' + (S.speak ? ' on' : '');
+out.listen = () => set({ speak: !S.speak });
+out.next = () => n >= 7 ? set({ phase: 'done', speak: false }) : set({ step: n + 1, speak: false });
+out.back = () => set({ step: Math.max(1, n - 1), speak: false });
+out.skipIt = () => set({ phase: 'skipped', speak: false });
+out.startTour = () => set({ phase: 'tour', step: 1 });
+out.finish = () => set({ phase: 'settled' });
+out.offer = ph === 'offer'; out.done = ph === 'done'; out.toast = ph === 'skipped';
+out.corner = ph === 'settled' || ph === 'tip' || ph === 'replay'; out.cornerCls = 'corner' + (ph === 'settled' ? ' settle' : '');
+out.tipOn = ph === 'tip' && !S.tipGone; out.gotIt = () => set({ tipGone: true });
+out.box1 = 'box press' + (S.t1 ? ' on' : ''); out.ticked1 = String(!!S.t1); out.ticked1b = !!S.t1; out.tick1 = () => set({ t1: !S.t1 });
+out.sows = L0.sows.map((l, k) => ({ l, c: 'segb' + (k === 0 ? ' on' : '') }));
+out.sc = scene({ month: 3, water: .35, heat: 0, rust: false, wet: false });
+if (!this._esc && typeof document !== 'undefined') { this._esc = true; document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && this.state.phase === 'tour') this.setState({ phase: 'skipped' }); else if (e.key === 'ArrowLeft' && this.state.phase === 'tour') { const dirx = (this.props.lang || this.state.lang) === 'ar' ? 1 : -1; this.setState({ step: Math.min(7, Math.max(1, this.state.step + dirx)) }); } }); }
+return out;
+ })();
+return Object.assign(base, extra || {});
+}
+}
+</script>
+</body>
+</html>

@@ -127,6 +127,49 @@ def signout(request: Request, resp: Response):
     return {"ok": True}
 
 
+# ---- v0.12 first-time tour: state per user (the browser mirrors it in localStorage; this is the truth) ----
+TOUR_STATUS = ("not_offered", "offered", "in_progress", "completed", "skipped")
+TOUR_TIPS = ("sim", "ask", "health", "profile")
+
+
+def _tour_get(uid: int) -> dict:
+    t = db.kv_get(f"tour:{uid}", None) or {}
+    return {"status": t.get("status", "not_offered"), "step": int(t.get("step") or 1), "completedAt": t.get("completedAt"),
+            "skippedAt": t.get("skippedAt"), "tipsSeen": [x for x in t.get("tipsSeen") or [] if x in TOUR_TIPS],
+            "first_field": t.get("first_field")}
+
+
+class TourState(BaseModel):
+    status: str | None = None
+    step: int | None = None
+    completedAt: str | None = None
+    skippedAt: str | None = None
+    tipsSeen: list[str] | None = None
+
+
+@app.get("/me/tour")
+def get_tour(user: dict = Depends(current_user)):
+    return _tour_get(user["id"])
+
+
+@app.put("/me/tour")
+def put_tour(req: TourState, user: dict = Depends(current_user)):
+    t = _tour_get(user["id"])
+    if req.status is not None:
+        if req.status not in TOUR_STATUS:
+            raise HTTPException(422, "Unknown tour status")
+        t["status"] = req.status
+    if req.step is not None:
+        t["step"] = max(1, min(7, req.step))
+    for k in ("completedAt", "skippedAt"):
+        if getattr(req, k) is not None:
+            t[k] = str(getattr(req, k))[:40]
+    if req.tipsSeen is not None:
+        t["tipsSeen"] = sorted({x for x in req.tipsSeen + t["tipsSeen"] if x in TOUR_TIPS})
+    db.kv_set(f"tour:{user['id']}", t)
+    return t
+
+
 @app.get("/auth/me")
 def me(user: dict = Depends(current_user)):
     eng = None
@@ -227,6 +270,10 @@ def add_field(req: NewField, user: dict = Depends(current_user)):
         raise HTTPException(422, str(e))
     f["num"] = f"{sum(x['owner_id'] == user['id'] for x in db.fields_for(user)) + 1:02d}"
     db.save_field(f, user["id"])
+    if f["num"] == "01":  # first field saved: the first-time tour is offered once, on Today (v0.12)
+        t = _tour_get(user["id"])
+        if t["status"] == "not_offered" and not t.get("first_field"):
+            db.kv_set(f"tour:{user['id']}", t | {"first_field": f["id"]})
     return _field_card(db.get_field(f["id"]))
 
 

@@ -390,3 +390,79 @@ body{background:var(--shell)}
 .raw th{position:sticky;top:0;background:var(--inset);text-align:start;font-weight:600;color:var(--muted);padding:8px 10px;border-bottom:1px solid #DCDDD8}
 .raw td{padding:6px 10px;border-bottom:1px solid #E6E7E2;color:var(--ink)}
 .raw tr:last-child td{border-bottom:0}
+
+/* ---- v0.12 mobile bottom navigation (below 768px): the header's own menu becomes a fixed bottom bar.
+   Same links, same icons; the top bar keeps only the logo and the bell. Desktop is untouched. ---- */
+@media (max-width:767px){
+  .top{height:60px;flex-wrap:nowrap;padding:0;gap:10px}
+  .top .brand{flex:1 1 auto}
+  .tools{flex:0 0 auto;flex-wrap:nowrap}
+  .tools>*:not(.ibtn){display:none!important}
+  .top .nav{position:fixed;z-index:40;inset-inline:0;bottom:0;order:0;width:auto;margin:0;
+    height:calc(72px + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);box-sizing:border-box;
+    display:flex;align-items:stretch;gap:0;border-radius:0;overflow:visible;
+    background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:none;border-top:1px solid var(--line)}
+  .top .nav>a{flex:1 1 0;min-width:0;min-height:56px;height:auto;padding:8px 2px 6px;border-radius:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    font-size:12px;font-weight:600;line-height:1.2;white-space:nowrap;color:var(--muted);background:transparent!important}
+  .top .nav>a>svg{width:22px;height:22px;flex:none}
+  .top .nav>a[aria-current=page]{color:var(--ink)}
+  .top .nav>a[aria-current=page]>svg{color:var(--green)}
+  .top .nav>a[href$="/tasks"]{display:none}  /* the bar has 4 items (5 for engineers); tasks live on My field */
+  .top .nav:has(>a[href$="/tasks"][aria-current=page])>a:first-child{color:var(--ink)}
+  .top .nav:has(>a[href$="/tasks"][aria-current=page])>a:first-child>svg{color:var(--green)}
+  .shell{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  /* the floating Ask Bezra button and the demo badge sit above the bar */
+  a[aria-label="Ask Bezra"][style*="fixed"]{bottom:calc(86px + env(safe-area-inset-bottom))!important}
+  .demo-badge{bottom:calc(86px + env(safe-area-inset-bottom))}
+  /* on-screen keyboard open (typing in Ask Bezra or a form): hide the bar */
+  body.kb-open .top .nav{display:none}
+}
+
+/* ---- v0.12 first-time tour (components/Tour.tsx). App colours, fonts and buttons; only the tour's own parts here. ---- */
+@keyframes tourIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes tourFade{from{opacity:0}to{opacity:1}}
+@keyframes tourSheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes tourBar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.tour-sheet{position:fixed;left:0;right:0;bottom:0;box-sizing:border-box;padding:24px 20px calc(18px + env(safe-area-inset-bottom));
+  background:#fff;border-radius:24px 24px 0 0;display:flex;flex-direction:column;gap:16px;box-shadow:0 -10px 40px -20px rgba(20,26,22,.4);
+  animation:tourSheet .42s var(--ease) both}
+.tour-sheet.center{align-items:center;text-align:center}
+.tour-sheet.rm{animation:tourFade .2s ease both}
+.tour-title{font-size:20px;font-weight:600;line-height:1.35;color:var(--ink)}
+html[dir="rtl"] .tour-title{font-size:21px}
+.tour-cta{width:100%;height:52px;border-radius:26px;font-size:16px}
+.tour-quiet{border:0;background:transparent;color:var(--muted);font-size:14px;font-weight:600;min-height:44px;padding:0 6px;align-self:center;cursor:pointer}
+@media (min-width:768px){
+  .tour-sheet{left:auto;right:auto;inset-inline-start:24px;bottom:24px;width:400px;border-radius:20px;padding:22px;box-shadow:0 24px 60px -20px rgba(20,26,22,.55);animation:tourIn .42s var(--ease) both}
+}
+.tour-coach{box-sizing:border-box;padding:16px;border-radius:20px;background:#fff;box-shadow:0 24px 60px -20px rgba(20,26,22,.55);
+  display:flex;flex-direction:column;gap:12px;animation:tourIn .42s var(--ease) both}
+.tour-coach.rm{animation:tourFade .2s ease both}
+.tour-count{font-size:13px;font-weight:600;color:var(--muted)}
+.tour-line{margin:0;flex:1;min-width:0;font-size:16px;font-weight:600;line-height:1.5;color:var(--ink)}
+html[dir="rtl"] .tour-line,[dir="rtl"] .tour-line{font-size:17px;line-height:1.55}
+.tour-listen{flex:none;width:40px;height:40px;border:0;border-radius:20px;background:var(--inset);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tour-listen.on{background:var(--sun)}
+.tour-bars{display:flex;gap:3px;align-items:center;height:16px}
+.tour-bars i{width:3px;height:16px;border-radius:2px;background:var(--ink);animation:tourBar .8s ease-in-out infinite;transform-origin:center}
+.tour-bars i:nth-child(2){animation-delay:.15s}.tour-bars i:nth-child(3){animation-delay:.3s}
+.tour-dots{display:flex;gap:5px;align-items:center}
+.tour-dots i{width:6px;height:6px;border-radius:3px;background:#D3D5CF;transition:width .25s var(--ease),background-color .25s}
+.tour-dots i.on{width:18px;background:var(--ink)}
+.tour-back{height:44px;padding:0 16px}
+.tour-next{min-width:88px;height:44px;padding:0 20px}
+.tour-toast{position:fixed;inset-inline:12px;bottom:calc(88px + env(safe-area-inset-bottom));margin-inline:auto;max-width:520px;box-sizing:border-box;
+  display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:20px;background:var(--dark);color:#fff;font-size:14px;line-height:1.5;
+  box-shadow:0 18px 40px -16px rgba(20,26,22,.6);animation:tourIn .42s var(--ease) both}
+@media (min-width:768px){.tour-toast{bottom:24px}}
+.tour-toast.rm,.tour-tip.rm{animation:tourFade .2s ease both}
+.tour-saffron{flex:none;min-height:44px;padding:0 16px;border:0;border-radius:22px;background:var(--sun);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tour-tip{box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:12px;border-radius:20px;background:var(--dark);color:#fff;font-size:14px;line-height:1.5;
+  box-shadow:0 18px 40px -16px rgba(20,26,22,.6);animation:tourIn .42s var(--ease) both}
+.tour-tip-arrow{position:absolute;width:16px;height:16px;background:var(--dark);transform:rotate(45deg);border-radius:3px}
+.tour-tip-arrow.down{bottom:-6px}.tour-tip-arrow.up{top:-6px}
+.tour-replay{width:100%;min-height:64px;border:0;cursor:pointer;justify-content:flex-start;gap:12px;font:inherit;text-align:start}
+.tour-play{width:40px;height:40px;flex:none;border-radius:12px;background:var(--green-tint);color:var(--green);display:flex;align-items:center;justify-content:center}
+@media (prefers-reduced-motion: reduce){.tour-sheet,.tour-coach,.tour-toast,.tour-tip{animation:tourFade .2s ease both!important}.tour-bars i{animation:none}}

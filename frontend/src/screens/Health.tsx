@@ -156,7 +156,7 @@ export default function HealthScreen() {
               </Link>
             </nav>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 380px","alignItems":"stretch"} as any}>
-              <section aria-labelledby="hm-h" className="hero rise" style={{"--d":"2","minHeight":"540px","background":"#D9D6C8"} as any}>
+              <section data-tour-tip="health" aria-labelledby="hm-h" className="hero rise" style={{"--d":"2","minHeight":"540px","background":"#D9D6C8"} as any}>
                 <i className="sk map" aria-hidden="true" style={{"--d":"2"} as any} />
                 <h2 id="hm-h" className="vh">
                   {"Greenness map"}

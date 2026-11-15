@@ -160,7 +160,7 @@ export default function FieldScreen() {
               </Link>
             </nav>
             <TodayBoard id={id} details={!!__v?.details} map={(
-            <section aria-labelledby="hero-h" className="hero rise" style={{"--d":"2","minHeight":"520px","background":"#D9D6C8"} as any}>
+            <section data-tour="map" aria-labelledby="hero-h" className="hero rise" style={{"--d":"2","minHeight":"520px","background":"#D9D6C8"} as any}>
               <i className={__v.skMap} aria-hidden="true" style={{"--d":"2"} as any} />
               <h2 id="hero-h" className="vh">
                 {"Your field from above"}

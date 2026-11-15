@@ -4,6 +4,8 @@ import { ModeProvider } from '@/lib/dc';
 import { FieldProvider } from '@/lib/field';
 import { LangProvider } from '@/lib/i18n';
 import DemoBadge from '@/components/DemoBadge';
+import KeyboardWatch from '@/components/KeyboardWatch';
+import { TourProvider } from '@/components/Tour';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -29,7 +31,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <LangProvider initial={lang}>
           <ModeProvider>
-            <FieldProvider>{children}<DemoBadge /></FieldProvider>
+            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /></FieldProvider>
           </ModeProvider>
         </LangProvider>
       </body>

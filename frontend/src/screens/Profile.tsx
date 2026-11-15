@@ -1,4 +1,5 @@
 'use client';
+import { TourReplayRow } from '@/components/Tour';
 import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Profile.html by scripts/convert-design.mjs (layout and copy 1:1).
@@ -134,7 +135,7 @@ export default function ProfileScreen() {
             </div>
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 380px","alignItems":"start"} as any}>
               <div className="col" style={{"gap":"14px"} as any}>
-                <section className="card rise " style={{"--d":"2"} as any}>
+                <section data-tour="accuracy" className="card rise " style={{"--d":"2"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"2"} as any} />
                   <div className="row" style={{"gap":"20px"} as any}>
                     <svg viewBox="0 0 160 96" width="190" role="img" aria-label={`Accuracy ${A.pct} percent, ${A.level}`}>
@@ -483,6 +484,7 @@ export default function ProfileScreen() {
                       <span style={__css(__v?.knob)} />
                     </button>
                   </label>
+                  <TourReplayRow />
                 </section>
                 <section className="card rise " style={{"--d":"4"} as any}>
                   <i className="sk " aria-hidden="true" style={{"--d":"4"} as any} />

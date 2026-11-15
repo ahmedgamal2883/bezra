@@ -1,4 +1,5 @@
 'use client';
+import { TourReplayChip } from '@/components/Tour';
 import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-Ask.html by scripts/convert-design.mjs (layout and copy 1:1).
@@ -337,8 +338,9 @@ export default function AskScreen() {
                   <Link href="/messages" className="btn line sm press">
                     <T en="Talk to your engineer" ar="كلّم المهندس" />
                   </Link>
+                  <TourReplayChip className="btn line sm press" />
                 </div>
-                <div className="row rise" style={{"--d":"11","gap":"8px","padding":"6px","borderRadius":"999px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.06)"} as any}>
+                <div data-tour-tip="ask" className="row rise" style={{"--d":"11","gap":"8px","padding":"6px","borderRadius":"999px","background":"#fff","boxShadow":"0 1px 2px rgba(20,26,22,.06)"} as any}>
                   <button type="button" className="ibtn press" aria-label={mic.on ? "Stop listening" : "Speak"} aria-pressed={mic.on} onClick={mic.toggle} title={mic.supported ? "Speak in Arabic" : "Voice needs Chrome or Edge"} style={{"background": mic.on ? "var(--risk)" : "var(--sun)", "color": mic.on ? "#fff" : undefined} as any}>
                     <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM6 11a6 6 0 0 0 12 0M12 17v4" />

@@ -30,3 +30,19 @@ def test_bezra_rule_adds_heat_prep_and_catch_up():
     assert rule(date(2026, 3, 11), grain) is False            # not again right after
     young = NS(gdd=300, water_pct=40)
     assert rule(date(2026, 3, 22), young) is True             # catch-up: dry soil, more than a turn since the last
+
+
+def test_tour_state_is_saved_per_user():
+    from fastapi.testclient import TestClient
+    from app import db, main
+    main.app.dependency_overrides[main.current_user] = lambda: {"id": 987654, "email": "t@t", "role": "farmer"}
+    try:
+        cl = TestClient(main.app)
+        db.kv_set("tour:987654", None)
+        assert cl.get("/me/tour").json()["status"] == "not_offered"
+        assert cl.put("/me/tour", json={"status": "skipped", "tipsSeen": ["sim", "bogus"]}).json()["tipsSeen"] == ["sim"]
+        assert cl.put("/me/tour", json={"status": "nope"}).status_code == 422
+        assert cl.get("/me/tour").json()["status"] == "skipped"
+    finally:
+        main.app.dependency_overrides.clear()
+        db.kv_set("tour:987654", None)

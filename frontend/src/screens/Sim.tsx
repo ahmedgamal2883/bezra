@@ -357,7 +357,7 @@ export default function SimScreen() {
                     <span className="h2" style={{"fontSize":"14px"} as any}>
                       {"Sowing date"}
                     </span>
-                    <div role="group" aria-label="Sowing date" className="seg" style={{"height":"auto","flexWrap":"wrap","borderRadius":"14px"} as any}>
+                    <div data-tour-tip="sim" role="group" aria-label="Sowing date" className="seg" style={{"height":"auto","flexWrap":"wrap","borderRadius":"14px"} as any}>
                       {((__v?.sow) || []).map((o: any, i4: number) => (
                         <Fragment key={i4}>
                           <button type="button" className={__s(o?.cls) as any} onClick={o?.pick} aria-pressed={__s(o?.p) as any} style={{"flex":"1","borderRadius":"10px"} as any}>

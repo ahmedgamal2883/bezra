@@ -35,7 +35,7 @@ export default function TodayTasks({ id }: { id: string }) {
     setT(j.tasks);
   };
   return (
-    <section className="card rise" style={{ '--d': '1' } as React.CSSProperties} aria-label={tr('Today', 'النهارده')}>
+    <section data-tour="tasks" className="card rise" style={{ '--d': '1' } as React.CSSProperties} aria-label={tr('Today', 'النهارده')}>
       <div className="row sp" style={{ gap: '8px' }}>
         <div className="col" style={{ gap: '2px' }}>
           <h2 className="h2">{tr('To do today', 'تعمل إيه النهارده')}</h2>
