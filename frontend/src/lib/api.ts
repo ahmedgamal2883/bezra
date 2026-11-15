@@ -17,6 +17,30 @@ export type Loadable<T = any> = { data: T | null; loading: boolean; error: strin
 
 const memo = new Map<string, any>();
 
+// After the farmer saves anything (a watering, a check-in, a task, an edit), forget what this visit cached for that
+// field, so every screen asks the server again and shows the new state (not the numbers from before the save).
+const SAVES = /\/(log|checkin|approve|cases)(\?|$)|\/(tasks|irrigation|field-alerts)\/[^/?]+(\?|$)|\/fields\/[^/?]+(\?|$)|\/fields(\?|$)/;
+export function forgetField(fieldId?: string) {
+  for (const k of [...memo.keys()]) if (!fieldId || k.includes(`/fields/${fieldId}`) || k.startsWith('/engineer') || k === '/fields') memo.delete(k);
+}
+if (typeof window !== 'undefined' && !(window as any).__bezraSaves) {
+  (window as any).__bezraSaves = true;
+  const orig = window.fetch.bind(window);
+  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const res = await orig(input, init);
+    const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    if (method !== 'GET' && res.ok) {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      const path = url.replace(/^https?:\/\/[^/]+/, '');
+      if (path.startsWith('/api/') && SAVES.test(path.split('?')[0] + '')) {
+        const m = path.match(/\/fields\/([^/?]+)/);
+        forgetField(m ? m[1] : undefined);
+      }
+    }
+    return res;
+  };
+}
+
 // Demo farmer (Hassan) only: when a request fails, screens may fall back to the design's sample values.
 // Everyone else keeps the loading state (skeleton) and the request keeps retrying: no sample values, ever.
 let demoAccount = false;

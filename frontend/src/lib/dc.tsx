@@ -2,7 +2,7 @@
 // Small runtime that runs the V11 design logic scripts unchanged inside React.
 // Each design screen ships a `Component extends DCLogic` class with renderVals();
 // we keep those classes verbatim and re-render React when they call setState.
-import { createContext, useContext, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, useRef, useState, type ReactNode } from 'react';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class DCLogic {
@@ -53,10 +53,6 @@ export function useDC(Logic: LogicClass, extraProps: Record<string, unknown> = {
     }
     force();
   };
-  useEffect(() => {
-    // A fresh page plays its entrance animations again.
-    document.documentElement.classList.remove('static');
-  }, []);
   return inst.renderVals();
 }
 

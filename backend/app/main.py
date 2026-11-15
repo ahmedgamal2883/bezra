@@ -209,7 +209,8 @@ def status_apis(fresh: bool = False):
 
 @app.api_route("/health", methods=["GET", "HEAD"])  # HEAD: uptime pingers (UptimeRobot) keep Render awake
 def health():
-    return {"ok": True, "today": date.today().isoformat()}
+    # "storage" = postgres (Supabase: farmers' data survives restarts) or sqlite (local, or lost on a Render restart)
+    return {"ok": True, "today": date.today().isoformat(), "storage": db.engine()}
 
 
 @app.get("/fields")

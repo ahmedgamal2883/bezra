@@ -15,10 +15,16 @@ const C = createContext<Ctx>({ user: null, fields: [], loaded: false, id: '', se
 // Kept for older imports: names of known fields by id (filled once fields load).
 export const FIELD_NAMES: Record<string, string> = {};
 
+// Kept in memory for the whole visit, so a re-mount (language switch) shows the page at once.
+const kept: { user: User | null; fields: FieldCard[]; loaded: boolean } = { user: null, fields: [], loaded: false };
+
 export function FieldProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [fields, setFields] = useState<FieldCard[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [user, setUserS] = useState<User | null>(kept.user);
+  const [fields, setFieldsS] = useState<FieldCard[]>(kept.fields);
+  const [loaded, setLoadedS] = useState(kept.loaded);
+  const setUser = (u: User | null) => { kept.user = u; setUserS(u); };
+  const setFields = (f: FieldCard[]) => { kept.fields = f; setFieldsS(f); };
+  const setLoaded = (v: boolean) => { kept.loaded = v; setLoadedS(v); };
   const [id, setId] = useState('');
   const path = usePathname();
   const load = useCallback(async () => {

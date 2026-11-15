@@ -2,7 +2,7 @@
 // Language: English (default) or Arabic. Chosen on the Landing / Profile switch, kept in a cookie so the
 // server renders the same language. Arabic turns the whole page right-to-left with IBM Plex Sans Arabic
 // (checkpoint D). Every sentence that exists in both languages is written once as a pair: <T en ar />.
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, Fragment, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { toArabic } from './ar';
 
 export type Lang = 'en' | 'ar';
@@ -22,11 +22,13 @@ export function LangProvider({ initial = 'en', children }: { initial?: Lang; chi
   }, [lang]);
   const setLang = useCallback((l: Lang) => {
     document.cookie = `bezra_lang=${l}; path=/; max-age=31536000; samesite=lax`;
+    // No page reload (that flashed a white page): the screens re-mount in the new language and direction.
+    // Going back to English needs fresh text nodes, because the Arabic pass rewrote them in place.
+    document.documentElement.classList.add('static');
     set(l);
-    window.location.reload(); // every screen re-renders in the new language and direction
   }, []);
   useEffect(() => { if (lang === 'ar') return translatePage(); }, [lang]);
-  return <C.Provider value={{ lang, setLang }}>{children}</C.Provider>;
+  return <C.Provider value={{ lang, setLang }}><Fragment key={lang}>{children}</Fragment></C.Provider>;
 }
 
 export function useLang() {
@@ -83,9 +85,11 @@ function translatePage() {
   const title = () => {
     const t = document.title;
     if (!t.startsWith('Bezra')) return;
+    english = t;
     const a = toArabic(t.replace(/^Bezra, /, ''));
     document.title = 'بذرة' + (a ? '، ' + a : '');
   };
+  let english = document.title;
   title();
   const to = new MutationObserver(title);
   const head = document.querySelector('title');
@@ -98,7 +102,7 @@ function translatePage() {
     }
   });
   mo.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
-  return () => { mo.disconnect(); to.disconnect(); };
+  return () => { mo.disconnect(); to.disconnect(); if (document.title.startsWith('بذرة')) document.title = english; };
 }
 
 /** EN | ع switch (header, Landing, Profile). */

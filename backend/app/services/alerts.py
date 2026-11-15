@@ -33,7 +33,12 @@ def _wd(d: date) -> str:
 def build(c: Ctx) -> dict:
     def make():
         return _build(c)
-    data, _ = fetch_cached(f"alerts_{c.f['id']}_{c.today}", 6, make)
+    # a new watering, log entry or check-in changes the alerts at once (not after the 6-hour cache)
+    import hashlib
+    import json
+    mine = {k: c.f.get(k) for k in ("waterings", "log", "checkins", "sow_date", "crop", "turn_days", "next_turn")}
+    fp = hashlib.sha1(json.dumps(mine, sort_keys=True, default=str).encode()).hexdigest()[:10]
+    data, _ = fetch_cached(f"alerts_{c.f['id']}_{c.today}_{fp}", 6, make)
     return data
 
 

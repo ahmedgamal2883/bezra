@@ -5,6 +5,7 @@ import { FieldProvider } from '@/lib/field';
 import { LangProvider } from '@/lib/i18n';
 import DemoBadge from '@/components/DemoBadge';
 import KeyboardWatch from '@/components/KeyboardWatch';
+import RouteMotion from '@/components/RouteMotion';
 import WakeUp from '@/components/WakeUp';
 import { TourProvider } from '@/components/Tour';
 import './globals.css';
@@ -22,6 +23,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         {/* The design has its own colours: stop the Dark Reader extension from repainting the page
             (it changes SVG attributes before React loads, which causes hydration errors). */}
         <meta name="darkreader-lock" />
+        {/* Language and direction from the cookie before anything paints (pre-built pages are built in English). */}
+        <script dangerouslySetInnerHTML={{ __html: "try{var a=/(?:^|; )bezra_lang=ar/.test(document.cookie);var h=document.documentElement;h.lang=a?'ar':'en';h.dir=a?'rtl':'ltr'}catch(e){}" }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
@@ -32,7 +35,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <LangProvider initial={lang}>
           <ModeProvider>
-            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /><WakeUp /></FieldProvider>
+            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /><WakeUp /><RouteMotion /></FieldProvider>
           </ModeProvider>
         </LangProvider>
       </body>
