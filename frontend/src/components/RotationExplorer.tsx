@@ -4,7 +4,7 @@
 // Shows what the farmer grows now plus the best 3 for their priorities. Every number is Estimated (Farmer when they
 // typed a soil test). No fertilizer amounts, no money: income is not compared yet.
 import { useState } from 'react';
-import { useApi } from '@/lib/api';
+import { API, useApi } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -261,6 +261,7 @@ export default function RotationExplorer({ id }: { id: string }) {
   const [om, setOm] = useState('');
   const [lab, setLab] = useState<{ ec?: string; om?: string }>({});
   const [past, setPast] = useState('');
+  const [saved, setSaved] = useState('');
   const q = new URLSearchParams({ rice: rice === 'yes' ? 'true' : 'false', water, residue, priorities: prio.join(',') });
   if (now) q.set('current', now);
   if (lab.ec) q.set('lab_ec', lab.ec);
@@ -319,7 +320,14 @@ export default function RotationExplorer({ id }: { id: string }) {
         <details>
           <summary className="sub" style={{ cursor: 'pointer' }}>{tr('I have a soil test (optional)', 'عندي تحليل تربة (اختياري)')}</summary>
           <form className="row wrap" style={{ gap: '8px', marginTop: '8px', alignItems: 'flex-end' }}
-            onSubmit={(e) => { e.preventDefault(); setLab({ ec: ec || undefined, om: om || undefined }); }}>
+            onSubmit={async (e) => {
+              e.preventDefault();
+              // saved with the field (R10): it stays after a reload and every screen uses it
+              const r = await fetch(`${API}/fields/${id}/soiltest`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ec: ec ? Number(ec) : null, om: om ? Number(om) : null }) });
+              if (r.ok) { setSaved(tr('Saved with your field.', 'اتحفظ مع أرضك.')); setLab({ ec: ec || undefined, om: om || undefined }); }
+              else setSaved(tr('Could not save. Check the numbers.', 'ماتحفظش. راجع الأرقام.'));
+            }}>
             <label className="col" style={{ gap: '4px' }}>
               <span className="tl">{tr('Salinity EC (dS/m)', 'الملوحة EC (ديسي سيمنز/م)')}</span>
               <input inputMode="decimal" value={ec} onChange={(e) => setEc(e.target.value.replace(/[^0-9.]/g, ''))} className="inset" style={{ border: 0, font: 'inherit', width: '120px' }} />
@@ -328,7 +336,11 @@ export default function RotationExplorer({ id }: { id: string }) {
               <span className="tl">{tr('Organic matter (%)', 'المادة العضوية (%)')}</span>
               <input inputMode="decimal" value={om} onChange={(e) => setOm(e.target.value.replace(/[^0-9.]/g, ''))} className="inset" style={{ border: 0, font: 'inherit', width: '120px' }} />
             </label>
-            <button type="submit" className="btn sm press">{tr('Use my test', 'استخدم تحليلي')}</button>
+            <button type="submit" className="btn sm press">{tr('Save my test', 'احفظ تحليلي')}</button>
+            {saved ? <span className="tl" role="status">{saved}</span> : null}
+            {D?.soil_test?.date && (D.soil_test.ec || D.soil_test.om) ? (
+              <span className="tl">{tr('Saved test', 'التحليل المحفوظ')} ({D.soil_test.date}): {D.soil_test.ec ? `EC ${D.soil_test.ec}` : ''}{D.soil_test.ec && D.soil_test.om ? ' · ' : ''}{D.soil_test.om ? `${tr('OM', 'مادة عضوية')} ${D.soil_test.om}%` : ''}</span>
+            ) : null}
           </form>
         </details>
       </section>

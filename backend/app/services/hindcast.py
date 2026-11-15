@@ -7,6 +7,10 @@ For each past wheat season of a field:
      (Open-Meteo Previous Runs archive: temperature_2m_previous_dayN). Bezra would have warned N days early
      if the forecast issued N days before already showed a day >= 32 C.
 Nothing here uses data from after the forecast was issued. Results are cached (the past does not change).
+
+False alarms (Field Shift R4): every grain-fill day is scored, not only the hot ones. For each warning lead N (1-7
+days), a "warning" = the forecast issued N days before showed >= 32 C for that day; an "event" = NASA POWER Tmax >= 32 C.
+Hits, misses and false alarms give precision (warnings that came true) and recall (hot days that were warned).
 """
 from __future__ import annotations
 
@@ -67,11 +71,63 @@ def _forecasts(lat: float, lon: float, day: date) -> dict[int, float | None]:
     return {int(k): v for k, v in data.items()}
 
 
+def _forecast_window(lat: float, lon: float, start: date, end: date) -> dict[str, dict[int, float | None]]:
+    """Daily max of each previous-day forecast for every day of a window: {day: {lead: tmax}} (one cached call)."""
+    def fetch():
+        hourly = ",".join(f"temperature_2m_previous_day{n}" for n in LEADS)
+        import time
+        for attempt in range(4):
+            try:
+                r = httpx.get(URL, params={"latitude": lat, "longitude": lon, "hourly": hourly, "start_date": start.isoformat(),
+                                           "end_date": end.isoformat(), "timezone": "Africa/Cairo"}, timeout=60)
+                r.raise_for_status()
+                break
+            except httpx.HTTPError:
+                if attempt == 3:
+                    raise
+                time.sleep(3 * (attempt + 1))
+        h = r.json()["hourly"]
+        out: dict[str, dict[str, float | None]] = {}
+        for i, t in enumerate(h["time"]):
+            day = t[:10]
+            for n in LEADS:
+                v = (h.get(f"temperature_2m_previous_day{n}") or [None] * len(h["time"]))[i]
+                if v is None:
+                    continue
+                cur = out.setdefault(day, {}).get(str(n))
+                out[day][str(n)] = v if cur is None else max(cur, v)
+        return out
+    data, _ = fetch_cached(f"prevruns_win_{lat:.2f}_{lon:.2f}_{start}_{end}", 24 * 3650, fetch)
+    return {d: {int(k): v for k, v in x.items()} for d, x in data.items()}
+
+
+def score(days: list[tuple[float, dict[int, float | None]]]) -> dict[int, dict]:
+    """Pure: [(actual Tmax, {lead: forecast Tmax})] -> per lead hits / misses / false alarms / precision / recall."""
+    out = {}
+    for n in LEADS:
+        hit = miss = fa = cn = 0
+        for actual, fc in days:
+            f = fc.get(n)
+            if actual is None or f is None:
+                continue
+            ev, wn = actual >= HOT, f >= HOT
+            hit += ev and wn
+            miss += ev and not wn
+            fa += wn and not ev
+            cn += not ev and not wn
+        warned = hit + fa
+        events = hit + miss
+        out[n] = {"hits": hit, "misses": miss, "false_alarms": fa, "quiet_days": cn, "days": hit + miss + fa + cn,
+                  "precision": round(hit / warned, 2) if warned else None, "recall": round(hit / events, 2) if events else None}
+    return out
+
+
 def run(c, years: range = range(2021, 2027)) -> dict:
     w = c.w
     lat, lon = c.f["lat"], c.f["lon"]
     md = (c.sow.month, c.sow.day)
     seasons, waves_all = [], []
+    scored: list[tuple[float, dict[int, float | None]]] = []
     for y in years:  # y = harvest year; sown the autumn before
         sow = date(y - 1, *md)
         r = season.run(w.historical, sow, crop="wheat", variety=c.variety, water=False, lat=lat)
@@ -86,6 +142,11 @@ def run(c, years: range = range(2021, 2027)) -> dict:
             days.append((d, x["tmax"] if x else None))
             d += timedelta(days=1)
         waves = heat_waves(days)
+        try:
+            win = _forecast_window(lat, lon, heading, r.ripe)
+            scored += [(t, win.get(d.isoformat(), {})) for d, t in days if t is not None]
+        except Exception:  # noqa: BLE001  archive down: the wave check below still runs
+            pass
         rows = []
         for wave in waves:
             fc = _forecasts(lat, lon, wave[0])
@@ -105,4 +166,7 @@ def run(c, years: range = range(2021, 2027)) -> dict:
             "rule": f"Heat alert = forecast Tmax >= {HOT:.0f} C during grain fill", "source": SOURCE,
             "waves": len(judged), "waves_without_forecast": len(waves_all) - len(judged), "warned": len(warned),
             "lead_range": [leads[0], leads[-1]] if leads else None, "seasons": seasons,
-            "grain_fill_start_gdd": C.GRAIN_FILL_START}
+            "grain_fill_start_gdd": C.GRAIN_FILL_START,
+            "day_scores": score(scored) if scored else None,
+            "day_scores_note": "Every grain-fill day scored: a warning = forecast issued N days before >= 32 C; "
+                               "an event = NASA POWER Tmax >= 32 C. POWER runs ~0.7 C warm in Feb-Mar (VALIDATION.md)."}

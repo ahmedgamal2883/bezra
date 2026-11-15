@@ -19,7 +19,7 @@ const memo = new Map<string, any>();
 
 // After the farmer saves anything (a watering, a check-in, a task, an edit), forget what this visit cached for that
 // field, so every screen asks the server again and shows the new state (not the numbers from before the save).
-const SAVES = /\/(log|checkin|approve|cases)(\?|$)|\/(tasks|irrigation|field-alerts)\/[^/?]+(\?|$)|\/fields\/[^/?]+(\?|$)|\/fields(\?|$)/;
+const SAVES = /\/(log|checkin|approve|cases|soiltest)(\?|$)|\/(tasks|irrigation|field-alerts)\/[^/?]+(\?|$)|\/fields\/[^/?]+(\?|$)|\/fields(\?|$)/;
 export function forgetField(fieldId?: string) {
   for (const k of [...memo.keys()]) if (!fieldId || k.includes(`/fields/${fieldId}`) || k.startsWith('/engineer') || k === '/fields') memo.delete(k);
 }

@@ -19,7 +19,7 @@ Status: ✅ measured or passing · ◐ partly · ⬜ not done yet
 | Test | Result | Status |
 |---|---|---|
 | Wheat calendar vs Egyptian timing | Recalibrated on real ERA5 weather (heading ≈ 14 Feb, harvest ≈ 10 Apr for early-November sowing). To confirm with ARC. | ◐ |
-| Heat-alert hindcast | Lead days measured (`services/hindcast.py`, About page). False alarms not counted yet. | ◐ |
+| Heat-alert hindcast, Menoufia demo field, wheat seasons 2021–2026 | Waves: 5 of 6 warned, 3–7 days early. **Day by day** (327 grain-fill days, forecast issued 3 days before vs NASA POWER Tmax ≥ 32 °C): 9 hits, 3 misses, **4 false alarms**, so precision 0.69 and recall 0.75. Across leads 1–7 days, precision is 0.56–0.75 and recall 0.67–0.75. One field, small sample; POWER runs ~0.7 °C warm in Feb–Mar. | ✅ |
 | Seasonal water use (FAO-56) vs ECOSTRESS ET and FLDAS ET | — | ⬜ |
 | Yield index vs governorate wheat yield anomalies 2000–2023 | — | ⬜ |
 | Rotation water use vs Egyptian figures | Model, per feddan per year: wheat→rice ≈ 9,900–10,300 m³, wheat→maize ≈ 6,950–7,300 m³. Commonly reported Egyptian field figures are about 2,000–2,500 m³ for wheat, 6,000–7,000 for rice and 3,000–4,000 for maize, so the model is in the same range. **Exact MWRI source still to cite.** | ◐ |

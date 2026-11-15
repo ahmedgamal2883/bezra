@@ -246,6 +246,34 @@ class EditField(NewField):
     sow_date: str = ""
 
 
+class SoilTest(BaseModel):
+    ec: float | None = None          # ECe, dS/m (lab, saturated paste)
+    om: float | None = None          # organic matter, %
+    date: str | None = None
+
+
+@app.post("/fields/{field_id}/soiltest")
+def post_soiltest(field_id: str, req: SoilTest, user: dict = Depends(current_user)):
+    """Field Shift R10: the farmer's lab soil test, saved with the field; it replaces the global maps everywhere
+    (labelled Farmer). Only these keys change: the rest of the field is kept as it is."""
+    _ctx(field_id, user)
+    if req.ec is not None and not 0 < req.ec < 40:
+        raise HTTPException(422, "EC must be between 0 and 40 dS/m")
+    if req.om is not None and not 0 < req.om < 15:
+        raise HTTPException(422, "Organic matter must be between 0 and 15 %")
+    f = db.get_field(field_id)
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    if req.ec is not None:
+        f["soil_ec"] = round(req.ec, 2)
+    if req.om is not None:
+        f["soil_om"] = round(req.om, 2)
+    f["soil_test_date"] = (req.date or date.today().isoformat())[:10]
+    db.save_field(f, owner)
+    return {"soil_ec": f.get("soil_ec"), "soil_om": f.get("soil_om"), "soil_test_date": f["soil_test_date"]}
+
+
 @app.put("/fields/{field_id}")
 def edit_field(field_id: str, req: EditField, user: dict = Depends(current_user)):
     """Rework C: the farmer (or their engineer) can change the field's answers any time."""

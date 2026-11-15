@@ -24,6 +24,15 @@ export default function HindcastCard() {
             : (!H && !error ? '' : tr('warned 4 to 7 days early', 'نبّهت قبلها بـ 4 لـ 7 أيام'))}
         </span>
       </span>
+      {real && H.day_scores?.['3'] ? (() => {
+        const s = H.day_scores['3'];
+        return (
+          <span className="sub">
+            {tr(`Day by day, warning 3 days ahead: ${s.hits} hot days caught, ${s.misses} missed, ${s.false_alarms} false alarms in ${s.days} grain-fill days (${Math.round((s.precision || 0) * 100)}% of warnings came true).`,
+              `يوم بيوم، التنبيه قبلها بـ 3 أيام: ${s.hits} يوم حر اتمسك، ${s.misses} فاتوا، ${s.false_alarms} تنبيه غلط في ${s.days} يوم امتلاء حبوب (${Math.round((s.precision || 0) * 100)}% من التنبيهات طلعت صح).`)}
+          </span>
+        );
+      })() : null}
       {real ? (
         <>
           <span className="pill pv-sat" style={{ alignSelf: 'flex-start' }}>{tr('Computed from real data', 'محسوبة من بيانات حقيقية')}</span>
