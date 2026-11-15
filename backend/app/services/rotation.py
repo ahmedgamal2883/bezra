@@ -402,16 +402,19 @@ def start_state(c: Ctx, lab_ec: float | None, lab_om: float | None) -> dict:
 def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "remove", priorities: str = "water,soil",
           current: str | None = None, lab_ec: float | None = None, lab_om: float | None = None, high_water_table: bool | None = None,
           past: str | None = None) -> dict:
-    key = f"{c.f['id']}|{rice}|{water}|{residue}|{priorities}|{current}|{lab_ec}|{lab_om}|{high_water_table}|{past}|{c.today}"
+    key = f"{c.f['id']}|{rice}|{water}|{residue}|{priorities}|{current}|{lab_ec}|{lab_om}|{high_water_table}|{past}|{c.f.get('soil_ec')}|{c.f.get('water_ec')}|{c.today}"
     hit = _cache.get(key)
     if hit and time.time() - hit[0] < 3600:
         return hit[1]
     water = water if water in S.EC_WATER else "canal"
+    # the farmer's saved lab tests (onboarding / profile) are used unless the screen sends new ones
+    lab_ec = lab_ec or (c.f.get("soil_ec") or None)
+    saved_wec = c.f.get("water_ec") or None
     residue = residue if residue in ("burn", "remove", "plough") else "remove"
     prio = [p for p in priorities.split(",") if p in PRIORITIES][:2] or ["water", "soil"]
     s0 = start_state(c, lab_ec, lab_om)
     saline_gw = s0["north"] if high_water_table is None else high_water_table
-    ecw = S.EC_WATER[water]
+    ecw = float(saved_wec) if saved_wec and 0 < float(saved_wec) < 20 else S.EC_WATER[water]
     dx, dn = c.w.trend_delta()
     wkey = f"{c.f['lat']:.1f},{c.f['lon']:.1f}|{c.w.power_last}"
     wins = _wins.get(wkey)
@@ -506,7 +509,7 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
             s["vs_current_pct"] = round(100 * (s["soil_level"] / base["soil_level"] - 1), 1)
             s["water_vs_current_pct"] = round(100 * (s["water_mm_year"] / base["water_mm_year"] - 1))
     res = {"field": c.f["id"], "start": s0["sources"], "profile": s0["profile"],
-           "inputs": {"rice": rice, "water": water, "residue": residue, "priorities": prio, "current": current,
+           "inputs": {"rice": rice, "water": water, "water_ec": ecw, "water_ec_source": "your water test" if saved_wec else "typical for the source", "residue": residue, "priorities": prio, "current": current,
                       "lab_ec": lab_ec, "lab_om": lab_om, "saline_water_table": saline_gw},
            "strategies": current_s + others[:3], "more": others[3:], "hidden": hidden,
            "weather": {"windows": [f"{y}-{y + YEARS - 1}" for y in WINDOWS], "warming": {"tmax": round(dx, 2), "tmin": round(dn, 2)},
