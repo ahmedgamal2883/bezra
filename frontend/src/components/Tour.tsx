@@ -324,6 +324,23 @@ function SkipToast({ t, onReplay }: { t: (k: CopyKey) => string; onReplay: () =>
 
 // ---- [B] spotlight + [C] coach mark -----------------------------------------------------------------------------
 type Rect = { top: number; left: number; width: number; height: number };
+const maxScroll = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+// Where the page should scroll so the target sits in the free space (null = already fixed on screen, e.g. the bottom bar).
+function scrollGoal(el: HTMLElement, m: 'top' | 'bottom'): number | null {
+  let fixed = false;
+  for (let x: HTMLElement | null = el; x; x = x.parentElement) if (getComputedStyle(x).position === 'fixed') { fixed = true; break; }
+  if (fixed) return null;
+  const r = el.getBoundingClientRect(), vh = window.innerHeight;
+  let want: number;
+  if (isPhone()) {
+    const ch = 200;
+    const [a, b] = m === 'top' ? [14 + ch + 22, vh - 88] : [12, vh - 88 - ch - 22];
+    want = r.height <= b - a ? a + (b - a - r.height) / 2 : a;
+  } else {
+    want = r.height <= vh - 160 ? (vh - r.height) / 2 : 80;
+  }
+  return Math.max(0, Math.min(maxScroll(), Math.round(window.scrollY + r.top - want)));
+}
 const PAD = 8;
 
 function Step({ n, dir, ar, t, onNext, onBack, onSkip, onMissing }: {
@@ -350,20 +367,23 @@ function Step({ n, dir, ar, t, onNext, onBack, onSkip, onMissing }: {
       const el = Array.from(document.querySelectorAll<HTMLElement>(s.sel)).find((x) => x.getClientRects().length && getComputedStyle(x).display !== 'none');
       if (el) {
         target.current = el;
-        const behavior: ScrollBehavior = reduced() ? 'auto' : 'smooth';
-        if (isPhone() && getComputedStyle(el).position !== 'fixed' && !el.closest('.top')) {
-          // phone: centre the target in the space the coach leaves free (coach ~200 px at the top, or above the bar)
-          const r = el.getBoundingClientRect(), vh = window.innerHeight, ch = 200;
-          const [a, b] = s.m === 'top' ? [14 + ch + 22, vh - 88] : [12, vh - 88 - ch - 22];
-          const want = r.height <= b - a ? a + (b - a - r.height) / 2 : a;
-          window.scrollBy({ top: r.top - want, behavior });
+        const y = scrollGoal(el, s.m);
+        if (y != null) {
+          window.scrollTo({ top: y, behavior: reduced() ? 'auto' : 'smooth' });
+          // never rely on the smooth scroll finishing (it can be cut off or paused): check, then jump if needed
+          setTimeout(() => {
+            if (!alive) return;
+            if (Math.abs(window.scrollY - y) > 4 && Math.abs(window.scrollY - Math.min(y, maxScroll())) > 4) window.scrollTo({ top: y, behavior: 'auto' });
+            setShown(true);
+          }, reduced() ? 30 : 520);
         } else {
-          el.scrollIntoView({ block: 'center', behavior });
+          setShown(true);
         }
-        setTimeout(() => alive && setShown(true), reduced() ? 50 : 450);  // scroll first, then the coach
         return;
       }
-      if (++tries > 25) { onMissing(); return; }
+      // a missing target is skipped quickly once the page has loaded (e.g. no alert this week); slower while loading
+      const loaded = !!document.querySelector('[data-tour="status"][data-ready], [data-tour="accuracy"]');
+      if (++tries > (loaded ? 3 : 25)) { onMissing(); return; }
       setTimeout(find, 200);
     };
     find();
@@ -379,7 +399,8 @@ function Step({ n, dir, ar, t, onNext, onBack, onSkip, onMissing }: {
     // the hole keeps 6 px inside the screen so the ring is always whole (e.g. bottom-bar items)
     const top = Math.max(6, r.top - PAD), left = Math.max(6, r.left - PAD);
     const h = { top, left, width: Math.min(vw - 6, r.right + PAD) - left, height: Math.min(vh - 6, r.bottom + PAD) - top };
-    setHole(h);
+    const off = h.height < 12 || h.width < 12;  // the target is off screen: dim everything, keep the coach visible
+    setHole(off ? null : h);
     const c = coach.current;
     const cw = Math.min(340, vw - 24), ch = c?.offsetHeight || 190;
     if (isPhone()) {
@@ -391,6 +412,7 @@ function Step({ n, dir, ar, t, onNext, onBack, onSkip, onMissing }: {
       setPos({ left: (vw - cw) / 2, width: cw, ...(where === 'top' ? { top: 14 } : { bottom: 88 }) });
       return;
     }
+    if (off) { setPos({ left: (vw - cw) / 2, top: Math.max(12, (vh - ch) / 2), width: cw }); return; }
     // desktop: 18 px beside the target (the side with room), else 14 px below / above; flip when it does not fit
     const clampY = (y: number) => Math.max(12, Math.min(vh - ch - 12, y));
     const clampX = (x: number) => Math.max(12, Math.min(vw - cw - 12, x));
