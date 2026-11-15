@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import ScaleCard from '@/components/ScaleCard';
+import SoilStory from '@/components/SoilStory';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Pair = [string, string];
@@ -376,6 +377,7 @@ export default function RotationExplorer({ id }: { id: string }) {
       {loading && !D ? <section className="card"><span className="sub">{tr('Running 10 years for each way on your field’s weather…', 'بنجرب 10 سنين لكل طريقة على جو أرضك…')}</span></section> : null}
       {error && !D ? <section className="card"><span className="sub">{tr('Could not run the rotations right now.', 'مقدرناش نشغّل الدورات دلوقتي.')}</span></section> : null}
 
+      {cur && D?.strategies?.find((s: any) => s.pick) ? <SoilStory now={cur} best={D.strategies.find((s: any) => s.pick)} /> : null}
       {D?.strategies?.length ? <ScaleCard path={`/fields/${id}/scale?${q}`} /> : null}
       {D?.strategies?.length ? (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '12px' }}>
