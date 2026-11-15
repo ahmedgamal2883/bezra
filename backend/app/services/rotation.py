@@ -17,7 +17,7 @@ import statistics as st
 import time
 from datetime import date, timedelta
 
-from ..connectors import history as hist_conn, soilgrids
+from ..connectors import cmip6, history as hist_conn, soilgrids
 from ..engine import history as H
 from ..engine import soil as S
 from ..engine.crops import CROPS, CropP
@@ -205,6 +205,17 @@ def read_history(c: Ctx, past: dict) -> dict | None:
                      "Tell Bezra your last seasons to check it.",
                      "بكسل MODIS 250 م بيغطي أرض جيرانك كمان: ده شكل الأرض حوالين أرضك. "
                      "قول لبذرة مواسمك اللي فاتت عشان نتأكد.")}
+
+
+def monthly_shift(get_day, dtmax: dict, dtmin: dict):
+    """Real past weather with each month warmed by its own change (delta method; dew point follows Tmin)."""
+    def get(d: date):
+        r = get_day(d)
+        if r is None:
+            return None
+        a, b = dtmax.get(d.month, 0.0), dtmin.get(d.month, 0.0)
+        return r | {"tmax": r["tmax"] + a, "tmin": r["tmin"] + b, "tmean": r["tmean"] + (a + b) / 2, "dew": r["dew"] + b}
+    return get
 
 
 def window(get_day, y0: int) -> list | None:
@@ -432,10 +443,11 @@ def start_state(c: Ctx, lab_ec: float | None, lab_om: float | None) -> dict:
             "profile": prof}
 
 
-def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "remove", priorities: str = "water,soil",
+def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "remove", residue_plan: str | None = None,
+          priorities: str = "water,soil",
           current: str | None = None, lab_ec: float | None = None, lab_om: float | None = None, high_water_table: bool | None = None,
           past: str | None = None) -> dict:
-    key = f"{c.f['id']}|{rice}|{water}|{residue}|{priorities}|{current}|{lab_ec}|{lab_om}|{high_water_table}|{past}|{c.f.get('soil_ec')}|{c.f.get('soil_om')}|{c.f.get('water_ec')}|{c.today}"
+    key = f"{c.f['id']}|{rice}|{water}|{residue}|{residue_plan}|{priorities}|{current}|{lab_ec}|{lab_om}|{high_water_table}|{past}|{c.f.get('soil_ec')}|{c.f.get('soil_om')}|{c.f.get('water_ec')}|{c.today}"
     hit = _cache.get(key)
     if hit and time.time() - hit[0] < 3600:
         return hit[1]
@@ -445,15 +457,24 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
     lab_om = lab_om or (c.f.get("soil_om") or None)
     saved_wec = c.f.get("water_ec") or None
     residue = residue if residue in ("burn", "remove", "plough") else "remove"
+    # R14: what is done with the straw NOW sets the soil's starting balance (spin-up); what is PLANNED runs the 10 years.
+    plan_res = residue_plan if residue_plan in ("burn", "remove", "plough") else residue
     prio = [p for p in priorities.split(",") if p in PRIORITIES][:2] or ["water", "soil"]
     s0 = start_state(c, lab_ec, lab_om)
     saline_gw = s0["north"] if high_water_table is None else high_water_table
     ecw = float(saved_wec) if saved_wec and 0 < float(saved_wec) < 20 else S.EC_WATER[water]
     dx, dn = c.w.trend_delta()
-    wkey = f"{c.f['lat']:.1f},{c.f['lon']:.1f}|{c.w.power_last}"
+    # N9: the ~2040 case from NASA NEX-GDDP-CMIP6 monthly changes when loaded; the field's own POWER trend until then
+    cm = cmip6.deltas_now(c.f["lat"], c.f["lon"])
+    warm_get = monthly_shift(c.w.historical, cm["tmax"], cm["tmin"]) if cm else c.w.shifted(dx, dn)
+    warm_info = ({"method": "cmip6", "source": cm["source"], "tmax_by_month": cm["tmax"], "tmin_by_month": cm["tmin"],
+                  "tmax": round(sum(cm["tmax"].values()) / 12, 2), "tmin": round(sum(cm["tmin"].values()) / 12, 2)} if cm else
+                 {"method": "trend", "source": "the field's own NASA POWER 1990-2025 linear trend, carried to 2040 (CMIP6 loading)",
+                  "tmax": round(dx, 2), "tmin": round(dn, 2)})
+    wkey = f"{c.f['lat']:.1f},{c.f['lon']:.1f}|{c.w.power_last}|{warm_info['method']}"
     wins = _wins.get(wkey)
     if wins is None:
-        wins = [(y0, window(c.w.historical, y0), "past") for y0 in WINDOWS] + [(2015, window(c.w.shifted(dx, dn), 2015), "warming")]
+        wins = [(y0, window(c.w.historical, y0), "past") for y0 in WINDOWS] + [(2015, window(warm_get, 2015), "warming")]
         wins = [w for w in wins if w[1]]
         _wins.clear()
         _wins[wkey] = wins
@@ -506,7 +527,7 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
         runs, warm = [], []
         for L_start in starts:
             for y0, days, kind in wins:
-                r = run_once(days, seq, y0, L_start, residue=residue, ecw=ecw, saline_gw=saline_gw, p95=p95)
+                r = run_once(days, seq, y0, L_start, residue=plan_res, ecw=ecw, saline_gw=saline_gw, p95=p95)
                 if r:
                     (warm if kind == "warming" else runs).append(r)
         if not runs:
@@ -549,10 +570,10 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
                 s["co2_vs_current_t_ha"] = round((soc_s - soc_b) * 44 / 12, 1)
     res = {"field": c.f["id"], "start": s0["sources"], "profile": s0["profile"],
            "soil_test": {"ec": c.f.get("soil_ec"), "om": c.f.get("soil_om"), "date": c.f.get("soil_test_date")},
-           "inputs": {"rice": rice, "water": water, "water_ec": ecw, "water_ec_source": "your water test" if saved_wec else "typical for the source", "residue": residue, "priorities": prio, "current": current,
+           "inputs": {"rice": rice, "water": water, "water_ec": ecw, "water_ec_source": "your water test" if saved_wec else "typical for the source", "residue": residue, "residue_plan": plan_res, "priorities": prio, "current": current,
                       "lab_ec": lab_ec, "lab_om": lab_om, "saline_water_table": saline_gw},
            "strategies": current_s + others[:3], "more": others[3:], "hidden": hidden,
-           "weather": {"windows": [f"{y}-{y + YEARS - 1}" for y in WINDOWS], "warming": {"tmax": round(dx, 2), "tmin": round(dn, 2)},
+           "weather": {"windows": [f"{y}-{y + YEARS - 1}" for y in WINDOWS], "warming": warm_info,
                        "source": "NASA POWER daily at the field (MERRA-2), ET0 FAO-56 Penman-Monteith"},
            "method": "Soil Ledger (RothC-26.3 carbon, relative N balance, FAO-29 salt balance, rule counters) x crop heat windows; "
                      "yield = share of what the field can give with full water. Estimates, not field-proven.",

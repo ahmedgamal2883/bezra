@@ -262,6 +262,7 @@ export default function RotationExplorer({ id }: { id: string }) {
   const [rice, setRice] = useState('yes');
   const [water, setWater] = useState('canal');
   const [residue, setResidue] = useState('remove');
+  const [residuePlan, setResiduePlan] = useState('same');
   const [now, setNow] = useState('');
   const [ec, setEc] = useState('');
   const [om, setOm] = useState('');
@@ -270,6 +271,7 @@ export default function RotationExplorer({ id }: { id: string }) {
   const [saved, setSaved] = useState('');
   const { name: fieldName } = useField();
   const q = new URLSearchParams({ rice: rice === 'yes' ? 'true' : 'false', water, residue, priorities: prio.join(',') });
+  if (residuePlan !== 'same') q.set('residue_plan', residuePlan);
   if (now) q.set('current', now);
   if (lab.ec) q.set('lab_ec', lab.ec);
   if (lab.om) q.set('lab_om', lab.om);
@@ -320,8 +322,10 @@ export default function RotationExplorer({ id }: { id: string }) {
             <Seg value={water} set={setWater} label={tr('Water source', 'مصدر المية')} opts={[{ k: 'canal', l: tr('Canal', 'ترعة') }, { k: 'mixed', l: tr('Mixed with drainage', 'مخلوطة بصرف') }]} />
           </div>
           <div className="col" style={{ gap: '6px' }}>
-            <b style={{ fontSize: '14px' }}>{tr('The straw after harvest', 'القش بعد الحصاد')}</b>
-            <Seg value={residue} set={setResidue} label={tr('Straw', 'القش')} opts={[{ k: 'burn', l: tr('Burned', 'بيتحرق') }, { k: 'remove', l: tr('Taken away', 'بيتشال') }, { k: 'plough', l: tr('Ploughed in', 'بيتحرت') }]} />
+            <b style={{ fontSize: '14px' }}>{tr('The straw after harvest, now', 'القش بعد الحصاد، دلوقتي')}</b>
+            <Seg value={residue} set={setResidue} label={tr('Straw now', 'القش دلوقتي')} opts={[{ k: 'burn', l: tr('Burned', 'بيتحرق') }, { k: 'remove', l: tr('Taken away', 'بيتشال') }, { k: 'plough', l: tr('Ploughed in', 'بيتحرت') }]} />
+            <b style={{ fontSize: '14px', marginTop: '6px' }}>{tr('…and from next season', '…ومن الموسم الجاي')}</b>
+            <Seg value={residuePlan} set={setResiduePlan} label={tr('Straw plan', 'القش بعد كده')} opts={[{ k: 'same', l: tr('Same', 'زي ما هو') }, { k: 'plough', l: tr('Plough it in', 'هحرته') }, { k: 'remove', l: tr('Take it away', 'هشيله') }]} />
           </div>
         </div>
         <details>
@@ -400,7 +404,7 @@ export default function RotationExplorer({ id }: { id: string }) {
           <details className="sub">
             <summary style={{ cursor: 'pointer' }}>{tr('How this is worked out', 'الحساب ده بيتعمل إزاي')}</summary>
             <span className="col" style={{ gap: '4px', marginTop: '6px' }}>
-              <span>{tr('Weather: ', 'الجو: ')}{D.weather.source}. {tr('Windows', 'الفترات')}: {D.weather.windows.join(', ')}; {tr('plus a warming case', 'وكمان حالة دفا')} (+{D.weather.warming.tmax} °C Tmax, {tr('the field’s own trend to 2040', 'اتجاه أرضك لحد 2040')}).</span>
+              <span>{tr('Weather: ', 'الجو: ')}{D.weather.source}. {tr('Windows', 'الفترات')}: {D.weather.windows.join(', ')}; {tr('plus a warming case', 'وكمان حالة دفا')} (+{D.weather.warming.tmax} °C Tmax {tr('on average', 'في المتوسط')}: {D.weather.warming.source}).</span>
               <span>{D.method}</span>
               <span>{tr('Summer heat: satellite-era weather models (NASA POWER and ERA5, which agree within about 1 °C) read Delta summers hotter than weather stations do, so a summer heat wave is a day above your field’s own 95th percentile for that month.',
                 'حر الصيف: موديلات الجو (ناسا POWER وERA5، والفرق بينهم حوالي درجة) بتقرا صيف الدلتا أسخن من محطات الأرصاد، فموجة الحر في الصيف = يوم أسخن من 95% من أيام نفس الشهر عند أرضك.')}</span>

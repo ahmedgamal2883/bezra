@@ -132,3 +132,14 @@ def test_soil_factor_caps_in_season_yield():
     a = season.run(get, date(2020, 11, 15), water=False)
     b = season.run(get, date(2020, 11, 15), water=False, soil=0.9)
     assert abs(b.yield_index - 0.9 * a.yield_index) < 1e-9 and b.factors["soil"] == 0.9
+
+
+def test_planned_ploughing_shows_its_gain():
+    """R14: a field that removes its straw today gains carbon when it starts ploughing it in (spin-up uses NOW)."""
+    L0 = S.Ledger(clay=40, soc=40, ece=1.5)
+    pre = R.run_once(_days(2000), [("wheat", "maize")], 2000, L0, residue="remove", ecw=0.45, saline_gw=False, keep_ledger=True)
+    L = pre["ledger"]
+    L.equilibrate(40.0)
+    same = R.run_once(_days(2000), [("wheat", "maize")], 2000, L, residue="remove", ecw=0.45, saline_gw=False)
+    plough = R.run_once(_days(2000), [("wheat", "maize")], 2000, L, residue="plough", ecw=0.45, saline_gw=False)
+    assert _final(plough, "soc") > _final(same, "soc") + 2

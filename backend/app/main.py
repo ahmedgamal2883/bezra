@@ -330,7 +330,8 @@ def get_next(field_id: str, user: dict = Depends(current_user)):
 
 
 @app.get("/fields/{field_id}/rotation")
-def get_rotation(field_id: str, rice: bool = True, water: str = "canal", residue: str = "remove", priorities: str = "water,soil",
+def get_rotation(field_id: str, rice: bool = True, water: str = "canal", residue: str = "remove", residue_plan: str | None = None,
+                 priorities: str = "water,soil",
                  current: str | None = None, lab_ec: float | None = None, lab_om: float | None = None,
                  high_water_table: bool | None = None, past: str | None = None, user: dict = Depends(current_user)):
     """Field Shift: 10-year rotation explorer on the soil ledger. Every number is Estimated (or Farmer for a soil test)."""
@@ -338,7 +339,7 @@ def get_rotation(field_id: str, rice: bool = True, water: str = "canal", residue
         raise HTTPException(400, "EC must be between 0 and 40 dS/m")
     if lab_om is not None and not 0 < lab_om < 15:
         raise HTTPException(400, "Organic matter must be between 0 and 15 %")
-    return rotation.build(_ctx(field_id, user), rice=rice, water=water, residue=residue, priorities=priorities,
+    return rotation.build(_ctx(field_id, user), rice=rice, water=water, residue=residue, residue_plan=residue_plan, priorities=priorities,
                           current=current, lab_ec=lab_ec, lab_om=lab_om, high_water_table=high_water_table, past=(past or "")[:200])
 
 

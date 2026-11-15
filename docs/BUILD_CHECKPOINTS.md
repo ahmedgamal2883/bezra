@@ -52,13 +52,19 @@ Status: ⬜ not started · ◐ in progress · ✅ done · 👤 needs a person (t
 | R14 | Straw choice split into **what you do now** (spin-up) and **what you plan** (the 10-year runs), found by R12 | Ploughing straw in shows its gain even when the field now removes it |
 
 ## CP6: Data depth (2–3 days)
+Status 15 Nov:
+- **R14 ✅:** straw now vs planned.
+- **N9 ◐:** CMIP6 delta method built and used automatically; the data for the demo areas is downloading, about 20 min per area.
+- **R7 👤:** GPM is on NASA GES DISC, which needs the Earthdata account to authorize the "NASA GESDISC DATA ARCHIVE" app once (the account owner does this in the Earthdata profile). GRACE-FO is likely the same.
+- **R9 👤:** only wheat has a confirmed official price (2,500 EGP/ardeb, 2026 season). The other crops need a dated MALR price table, so no income is shown until then (no guessed prices).
+- **R6, R8 ⬜:** heavier downloads (a global salinity raster; Landsat scenes since 1984), next session.
 | # | Item | Done when |
 |---|---|---|
-| R6 | **Salinity map** layer (FAO GSASmap or 1 km global) instead of the regional rule | Start ECe from the map, with its range |
-| R7 | **GRACE-FO** groundwater trend + **GPM IMERG** rain check | Both named in the challenge; shown on Next |
-| N9 | **NASA NEX-GDDP-CMIP6** for the warming case (instead of a linear trend) | 2040 runs use CMIP6 |
-| R8 | **Landsat** back to 1984 for the 40-year greenness trend | Trend from 1984 |
-| R9 | Relative **income** (high / medium / low) from a dated price table | On rotation cards |
+| R6 ⬜ | **Salinity map** layer (FAO GSASmap or 1 km global) instead of the regional rule | Start ECe from the map, with its range |
+| R7 👤 | **GRACE-FO** groundwater trend + **GPM IMERG** rain check | Both named in the challenge; shown on Next |
+| N9 ◐ | **NASA NEX-GDDP-CMIP6** for the warming case (instead of a linear trend) | 2040 runs use CMIP6 |
+| R8 ⬜ | **Landsat** back to 1984 for the 40-year greenness trend | Trend from 1984 |
+| R9 👤 | Relative **income** (high / medium / low) from a dated price table | On rotation cards |
 
 ## CP7: Community and open data (2–3 days)
 | # | Item | Done when |
