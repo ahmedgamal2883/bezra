@@ -40,7 +40,7 @@ def losses(factors: dict) -> list[dict]:
     """Pure: what the season has cost, from the model's factors (1.0 = no loss)."""
     out = []
     for key, label in (("water", "Thirst (soil water ran low)"), ("heat", "Hot days while the grain fills"),
-                       ("rust", "Rust weather")):
+                       ("rust", "Rust weather"), ("soil", "Tired soil (what the last crops left behind)")):
         f = factors.get(key)
         if isinstance(f, (int, float)) and f < 0.995:
             out.append({"why": key, "label": label, "pct": round((1 - f) * 100, 1)})
@@ -52,10 +52,12 @@ def build(c: Ctx) -> dict:
     f, crop = c.f, c.f["crop"]
     st = f.get("task_answers") or {}
     usual, usual_src = usual_yield(crop, f.get("yields"))
+    from .rotation import soil_now
+    sf = soil_now(c)["total"]
 
     def run(irrigate, skipped=()):
         return season.run(c.w.day, c.sow, crop=crop, variety=c.variety, irrigate=irrigate, skipped=skipped,
-                          every=f["turn_days"], lat=f["lat"])
+                          every=f["turn_days"], lat=f["lat"], soil=sf)
 
     turns = _plan_turns(c, _next_turn(c))
     base = run(turns)

@@ -49,6 +49,7 @@ Status: ⬜ not started · ◐ in progress · ✅ done · 👤 needs a person (t
 | R5 | Yield index vs **governorate wheat yield anomalies** 2000–2023 (FAOSTAT / CAPMAS) | Row K5, honest even if weak |
 | R13 | Soil factor also inside the **in-season** wheat engine | Today's harvest estimate includes the soil ledger |
 | R12 | RothC change per rotation vs Egyptian long-term trials | Row K10 |
+| R14 | Straw choice split into **what you do now** (spin-up) and **what you plan** (the 10-year runs), found by R12 | Ploughing straw in shows its gain even when the field now removes it |
 
 ## CP6: Data depth (2–3 days)
 | # | Item | Done when |

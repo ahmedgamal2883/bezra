@@ -94,7 +94,7 @@ class Result:
 def run(get_day: Callable[[date], dict | None], sow: date, *, crop: str = "wheat", variety: dict | None = None,
         irrigate: Callable[[date, Day | None], bool] | Iterable[date] | None = None, water: bool = True,
         max_days: int = 240, stop: date | None = None, skipped: Iterable[date] = (), every: int = 10,
-        lat: float = 30.55) -> Result:
+        lat: float = 30.55, soil: float = 1.0) -> Result:
     """Simulate from sowing. `irrigate` is a set of dates or a rule(date, yesterday) -> bool.
     Sowing day is always irrigated (Dr starts at 0). Set water=False for 'fully watered' runs.
     `skipped` = planned turns the farmer skips (for the brief's skipped-turn rule)."""
@@ -180,8 +180,9 @@ def run(get_day: Callable[[date], dict | None], sow: date, *, crop: str = "wheat
         rule_f *= 1 - 0.15 * min(1.0, other / n_turns)
         wat = min(wat, rule_f)
     rust_f = max(0.9, 1 - 0.005 * res.rust_days) if variety.get("rust") == "susceptible" else 1.0
-    res.factors = {"heat": heat, "length": length, "water": wat, "rust": rust_f, "season_days": n_days}
-    res.yield_index = heat * length * wat * rust_f if res.ripe or crop != "wheat" else heat * length * wat * rust_f
+    # soil: the Soil Ledger's factor for this crop (salt, nitrogen, carbon, sequence, structure; Field Shift R13), 1 = no cap
+    res.factors = {"heat": heat, "length": length, "water": wat, "rust": rust_f, "soil": soil, "season_days": n_days}
+    res.yield_index = heat * length * wat * rust_f * soil
     return res
 
 

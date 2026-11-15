@@ -20,8 +20,8 @@ Status: ✅ measured or passing · ◐ partly · ⬜ not done yet
 |---|---|---|
 | Wheat calendar vs Egyptian timing | Recalibrated on real ERA5 weather (heading ≈ 14 Feb, harvest ≈ 10 Apr for early-November sowing). To confirm with ARC. | ◐ |
 | Heat-alert hindcast, Menoufia demo field, wheat seasons 2021–2026 | Waves: 5 of 6 warned, 3–7 days early. **Day by day** (327 grain-fill days, forecast issued 3 days before vs NASA POWER Tmax ≥ 32 °C): 9 hits, 3 misses, **4 false alarms**, so precision 0.69 and recall 0.75. Across leads 1–7 days, precision is 0.56–0.75 and recall 0.67–0.75. One field, small sample; POWER runs ~0.7 °C warm in Feb–Mar. | ✅ |
-| Seasonal water use (FAO-56) vs ECOSTRESS ET and FLDAS ET | — | ⬜ |
-| Yield index vs governorate wheat yield anomalies 2000–2023 | — | ⬜ |
+| Seasonal water use (FAO-56) vs ECOSTRESS ET (ECO_L3T_JET v2, ETdaily) | AppEEARS task submitted 15 Nov for all fields, Oct 2023 – Oct 2025 (`connectors/ecoet.py`); waiting on NASA's queue. FLDAS not started. | ◐ |
+| Yield index vs **national** wheat yield anomalies (FAOSTAT Egypt, harvest years 2001–2024) | Model = mean wheat yield index of 7 demo fields across 7 governorates, sown 15 Nov, fully watered, on real NASA POWER weather; both series linearly detrended. **Pearson r = −0.01 (n = 24): no skill at the national level.** 2010, the worst real year (−892 kg/ha after the spring 2010 heat), is the model's 5th-worst year (−7.4 points), so it is partly caught. National yields also move with area, varieties, prices and sowing dates the model does not see; governorate data (CAPMAS) is the fairer test. Reported as is; the model was not tuned to it. | ✅ (negative result) |
 | Rotation water use vs Egyptian figures | Model, per feddan per year: wheat→rice ≈ 9,900–10,300 m³, wheat→maize ≈ 6,950–7,300 m³. Commonly reported Egyptian field figures are about 2,000–2,500 m³ for wheat, 6,000–7,000 for rice and 3,000–4,000 for maize, so the model is in the same range. **Exact MWRI source still to cite.** | ◐ |
 
 ## 3. Soil memory (engine/soil.py), tested in code
@@ -40,7 +40,7 @@ All in `backend/tests/test_rotation.py` and `test_history.py`; every run passes 
 | Calendar | No two crops overlap; every crop is harvested (fixed a real bug: maize was overwritten by a 1 Oct sugar beet) | ✅ |
 | Carbon spin-up | Same crops and climate keep carbon within ±2.5% over 10 years | ✅ |
 | No fertilizer amounts | No kg, dose or bag in any output | ✅ |
-| RothC change per rotation vs Egyptian long-term trials | — | ⬜ |
+| RothC change per rotation vs Egyptian field data | Model, Menoufia demo field, 10 years: −0.36 to +0.06 t C/ha/yr across rotations. We found **no Egyptian long-term trial with a comparable per-year rate** for straw or berseem management; the closest (Alnaimy et al. 2020, Carbon Management, western Delta) measures virgin calcareous soil brought under cultivation (+8.2 t C/ha/yr over 0–90 cm in the first 5 years), a different situation. Gap kept open. **Design flaw found:** the straw choice is used both for the past (spin-up) and the future, so ploughing straw in shows no gain when it is already the habit; to split into "now" and "planned". | ◐ |
 | Observed check: legume-break vs continuous-cereal land, peak-greenness trend over 10+ years | Needs the satellite history for many fields | ⬜ |
 
 ## 4. Field history (engine/history.py)

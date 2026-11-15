@@ -365,6 +365,39 @@ def summarize(sid: str, seq: list[tuple], runs: list[dict], start_ece: float) ->
             "provenance": "estimated"}
 
 
+# ---- the soil now, for the in-season engine (R13) --------------------------------------------------------------
+_soil_now: dict[str, tuple[float, dict]] = {}
+
+
+def soil_now(c: Ctx) -> dict:
+    """{"total", "parts"} for the crop in the ground: the ledger spun up on what this field grows (its winter crop and
+    last summer crop, satellite history when read), anchored to its soil test or the maps. 1.0 when unknown."""
+    crop = (c.f.get("crop") or "").lower()
+    if crop not in CROPS:
+        return {"total": 1.0, "parts": {}}
+    key = f"{c.f['id']}|{c.today}|{c.f.get('soil_ec')}|{c.f.get('soil_om')}|{c.f.get('prev_crop')}|{crop}"
+    hit = _soil_now.get(key)
+    if hit and time.time() - hit[0] < 6 * 3600:
+        return hit[1]
+    try:
+        s0 = start_state(c, c.f.get("soil_ec") or None, c.f.get("soil_om") or None)
+        prev = (c.f.get("prev_crop") or "maize").lower()
+        pair = (crop, prev) if CROPS[crop].season == "winter" and prev in CROPS and CROPS[prev].season == "summer" else ("wheat", "maize")
+        days = window(c.w.historical, 2015)
+        L0 = S.Ledger(clay=s0["clay"], soc=s0["soc"], ece=s0["ece"])
+        pre = run_once(days, [pair], 2015, L0, residue="remove", ecw=S.EC_WATER["canal"], saline_gw=s0["north"],
+                       keep_ledger=True, p95=local_p95(c.w)) if days else None
+        L = pre["ledger"] if pre else L0
+        L.equilibrate(s0["soc"])
+        L.ece = s0["ece"]
+        out = L.factor(CROPS[crop]) | {"source": "Soil Ledger (Field Shift): what this field grows + its soil test or the maps",
+                                         "provenance": "farmer" if c.f.get("soil_ec") or c.f.get("soil_om") else "estimated"}
+    except Exception:  # noqa: BLE001  no soil data: the season engine runs without a soil cap
+        out = {"total": 1.0, "parts": {}}
+    _soil_now[key] = (time.time(), out)
+    return out
+
+
 # ---- the endpoint ----------------------------------------------------------------------------------------------
 _cache: dict[str, tuple[float, dict]] = {}
 _wins: dict[str, list] = {}

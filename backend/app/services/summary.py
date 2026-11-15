@@ -35,11 +35,13 @@ def _plan_turns(c: Ctx, next_turn: date, skip: date | None = None) -> set[date]:
 
 
 def season_runs(c: Ctx):
+    from .rotation import soil_now
     nt = _next_turn(c)
+    sf = soil_now(c)["total"]
     base = season.run(c.w.day, c.sow, crop=c.f["crop"], variety=c.variety, irrigate=_plan_turns(c, nt),
-                      every=c.f["turn_days"], lat=c.f["lat"])
+                      every=c.f["turn_days"], lat=c.f["lat"], soil=sf)
     skip = season.run(c.w.day, c.sow, crop=c.f["crop"], variety=c.variety, irrigate=_plan_turns(c, nt, skip=nt),
-                      skipped=[nt], every=c.f["turn_days"], lat=c.f["lat"])
+                      skipped=[nt], every=c.f["turn_days"], lat=c.f["lat"], soil=sf)
     return nt, base, skip
 
 

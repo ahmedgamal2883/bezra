@@ -123,3 +123,12 @@ def test_scale_uses_each_fields_real_crops():
     assert own_rotation(C("wheat", "maize")) == {"current": "wheat-maize", "rice": False}
     assert own_rotation(C("berseem", "cotton"))["current"] == "berseem-cotton"
     assert own_rotation(C("maize", "wheat"))["current"] is None      # not a winter -> summer pair
+
+
+def test_soil_factor_caps_in_season_yield():
+    from datetime import date
+    from app.engine import season
+    get = lambda d: {"tmax": 24, "tmin": 10, "tmean": 17, "rh": 60, "dew": 8, "rain": 0, "et0": 3}   # noqa: E731
+    a = season.run(get, date(2020, 11, 15), water=False)
+    b = season.run(get, date(2020, 11, 15), water=False, soil=0.9)
+    assert abs(b.yield_index - 0.9 * a.yield_index) < 1e-9 and b.factors["soil"] == 0.9
