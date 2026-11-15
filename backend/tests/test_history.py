@@ -27,7 +27,7 @@ def _curve(y: int, winter: str, summer: str) -> list[dict]:
             elif summer == "maize":
                 ndvi = 0.2 + 0.6 * max(0.0, 1 - abs(t - 90) / 50)
             elif summer == "cotton":
-                ndvi = 0.45 + 0.3 * max(0.0, 1 - abs(t - 80) / 90)
+                ndvi = 0.4 + 0.35 * max(0.0, 1 - abs(t - 80) / 90)
         rows.append({"date": d.isoformat(), "ndvi": round(ndvi, 3), "lswi": lswi})
         d += timedelta(days=16)
     return rows
@@ -42,10 +42,11 @@ def _series(plan: dict[int, tuple[str, str]]) -> list[dict]:
 
 def test_reads_known_seasons():
     plan = {2010: ("wheat", "rice"), 2011: ("berseem", "maize"), 2012: ("wheat", "maize"), 2013: ("bare", "bare"),
-            2014: ("wheat", "cotton")}
+            2014: ("bare", "cotton")}
+    seen = {"wheat": "crop", "berseem": "crop", "maize": "crop", "cotton": "crop", "rice": "rice", "bare": "bare"}
     ss = {x["year"]: x for x in H.seasons(_series(plan), first=2009, last=2014)}
     for y, (w, s) in plan.items():
-        assert (ss[y]["winter"], ss[y]["summer"]) == (w, s), (y, ss[y])
+        assert (ss[y]["winter"], ss[y]["summer"]) == (seen[w], seen[s]), (y, ss[y])
     assert ss[2010]["flood"] and not ss[2012]["flood"]
     assert ss[2013]["bare_days"] > 300
 
@@ -57,19 +58,19 @@ def test_summary_counts_and_trend():
         r["ndvi"] = round(r["ndvi"] * (1 - 0.01 * (int(r["date"][:4]) - 2001)), 3)
     ss = H.seasons(rows, first=2000, last=2020)
     sm = H.summary(ss)
-    assert sm["summers_rice"] == 10 and sm["winters_wheat"] == 20
-    assert sm["wheat_peak_trend"]["per_decade"] < 0 and sm["wheat_peak_trend"]["t"] < -2
+    assert sm["summers_rice"] == 10 and sm["winters_green"] == 20
+    assert sm["winter_peak_trend"]["per_decade"] < 0 and sm["winter_peak_trend"]["t"] < -2
 
 
 def test_agreement_with_farmer():
-    ss = [{"year": 2024, "winter": "wheat", "summer": "rice"}, {"year": 2025, "winter": "berseem", "summer": "maize"}]
-    ag = H.agreement(ss, {2024: ("wheat", "rice"), 2025: ("wheat", "maize")})
-    assert ag["checked"] == 4 and ag["agree"] == 3 and ag["confidence"] == "medium"
-    assert H.agreement(ss, {2025: ("fahl", "maize")})["agree"] == 2      # fahl reads as berseem at 250 m
+    ss = [{"year": 2024, "winter": "crop", "summer": "rice"}, {"year": 2025, "winter": "crop", "summer": "crop"}]
+    ag = H.agreement(ss, {2024: ("wheat", "rice"), 2025: ("wheat", "rice")})
+    assert ag["checked"] == 4 and ag["agree"] == 3 and ag["confidence"] == "medium"   # 2025: farmer says rice, no flooding seen
 
 
 def test_parse_past_and_history_schedule():
     assert R.parse_past("2025:wheat-rice,2024:berseem-maize,bad") == {2025: ("wheat", "rice"), 2024: ("berseem", "maize")}
-    ss = [{"year": 2001 + k, "winter": "wheat", "summer": "bare" if k == 3 else "rice"} for k in range(10)]
-    sch = R.history_schedule(ss, 2000)
-    assert len(sch) == 19 and all(c.key in ("wheat", "rice") for c, _, _ in sch)
+    ss = [{"year": 2001 + k, "winter": "crop", "summer": "bare" if k == 3 else ("rice" if k % 2 else "crop")} for k in range(10)]
+    sch = R.history_schedule(ss, 2000, ("berseem", "rice"))
+    assert len(sch) == 19
+    assert {c.key for c, _, _ in sch} == {"berseem", "rice", "maize"}     # unreadable green summer -> maize, not rice

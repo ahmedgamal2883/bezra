@@ -673,6 +673,24 @@ def get_engineer_scale(user: dict = Depends(engineer_only)):
     return scale.engineer([f["id"] for f in db.fields_for(user)])
 
 
+@app.get("/open/delta-soil-memory.csv")
+def open_dataset_csv():
+    """Field Shift N7: open dataset (demo fields only, no names, coordinates ~5 km). CC BY 4.0."""
+    from .services import opendata
+    txt = opendata.csv_text()
+    if txt is None:
+        return Response("Preparing the dataset (about a minute). Please try again shortly.", status_code=503,
+                        media_type="text/plain", headers={"Retry-After": "60"})
+    return Response(txt, media_type="text/csv",
+                    headers={"Content-Disposition": 'attachment; filename="delta-soil-memory.csv"'})
+
+
+@app.get("/open/README.txt")
+def open_dataset_readme():
+    from .services import opendata
+    return Response(opendata.README, media_type="text/plain; charset=utf-8")
+
+
 @app.get("/engineer/fields")
 def get_engineer_fields(user: dict = Depends(engineer_only)):
     return engineer.workspace([f["id"] for f in db.fields_for(user)])

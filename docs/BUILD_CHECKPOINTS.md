@@ -67,6 +67,10 @@ Status 15 Nov:
 | R9 👤 | Relative **income** (high / medium / low) from a dated price table | On rotation cards |
 
 ## CP7: Community and open data (2–3 days)
+Status 15 Nov:
+- **N7 ✅:** open CSV + README at `/api/open/delta-soil-memory.csv`; demo fields only, no names, ~5 km; built in the background (503 until ready); linked from About.
+- **N5 ◐:** the engineer's total now shows canal water month by month, now vs best. Finding: with maize kept in summer, the busiest month (August) does not drop; the saving is in March and May. A real mesqa grouping needs a mesqa id on each field.
+- **N8 ⬜:** sourced practices per climate twin need research per region, next session.
 | # | Item | Done when |
 |---|---|---|
 | N5 | **Mesqa rotation:** neighbours on one canal plan together (shared turn, rice licence) | Engineer view: fields on one mesqa, the canal's water need per plan |

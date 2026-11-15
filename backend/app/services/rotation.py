@@ -140,20 +140,21 @@ def local_p95(w) -> dict[int, float]:
     return {m: _q(v, 0.95) for m, v in by.items()}
 
 
-SAT_TO_CROP = {"wheat": "wheat", "berseem": "berseem", "rice": "rice", "maize": "maize", "cotton": "cotton"}
-
-
-def history_schedule(ss: list[dict], y0: int) -> list[tuple[CropP, date, int]]:
-    """The crops the satellite read for the 10 farming years starting Oct y0 (bare seasons stay bare)."""
+def history_schedule(ss: list[dict], y0: int, cur: tuple[str, str]) -> list[tuple[CropP, date, int]]:
+    """The 10 farming years from Oct y0 as the satellite saw them: rice and bare seasons from MODIS; a green season of a
+    type 250 m cannot read takes what the farmer grows now (his summer crop, or maize if that is rice)."""
     out, free = [], date(y0, 9, 1)
     by = {x["year"]: x for x in ss}
+    w_now, s_now = cur
+    s_other = s_now if s_now != "rice" else "maize"
     for k in range(YEARS):
         x = by.get(y0 + k + 1)
         if not x:
             continue
         for slot, yr in (("winter", y0 + k), ("summer", y0 + k + 1)):
-            key = SAT_TO_CROP.get(x[slot])
-            if not key:
+            seen = x[slot]
+            key = None if seen == "bare" else ("rice" if seen == "rice" else (w_now if slot == "winter" else s_other))
+            if not key or key not in CROPS:
                 continue
             c = CROPS[key]
             sow = max(date(yr, *c.sow), free)
@@ -184,20 +185,22 @@ def read_history(c: Ctx, past: dict) -> dict | None:
         return None
     sm = H.summary(ss)
     ag = H.agreement(ss, past)
-    t = sm["wheat_peak_trend"]
+    t = sm["winter_peak_trend"]
     falling = bool(t and t["t"] is not None and t["t"] <= -2)
     rising = bool(t and t["t"] is not None and t["t"] >= 2)
     n = sm["years"]
-    causes = (f"Around your field, {sm['summers_rice']} of the last {n} summers were rice, {sm['summers_bare']} were left bare, "
-              f"and berseem (or another long winter crop) grew in {sm['winters_berseem']} of {n} winters.",
-              f"حوالين أرضك، {sm['summers_rice']} من آخر {n} صيف كانوا رز، و{sm['summers_bare']} الأرض اتسابت فاضية، "
-              f"والبرسيم (أو محصول شتوي طويل) اتزرع في {sm['winters_berseem']} من {n} شتوية.")
+    causes = (f"Around your field, {sm['summers_rice']} of the last {n} summers were rice (seen by the flooding) and "
+              f"{sm['summers_bare'] + sm['winters_bare']} seasons were left bare. From space at 250 m we cannot tell wheat "
+              f"from berseem, or maize from cotton: your own seasons fill that in.",
+              f"حوالين أرضك، {sm['summers_rice']} من آخر {n} صيف كانوا رز (باين من غمر المية)، و"
+              f"{sm['summers_bare'] + sm['winters_bare']} موسم الأرض اتسابت فاضية. من الفضاء على 250 م مانقدرش نفرّق القمح "
+              f"من البرسيم، ولا الذرة من القطن: مواسمك انت اللي بتكمّل ده.")
     tr_txt = None
     if t:
         word = ("falling", "بتقل") if falling else (("rising", "بتزيد") if rising else ("no clear change", "مفيش تغيير واضح"))
-        tr_txt = (f"Peak greenness of the winter grain seasons {t['from']}-{t['to']}: {t['per_decade']:+.2f} NDVI per decade "
-                  f"(± {t['se_per_decade']:.2f}), {word[0]}.",
-                  f"أعلى خضرة لمواسم القمح {t['from']}-{t['to']}: {t['per_decade']:+.2f} NDVI كل 10 سنين (± {t['se_per_decade']:.2f})، {word[1]}.")
+        tr_txt = (f"Peak winter greenness around your field {t['from']}-{t['to']}: {t['per_decade']:+.2f} NDVI per decade "
+                  f"(± {t['se_per_decade']:.2f}), {word[0]}." + (" At 250 m a fall can also mean buildings spreading onto farmland nearby, not only tired soil." if falling else ""),
+                  f"أعلى خضرة في الشتا حوالين أرضك {t['from']}-{t['to']}: {t['per_decade']:+.2f} NDVI كل 10 سنين (± {t['se_per_decade']:.2f})، {word[1]}." + (" على 250 م النزول ممكن يكون كمان مباني بتزحف على الأرض الزراعية حواليك، مش بس أرض تعبانة." if falling else ""))
     return {"seasons": ss[-20:], "all": ss, "summary": sm, "agreement": ag, "causes": causes, "trend_text": tr_txt,
             "tiring_signal": falling, "source": rec.get("source", hist_conn.SOURCE),
             "confidence": ag["confidence"] if ag["checked"] else "low",
@@ -234,7 +237,7 @@ def run_once(days: list, seq: list[tuple] | None, y0: int, start: S.Ledger, *, r
     for c, sow, k in sched:
         for i in range(c.days):
             active[sow + timedelta(days=i)] = (c, i, sow, k)
-    years = [{"crops": [], "water": 0.0, "bare": 0, "heat_hit": False} for _ in range(YEARS)]
+    years = [{"crops": [], "water": 0.0, "bare": 0, "heat_hit": False, "water_m": [0.0] * 12} for _ in range(YEARS)]
     seasons: dict[tuple, dict] = {}
     mon = {"t": [], "w": 0.0, "et": 0.0, "cov": 0, "c": 0.0, "bare_hot": 0}
     d = d0
@@ -258,6 +261,7 @@ def run_once(days: list, seq: list[tuple] | None, y0: int, start: S.Ledger, *, r
             s["etc"] += etc
             s["rain"] += r["rain"]
             s["water"] += irr
+            years[kk]["water_m"][d.month - 1] += irr          # N5: when the water is needed (canal peak month)
             lo, hi = c.heat_window
             thr = (p95 or {}).get(d.month, c.heat) if c.heat_local else c.heat
             if thr and lo * c.days <= i < hi * c.days and r["tmax"] >= thr:
@@ -327,6 +331,7 @@ def summarize(sid: str, seq: list[tuple], runs: list[dict], start_ece: float) ->
                     "soil_factor": _band(sf) if sf else None,
                     "soil": {kk: round(st.median(v), 2) for kk, v in soil_k.items()},
                     "water_mm": round(st.median([r["years"][k]["water"] for r in runs])),
+                    "water_mm_month": [round(st.median([r["years"][k].get("water_m", [0.0] * 12)[m] for r in runs])) for m in range(12)],
                     "bare_days": round(st.median([r["years"][k]["bare"] for r in runs]))})
     heat_years = sum(y["heat_hit"] for r in runs for y in r["years"])
     total_years = len(runs) * YEARS
@@ -478,6 +483,10 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
         wins = [w for w in wins if w[1]]
         _wins.clear()
         _wins[wkey] = wins
+    if not current:   # default: what the field's own record says it grows (winter crop + last summer crop)
+        w0, s1 = (c.f.get("crop") or "").lower(), (c.f.get("prev_crop") or "").lower()
+        if w0 in CROPS and s1 in CROPS and CROPS[w0].season == "winter" and CROPS[s1].season == "summer" and (rice or s1 != "rice"):
+            current = f"{w0}-{s1}"
     strats = strategies(rice, current, salty=s0["ece"] >= 4)
     cur_seq = strats[0]["seq"]
     p95 = local_p95(c.w)
@@ -494,13 +503,13 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
     agrees = False
     if hist:
         hy0 = hist["all"][-10]["year"] - 1
-        hsched = history_schedule(hist["all"], hy0)
+        hsched = history_schedule(hist["all"], hy0, tuple(cur_seq[0]))
         hdays = window(c.w.historical, hy0)
         if hsched and hdays:
             variants.append(("satellite history", hdays, hy0, None, hsched))
-        pairs = [(x["winter"], x["summer"]) for x in hist["all"][-10:]]
-        top = max(set(pairs), key=pairs.count)
-        agrees = (SAT_TO_CROP.get(top[0]), SAT_TO_CROP.get(top[1])) == tuple(cur_seq[0])
+        # agree = the satellite's rice / not-rice summers match what the farmer says he grows now (7 of 10 years)
+        rice_years = sum(1 for x in hist["all"][-10:] if x["summer"] == "rice")
+        agrees = (rice_years >= 7) == (cur_seq[0][1] == "rice") and (rice_years <= 3 or cur_seq[0][1] == "rice")
     if not variants or not agrees:
         variants.append(("what you grow now", spin_win[1], spin_win[0], cur_seq, None))
     for label, vdays, vy0, vseq, vsched in variants:
@@ -581,10 +590,17 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
            "history": None if not hist else {k: v for k, v in hist.items() if k != "all"},
            "spin_up_from": [v[0] for v in variants],
            "robust": len(variants) > 1,
-           "spin_up": {**spin, "assumption": ("Bezra has not read your past seasons yet, so it assumes your soil carbon is in balance with what you grow now; "
-                                              "the carbon that does not move is old, stable Nile carbon.",
-                                              "بذرة لسه ماقرتش مواسمك اللي فاتت، فبتفترض إن كربون أرضك متوازن مع اللي بتزرعه دلوقتي؛ "
-                                              "والكربون اللي مش بيتحرك ده كربون قديم ثابت من طمي النيل.")},
+           "spin_up": {**spin, "assumption": (
+               ("The starting soil comes from the last 10 years as the satellite saw them (rice and bare seasons), with your "
+                "crops for what 250 m cannot tell; soil carbon is assumed in balance with those years, and the carbon that does "
+                "not move is old, stable Nile carbon.",
+                "بداية التربة جاية من آخر 10 سنين زي ما القمر الصناعي شافها (مواسم الرز والأرض الفاضية)، ومحاصيلك انت "
+                "للي مش باين على 250 م؛ وكربون التربة متوازن مع السنين دي، والكربون اللي مش بيتحرك ده كربون قديم ثابت من طمي النيل.")
+               if any(v[0] == "satellite history" for v in variants) else
+               ("Bezra has not read your past seasons yet, so it assumes your soil carbon is in balance with what you grow now; "
+                "the carbon that does not move is old, stable Nile carbon.",
+                "بذرة لسه ماقرتش مواسمك اللي فاتت، فبتفترض إن كربون أرضك متوازن مع اللي بتزرعه دلوقتي؛ "
+                "والكربون اللي مش بيتحرك ده كربون قديم ثابت من طمي النيل."))},
            "provenance": "estimated"}
     if s0["profile"] is not None:          # don't keep a result built on the fallback soil
         _cache[key] = (time.time(), res)

@@ -38,6 +38,35 @@ export default function ScaleCard({ path }: { path: string }) {
           <span style={{ opacity: 0.8, fontSize: '13px' }}>{tr('soil health by year 10', 'صحة التربة في السنة العاشرة')}</span>
         </div>
       </div>
+      {S.canal && S.canal.peak_now ? (() => {
+        const C = S.canal;
+        const mx = Math.max(...C.month_now, ...C.month_best, 1);
+        const M = ar ? ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس'] : ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+        return (
+          <div className="col" style={{ gap: '6px' }}>
+            <b style={{ fontSize: '14px' }}>{tr('Canal water, month by month (all these fields)', 'مية الترعة شهر بشهر (كل الأراضي دي)')}</b>
+            <div className="row" style={{ gap: '4px', alignItems: 'flex-end', height: '90px' }} role="img"
+              aria-label={tr(`Peak month ${C.peak_month}: ${n0(C.peak_now)} m³ now, ${n0(C.peak_best)} m³ with the best rotations`, `أزحم شهر ${C.peak_month}: ${n0(C.peak_now)} م³ دلوقتي، ${n0(C.peak_best)} م³ مع الدورات الأنسب`)}>
+              {C.month_now.map((v: number, i: number) => (
+                <span key={i} className="col" style={{ flex: 1, alignItems: 'center', gap: '2px', height: '100%', justifyContent: 'flex-end' }}>
+                  <span className="row" style={{ gap: '1px', alignItems: 'flex-end', height: '76px', width: '100%' }}>
+                    <span style={{ flex: 1, height: `${(v / mx) * 100}%`, background: 'rgba(255,255,255,.35)', borderRadius: '2px' }} />
+                    <span style={{ flex: 1, height: `${(C.month_best[i] / mx) * 100}%`, background: '#6FA8DC', borderRadius: '2px' }} />
+                  </span>
+                  <span style={{ fontSize: '10px', opacity: 0.7 }}>{M[i]}</span>
+                </span>
+              ))}
+            </div>
+            <span style={{ fontSize: '12px', opacity: 0.85 }}>
+              <i style={{ display: 'inline-block', width: '10px', height: '10px', background: 'rgba(255,255,255,.35)', borderRadius: '2px' }} /> {tr('now', 'دلوقتي')}{'  '}
+              <i style={{ display: 'inline-block', width: '10px', height: '10px', background: '#6FA8DC', borderRadius: '2px' }} /> {tr('best rotations', 'الدورات الأنسب')}
+              {' · '}{tr(`Busiest month: ${n0(C.peak_now)} → ${n0(C.peak_best)} m³ (${C.peak_cut_pct > 0 ? '−' : '+'}${Math.abs(C.peak_cut_pct)}%). `, `أزحم شهر: ${n0(C.peak_now)} ← ${n0(C.peak_best)} م³ (${C.peak_cut_pct > 0 ? '−' : '+'}${Math.abs(C.peak_cut_pct)}%). `)}
+              {P(C.note)}{' '}
+              {C.peak_cut_pct < 2 ? tr('Here the summer crop stays maize, so the busiest month barely moves: the saving comes in spring and early summer.', 'هنا المحصول الصيفي فاضل ذرة، فأزحم شهر مش بيتغير تقريباً: التوفير بييجي في الربيع وأول الصيف.') : null}
+            </span>
+          </div>
+        );
+      })() : null}
       {S.rows ? (
         <details>
           <summary style={{ cursor: 'pointer', opacity: 0.85, fontSize: '13px' }}>{tr(`${S.fields} fields, ${S.area_feddan} feddan: field by field`, `${S.fields} أرض، ${S.area_feddan} فدان: أرض أرض`)}</summary>

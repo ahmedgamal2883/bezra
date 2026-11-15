@@ -57,6 +57,12 @@ export default function SoilPipeline() {
         <a href="https://github.com/ahmedgamal2883/bezra/blob/main/docs/VALIDATION.md" target="_blank" rel="noreferrer">{tr('the validation table', 'جدول التحقق')}</a>.
         {' '}{tr('This is a simulation checked against data and published ranges, not a field trial. No fertilizer amounts, ever.', 'ده محاكاة متراجعة على داتا وأرقام منشورة، مش تجربة في الغيط. ومفيش كميات سماد أبداً.')}
       </span>
+      <span className="sub">
+        {tr('Open data: ', 'داتا مفتوحة: ')}
+        <a href="/api/open/delta-soil-memory.csv" download>{tr('Delta Soil Memory (CSV)', 'ذاكرة تربة الدلتا (CSV)')}</a>{' · '}
+        <a href="/api/open/README.txt" target="_blank" rel="noreferrer">README</a>
+        {' · '}{tr('demo fields only, no names, locations rounded to ~5 km, CC BY 4.0.', 'أراضي الديمو بس، من غير أسامي، والأماكن متقرّبة لحوالي 5 كم، رخصة CC BY 4.0.')}
+      </span>
     </section>
   );
 }

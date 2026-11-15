@@ -39,7 +39,12 @@ def field_gain(c, **kw) -> dict | None:
     c_ha = best.get("carbon_vs_current_t_ha") or 0.0
     if (best.get("vs_current_pct") or 0) <= 0 and w_fed <= 0:
         best, w_fed, c_ha = cur, 0, 0.0          # nothing better than today: keep what you grow (no change counted)
+    def monthly(s):  # mean m3 per month over the 10 years, for this field's area (canal demand)
+        ys = s["years"]
+        return [round(sum(y.get("water_mm_month", [0] * 12)[m] for y in ys) / len(ys) * 4.2 * area) for m in range(12)]
     return {"field": c.f["id"], "name": c.f.get("name"), "farmer": c.f.get("farmer"), "area_feddan": area,
+            "village": c.f.get("village"), "governorate": c.f.get("governorate"),
+            "month_now": monthly(cur), "month_best": monthly(best),
             "current": cur["name"], "best": best["name"], "best_id": best["id"],
             "water_saved_m3_feddan_year": round(w_fed), "water_saved_m3_year": round(w_fed * area),
             "carbon_t_c": round(c_ha * area * FEDDAN_HA, 2), "soil_level_now": cur["soil_level"], "soil_level_best": best["soil_level"],
@@ -51,7 +56,14 @@ def _total(rows: list[dict], label: tuple[str, str]) -> dict:
     carbon = sum(r["carbon_t_c"] for r in rows)
     area = sum(r["area_feddan"] for r in rows)
     soil = (sum(r["soil_gain_pct"] * r["area_feddan"] for r in rows if r["soil_gain_pct"] is not None) / area) if area else 0
-    return {"label": label, "fields": len(rows), "area_feddan": round(area, 1), "water_saved_m3_year": round(water, -1),
+    mn = [sum(r.get("month_now", [0] * 12)[m] for r in rows) for m in range(12)]
+    mb = [sum(r.get("month_best", [0] * 12)[m] for r in rows) for m in range(12)]
+    peak = max(range(12), key=lambda m: mn[m]) if rows else 0
+    canal = {"month_now": mn, "month_best": mb, "peak_month": peak + 1, "peak_now": mn[peak], "peak_best": mb[peak],
+             "peak_cut_pct": round(100 * (1 - mb[peak] / mn[peak]), 1) if mn[peak] else 0.0,
+             "note": ("A canal is sized for its busiest month: lowering the peak matters as much as the yearly total.",
+                      "الترعة بتتصمم على أزحم شهر: تقليل الذروة مهم زي المجموع السنوي.")}
+    return {"label": label, "fields": len(rows), "area_feddan": round(area, 1), "water_saved_m3_year": round(water, -1), "canal": canal,
             "olympic_pools_year": round(water / POOL_M3, 1), "carbon_t_c": round(carbon, 1), "co2_t": round(carbon * 44 / 12, 1),
             "soil_gain_pct_area_weighted": round(soil, 1), "rows": rows,
             "method": "Each field runs the Rotation Explorer (10 years, NASA POWER weather windows, Soil Ledger); "

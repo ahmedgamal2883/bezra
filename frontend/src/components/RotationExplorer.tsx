@@ -43,12 +43,10 @@ const cap = (x: number) => `${Math.min(100, Math.round(x * 100))}%`; // the soil
 const signed = (x: number) => (x > 0 ? `+${x}` : `${x}`);
 const cellColor = (v: number) => (v >= 0.98 ? 'var(--green)' : v >= 0.94 ? '#6FA383' : v >= 0.9 ? '#E8B04C' : '#D8664E');
 
-const CROP_COLOR: Record<string, string> = {
-  wheat: '#E8B04C', berseem: 'var(--green)', rice: 'var(--water)', maize: '#B4660B', cotton: '#B9BCB4', bare: '#E4E5E0',
-};
+// What a 250 m MODIS pixel can tell (engine/history.py): rice (by its flooding), another green crop, or bare land.
+const CROP_COLOR: Record<string, string> = { crop: 'var(--green)', rice: 'var(--water)', bare: '#D9D6C8' };
 const CROP_NAME: Record<string, [string, string]> = {
-  wheat: ['Wheat or winter grain', 'قمح أو حبوب شتوية'], berseem: ['Berseem or long winter crop', 'برسيم أو محصول شتوي طويل'],
-  rice: ['Rice', 'رز'], maize: ['Maize', 'ذرة'], cotton: ['Cotton', 'قطن'], bare: ['Bare', 'فاضية'],
+  crop: ['A green crop (type not readable at 250 m)', 'محصول أخضر (نوعه مش باين على 250 م)'], rice: ['Rice (flooded)', 'رز (أرض متغرقة)'], bare: ['Bare', 'فاضية'],
 };
 const WINTER_OPTS = ['wheat', 'berseem', 'fahl', 'faba', 'sugarbeet', 'bare'];
 const SUMMER_OPTS = ['rice', 'maize', 'cotton', 'bare'];
@@ -309,7 +307,7 @@ export default function RotationExplorer({ id }: { id: string }) {
           <label className="col" style={{ gap: '6px' }}>
             <b style={{ fontSize: '14px' }}>{tr('What you grow now', 'بتزرع إيه دلوقتي')}</b>
             <select value={now} onChange={(e) => setNow(e.target.value)} className="inset" style={{ border: 0, font: 'inherit' }}>
-              <option value="">{tr('Wheat, then rice (or maize if rice is not allowed)', 'قمح وبعده رز (أو ذرة لو الرز مش مسموح)')}</option>
+              <option value="">{tr('As in my field record', 'زي بيانات أرضي')}</option>
               {NOW.map((n) => <option key={n.k} value={n.k}>{tr(n.en, n.ar)}</option>)}
             </select>
           </label>

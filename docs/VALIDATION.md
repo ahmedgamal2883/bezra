@@ -48,6 +48,7 @@ All in `backend/tests/test_rotation.py` and `test_history.py`; every run passes 
 | Test | Result | Status |
 |---|---|---|
 | Season reader on known curves | Wheat, berseem, rice (with the flooding signal), maize, cotton and bare land read correctly; trend and counts correct | ✅ (synthetic) |
+| **MODIS history on the 9 demo fields (2001–2026)**, what 250 m can and cannot see | **Rice (flooding signal):** 15/20 summers at the Kafr El-Sheikh and Dakahlia fields, 11/20 Beheira, 4/20 one Menoufia field, 0/20 at the other Menoufia, Qalyubia, Sharqia and Gharbia fields, matching where rice is licensed. **Wheat vs berseem, maize vs cotton: not separable.** A 250 m pixel mixes the field with trees, villages and neighbours; NDVI never drops below ~0.4. Two curve rules were tried and rejected: "green in late April = berseem" read 20/20 winters as berseem, and "bare in March = cotton" read 9/20 Menoufia summers as cotton. So the reader reports only rice / another crop / bare, and the farmer's seasons fill in the type. Winter greenness falls at 2 fields (t ≤ −2); at 250 m that can also be buildings spreading onto farmland. | ✅ (rice), ✖ (crop type at 250 m) |
 | Season reader vs real seasons | Demo fields' known last crops and farmer-logged seasons; then WorldCereal 2021 | ⬜ |
 | Detected district crop areas vs CAPMAS / MALR | — | ⬜ |
 | Spin-up vs measured soil (lab test) | — | ⬜ |
