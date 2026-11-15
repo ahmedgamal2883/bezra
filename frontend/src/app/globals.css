@@ -384,6 +384,17 @@ body{background:var(--shell)}
 .demo-badge i{width:7px;height:7px;border-radius:4px;background:#E3B505;display:block}
 @media print{.demo-badge{display:none}}
 
+/* Cold start banner (components/WakeUp.tsx): backend waking on Render's free plan */
+@keyframes wakeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes wakePulse{0%,100%{opacity:.35}50%{opacity:1}}
+.wake{position:fixed;left:0;right:0;margin:0 auto;width:max-content;top:12px;z-index:70;max-width:calc(100vw - 32px);box-sizing:border-box;min-height:32px;padding:6px 14px;border-radius:16px;
+  background:var(--dark);color:#fff;font-family:'Hanken Grotesk','IBM Plex Sans Arabic',system-ui,sans-serif;box-shadow:0 6px 20px -8px rgba(20,26,22,.5);display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;line-height:1.35;animation:wakeIn .35s var(--ease) both}
+.wake i{flex:0 0 auto;width:7px;height:7px;border-radius:4px;background:var(--sun);display:block;animation:wakePulse 1.2s ease-in-out infinite}
+.wake.ready i{background:#5BC07E;animation:none}
+.wake.slow i{background:var(--risk);animation:none}
+@media (prefers-reduced-motion:reduce){.wake,.wake i{animation:none}}
+@media print{.wake{display:none}}
+
 /* Show details: raw numbers tables */
 .raw-scroll{overflow-x:auto;border-radius:10px;background:var(--inset);max-width:100%}
 .raw{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}

@@ -207,7 +207,7 @@ def status_apis(fresh: bool = False):
     return apistatus.report(fresh)
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])  # HEAD: uptime pingers (UptimeRobot) keep Render awake
 def health():
     return {"ok": True, "today": date.today().isoformat()}
 
