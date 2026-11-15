@@ -1,5 +1,6 @@
 'use client';
 import HindcastCard from '@/components/HindcastCard';
+import SoilPipeline from '@/components/SoilPipeline';
 import { T, useT } from '@/lib/i18n';
 /* eslint-disable */
 // Generated from design/html/V11-About.html by scripts/convert-design.mjs (layout and copy 1:1).
@@ -437,6 +438,7 @@ export default function AboutScreen() {
                 <HindcastCard />
               </aside>
             </div>
+            <SoilPipeline />
             <ApiStatus />
             <footer className="foot">
               <span>

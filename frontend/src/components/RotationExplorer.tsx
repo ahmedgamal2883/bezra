@@ -39,6 +39,90 @@ const cap = (x: number) => `${Math.min(100, Math.round(x * 100))}%`; // the soil
 const signed = (x: number) => (x > 0 ? `+${x}` : `${x}`);
 const cellColor = (v: number) => (v >= 0.98 ? 'var(--green)' : v >= 0.94 ? '#6FA383' : v >= 0.9 ? '#E8B04C' : '#D8664E');
 
+const CROP_COLOR: Record<string, string> = {
+  wheat: '#E8B04C', berseem: 'var(--green)', rice: 'var(--water)', maize: '#B4660B', cotton: '#B9BCB4', bare: '#E4E5E0',
+};
+const CROP_NAME: Record<string, [string, string]> = {
+  wheat: ['Wheat or winter grain', 'قمح أو حبوب شتوية'], berseem: ['Berseem or long winter crop', 'برسيم أو محصول شتوي طويل'],
+  rice: ['Rice', 'رز'], maize: ['Maize', 'ذرة'], cotton: ['Cotton', 'قطن'], bare: ['Bare', 'فاضية'],
+};
+const WINTER_OPTS = ['wheat', 'berseem', 'fahl', 'faba', 'sugarbeet', 'bare'];
+const SUMMER_OPTS = ['rice', 'maize', 'cotton', 'bare'];
+const OPT_NAME: Record<string, [string, string]> = {
+  wheat: ['Wheat', 'قمح'], berseem: ['Berseem', 'برسيم'], fahl: ['Short berseem (fahl)', 'برسيم فحل'], faba: ['Faba bean', 'فول'],
+  sugarbeet: ['Sugar beet', 'بنجر'], rice: ['Rice', 'رز'], maize: ['Maize', 'ذرة'], cotton: ['Cotton', 'قطن'], bare: ['Left bare', 'فاضية'],
+};
+
+function Past({ H, tr, ar, onPast }: { H: any; tr: (e: string, a: string) => string; ar: boolean; onPast: (p: string) => void }) {
+  const P = (p: Pair) => (ar ? p[1] : p[0]);
+  const last = H?.seasons?.length ? H.seasons[H.seasons.length - 1].year : new Date().getFullYear() - 1;
+  const years = [last, last - 1, last - 2];
+  const [mem, setMem] = useState<Record<number, [string, string]>>({});
+  const set = (y: number, i: 0 | 1, v: string) => setMem((m) => {
+    const cur: [string, string] = m[y] ? [...m[y]] as [string, string] : ['', ''];
+    cur[i] = v;
+    return { ...m, [y]: cur };
+  });
+  const submit = () => onPast(Object.entries(mem).filter(([, v]) => v[0] || v[1]).map(([y, v]) => `${y}:${v[0] === 'bare' ? '' : v[0]}-${v[1] === 'bare' ? '' : v[1]}`).join(','));
+  return (
+    <section className="card rise" style={{ gap: '10px' }} aria-label={tr("Your land's past", 'تاريخ أرضك')}>
+      <div className="row sp wrap" style={{ gap: '6px' }}>
+        <b style={{ fontSize: '15px' }}>{tr("Your land's past, read from space", 'تاريخ أرضك، متقري من الفضاء')}</b>
+        {H ? <span className="pill pv-sat">{tr('Satellite', 'قمر صناعي')}</span> : null}
+      </div>
+      {H ? (
+        <>
+          <span className="body">{P(H.causes)}</span>
+          {H.trend_text ? <span className="body" style={H.tiring_signal ? { color: 'var(--risk)' } : undefined}>{P(H.trend_text)}</span> : null}
+          <div className="col" style={{ gap: '3px' }}>
+            <div className="row" style={{ gap: '2px' }} role="img" aria-label={tr('Seasons read from MODIS, oldest to newest', 'المواسم المتقرية من MODIS من الأقدم للأحدث')}>
+              {H.seasons.map((x: any) => (
+                <span key={x.year} className="col" style={{ flex: 1, gap: '2px' }} title={`${x.year}: ${P(CROP_NAME[x.winter])} → ${P(CROP_NAME[x.summer])}`}>
+                  <span style={{ height: '12px', borderRadius: '3px', background: CROP_COLOR[x.winter] }} />
+                  <span style={{ height: '12px', borderRadius: '3px', background: CROP_COLOR[x.summer] }} />
+                </span>
+              ))}
+            </div>
+            <div className="row sp tl" style={{ fontSize: '11px' }}><span>{H.seasons[0]?.year}</span><span>{tr('top: winter · bottom: summer', 'فوق: شتوي · تحت: صيفي')}</span><span>{H.seasons[H.seasons.length - 1]?.year}</span></div>
+            <div className="row wrap tl" style={{ gap: '8px', fontSize: '11px' }}>
+              {Object.keys(CROP_COLOR).map((k) => (
+                <span key={k} className="row" style={{ gap: '4px' }}><i style={{ width: '10px', height: '10px', borderRadius: '3px', background: CROP_COLOR[k], display: 'inline-block' }} />{P(CROP_NAME[k])}</span>
+              ))}
+            </div>
+          </div>
+          {H.agreement?.checked ? (
+            <span className="sub">{tr(`Your memory vs the satellite: ${H.agreement.agree} of ${H.agreement.checked} seasons agree (confidence ${H.agreement.confidence}).`,
+              `ذاكرتك مقارنة بالقمر الصناعي: ${H.agreement.agree} من ${H.agreement.checked} مواسم متفقين (الثقة ${H.agreement.confidence === 'high' ? 'عالية' : H.agreement.confidence === 'medium' ? 'متوسطة' : 'قليلة'}).`)}</span>
+          ) : null}
+          <span className="tl">{P(H.note)} {H.source}.</span>
+        </>
+      ) : (
+        <span className="sub">{tr('Not read yet: NASA is preparing 25 years of images for this spot. Until then the starting soil assumes what you grow now.',
+          'لسه ماتقراش: ناسا بتجهز صور 25 سنة للمكان ده. لحد ما تخلص، بداية التربة بتفترض إنك بتزرع اللي بتزرعه دلوقتي.')}</span>
+      )}
+      <details>
+        <summary className="sub" style={{ cursor: 'pointer' }}>{tr('Tell Bezra your last 3 seasons', 'قول لبذرة آخر 3 مواسم')}</summary>
+        <form className="col" style={{ gap: '8px', marginTop: '8px' }} onSubmit={(e) => { e.preventDefault(); submit(); }}>
+          {years.map((y) => (
+            <div key={y} className="row wrap" style={{ gap: '6px', alignItems: 'center' }}>
+              <b style={{ width: '64px' }}>{y - 1}/{String(y).slice(2)}</b>
+              <select aria-label={tr(`Winter ${y}`, `شتوي ${y}`)} className="inset" style={{ border: 0, font: 'inherit' }} value={mem[y]?.[0] || ''} onChange={(e) => set(y, 0, e.target.value)}>
+                <option value="">{tr('Winter: ?', 'الشتوي: ؟')}</option>
+                {WINTER_OPTS.map((k) => <option key={k} value={k}>{P(OPT_NAME[k])}</option>)}
+              </select>
+              <select aria-label={tr(`Summer ${y}`, `صيفي ${y}`)} className="inset" style={{ border: 0, font: 'inherit' }} value={mem[y]?.[1] || ''} onChange={(e) => set(y, 1, e.target.value)}>
+                <option value="">{tr('Summer: ?', 'الصيفي: ؟')}</option>
+                {SUMMER_OPTS.map((k) => <option key={k} value={k}>{P(OPT_NAME[k])}</option>)}
+              </select>
+            </div>
+          ))}
+          <button type="submit" className="btn sm press" style={{ alignSelf: 'flex-start' }}>{tr('Check against the satellite', 'قارن بالقمر الصناعي')}</button>
+        </form>
+      </details>
+    </section>
+  );
+}
+
 function Seg({ value, set, opts, label }: { value: string; set: (v: string) => void; opts: { k: string; l: string }[]; label: string }) {
   return (
     <div className="seg" role="radiogroup" aria-label={label} style={{ alignSelf: 'flex-start', maxWidth: '100%', overflowX: 'auto' }}>
@@ -176,10 +260,12 @@ export default function RotationExplorer({ id }: { id: string }) {
   const [ec, setEc] = useState('');
   const [om, setOm] = useState('');
   const [lab, setLab] = useState<{ ec?: string; om?: string }>({});
+  const [past, setPast] = useState('');
   const q = new URLSearchParams({ rice: rice === 'yes' ? 'true' : 'false', water, residue, priorities: prio.join(',') });
   if (now) q.set('current', now);
   if (lab.ec) q.set('lab_ec', lab.ec);
   if (lab.om) q.set('lab_om', lab.om);
+  if (past) q.set('past', past);
   const { data: D, loading, error } = useApi<any>(id ? `/fields/${id}/rotation?${q}` : null);
   const P = (p: Pair) => (ar ? p[1] : p[0]);
   const togglePrio = (k: string) => setPrio((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k].slice(-2)));
@@ -268,6 +354,11 @@ export default function RotationExplorer({ id }: { id: string }) {
         </section>
       ) : null}
 
+      {D ? <Past H={D.history} tr={tr} ar={ar} onPast={setPast} /> : null}
+      {D?.robust ? (
+        <p className="sub" style={{ margin: '0 4px' }}>{tr('The satellite and what you told us disagree about your past, so every way below was run from both, and the ranking holds in both.',
+          'القمر الصناعي واللي قلته مختلفين عن اللي فات، فكل طريقة تحت اتجربت من الاتنين، والترتيب صحيح في الاتنين.')}</p>
+      ) : null}
       {loading && !D ? <section className="card"><span className="sub">{tr('Running 10 years for each way on your field’s weather…', 'بنجرب 10 سنين لكل طريقة على جو أرضك…')}</span></section> : null}
       {error && !D ? <section className="card"><span className="sub">{tr('Could not run the rotations right now.', 'مقدرناش نشغّل الدورات دلوقتي.')}</span></section> : null}
 
@@ -290,8 +381,8 @@ export default function RotationExplorer({ id }: { id: string }) {
             <span className="col" style={{ gap: '4px', marginTop: '6px' }}>
               <span>{tr('Weather: ', 'الجو: ')}{D.weather.source}. {tr('Windows', 'الفترات')}: {D.weather.windows.join(', ')}; {tr('plus a warming case', 'وكمان حالة دفا')} (+{D.weather.warming.tmax} °C Tmax, {tr('the field’s own trend to 2040', 'اتجاه أرضك لحد 2040')}).</span>
               <span>{D.method}</span>
-              <span>{tr('Summer heat: NASA POWER reads 4 to 6 °C hotter than Delta weather stations in July and August, so a summer heat wave is a day above your field’s own 95th percentile for that month.',
-                'حر الصيف: ناسا POWER بتقرا أسخن من محطات الدلتا بـ 4 لـ 6 درجات في يوليو وأغسطس، فموجة الحر في الصيف = يوم أسخن من 95% من أيام نفس الشهر عند أرضك.')}</span>
+              <span>{tr('Summer heat: satellite-era weather models (NASA POWER and ERA5, which agree within about 1 °C) read Delta summers hotter than weather stations do, so a summer heat wave is a day above your field’s own 95th percentile for that month.',
+                'حر الصيف: موديلات الجو (ناسا POWER وERA5، والفرق بينهم حوالي درجة) بتقرا صيف الدلتا أسخن من محطات الأرصاد، فموجة الحر في الصيف = يوم أسخن من 95% من أيام نفس الشهر عند أرضك.')}</span>
               <span>{tr('Carbon spin-up', 'توازن الكربون')}: {D.spin_up.input_t_c_ha_yr} t C/ha/{tr('yr from crops now', 'سنة من المحاصيل دلوقتي')}; {D.spin_up.active_t_c_ha} {tr('active', 'نشط')} + {D.spin_up.inert_t_c_ha} {tr('stable', 'ثابت')} t C/ha.</span>
               <span>{tr('No fertilizer or pesticide amounts are ever given. Ask your agricultural engineer.', 'مفيش أي كميات سماد أو مبيدات. اسأل مهندسك الزراعي.')}</span>
             </span>

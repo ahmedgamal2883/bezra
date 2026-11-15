@@ -17,11 +17,12 @@ Sources (cite exact tables; values marked "verify" are still to be checked again
             here are heat-wave levels: rice 38, maize 38 at silking (pollen viability falls above ~35-38 C, Sanchez et al.
             2014, Field Crops Res. 160:25), cotton 40 at flowering/boll set; faba bean 30 at flowering. All to verify
             with ARC. Sugar beet and berseem: no heat window in the Delta winter.
-            NASA POWER (MERRA-2) runs 4-6 C hotter than Delta stations in July-August (POWER July mean Tmax 38-40 C at
-            the demo fields vs ~33-35 C station normals; irrigation cooling is not in the reanalysis). So for summer crops
-            (heat_local) a hot day is a heat wave relative to the field's own climate: Tmax above the field's 95th
-            percentile for that month (POWER 1991-2020), which cancels the bias. Winter thresholds stay in deg C (POWER
-            winter Tmax vs ERA5: bias +0.7 C, docs/ACCURACY.md). To check against NOAA GSOD stations (validation K1).
+            Measured (docs/VALIDATION.md): July-August 2020-2024 at 3 demo fields, NASA POWER Tmax averages 38.5-40.5 C and
+            ERA5 37.2-39.4 C (POWER - ERA5 = +0.7 to +1.2 C). Both reanalyses are well above typical Delta station highs
+            (Cairo's July mean high is ~35 C; irrigation cooling is not modelled), still to confirm with NOAA GSOD (K1).
+            So for summer crops (heat_local) a hot day is a heat wave relative to the field's own climate: Tmax above the
+            field's 95th percentile for that month (POWER 1991-2020), which does not depend on that offset. Winter
+            thresholds stay in deg C (POWER winter Tmax vs ERA5: bias +0.7 C, docs/ACCURACY.md).
   yields    Typical Egyptian yields (t/ha, FAOSTAT 2018-2022 averages, rounded). Only used to size residue
             and nutrient removal inside the soil ledger; never shown as a promise.
   residue   Harvest index -> above-ground residue (t DM/ha), plus roots/stubble that always stay; carbon = 45% of DM.
