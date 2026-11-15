@@ -19,7 +19,8 @@ Sources (cite exact tables; values marked "verify" are still to be checked again
             with ARC. Sugar beet and berseem: no heat window in the Delta winter.
             Measured (docs/VALIDATION.md): July-August 2020-2024 at 3 demo fields, NASA POWER Tmax averages 38.5-40.5 C and
             ERA5 37.2-39.4 C (POWER - ERA5 = +0.7 to +1.2 C). Both reanalyses are well above typical Delta station highs
-            (Cairo's July mean high is ~35 C; irrigation cooling is not modelled), still to confirm with NOAA GSOD (K1).
+            (irrigation cooling is not modelled). Against a real station (NOAA GHCN-Daily, Alexandria airport, 2000-2023):
+            POWER Tmax bias +3.0 C in July-August but only +0.7 C in February-March (docs/VALIDATION.md).
             So for summer crops (heat_local) a hot day is a heat wave relative to the field's own climate: Tmax above the
             field's 95th percentile for that month (POWER 1991-2020), which does not depend on that offset. Winter
             thresholds stay in deg C (POWER winter Tmax vs ERA5: bias +0.7 C, docs/ACCURACY.md).
