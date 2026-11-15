@@ -11,6 +11,7 @@ import { LangSwitch } from '@/lib/i18n';
 import { useApi } from '@/lib/api';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import AboutLink from '@/components/AboutLink';
+import RotationExplorer from '@/components/RotationExplorer';
 import Logic from './Next.logic';
 
 export default function NextScreen() {
@@ -365,131 +366,7 @@ export default function NextScreen() {
                 </span></>) : null}
               </section>
             </div>
-            {demo ? (<><div className="row sp rise" style={{"--d":"9","padding":"6px 4px 0"} as any}>
-              <h2 style={{"fontSize":"24px","fontWeight":"600","letterSpacing":"-.6px"} as any}>
-                {"Three ways to plan the next 3 years"}
-              </h2>
-              <span className="pill pv-est">
-                {"Estimated"}
-              </span>
-            </div>
-            <div className="grid" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))"} as any}>
-              <section className="card rise " style={{"--d":"10"} as any}>
-                <i className={__v.sk} aria-hidden="true" style={{"--d":"10"} as any} />
-                <div className="row sp">
-                  <span className="row" style={{"gap":"10px"} as any}>
-                    <span style={{"width":"34px","height":"34px","borderRadius":"10px","background":"var(--inset)","color":"var(--ink)","display":"flex","alignItems":"center","justifyContent":"center","fontWeight":"700"} as any}>
-                      {"A"}
-                    </span>
-                    <span className="col">
-                      <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                        {"Keep what you grow"}
-                      </b>
-                      <span className="tl">
-                        {"Wheat, then maize"}
-                      </span>
-                    </span>
-                  </span>
-                </div>
-                <div className="inset">
-                  <span>
-                    {"Water need"}
-                  </span>
-                  <b>
-                    {"High"}
-                  </b>
-                </div>
-                <p className="sub">
-                  {"Works well today. Harvest drops as springs get hotter."}
-                </p>
-                <Link href="/sim" className="btn soft cta press">
-                  {"Try it in the simulator"}
-                  <span className="ar">
-                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M7 17 17 7M9 7h8v8" />
-                    </svg>
-                  </span>
-                </Link>
-              </section>
-              <section className="card rise " style={{"--d":"11","boxShadow":"0 0 0 2px var(--dark)"} as any}>
-                <i className={__v.sk} aria-hidden="true" style={{"--d":"11"} as any} />
-                <div className="row sp">
-                  <span className="row" style={{"gap":"10px"} as any}>
-                    <span style={{"width":"34px","height":"34px","borderRadius":"10px","background":"var(--dark)","color":"#fff","display":"flex","alignItems":"center","justifyContent":"center","fontWeight":"700"} as any}>
-                      {"B"}
-                    </span>
-                    <span className="col">
-                      <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                        {"Earlier wheat, lighter summer"}
-                      </b>
-                      <span className="tl">
-                        {"Early wheat, then sorghum"}
-                      </span>
-                    </span>
-                  </span>
-                  <span className="lv lv-low">
-                    <i />
-                    {"Our pick"}
-                  </span>
-                </div>
-                <div className="inset">
-                  <span>
-                    {"Water need"}
-                  </span>
-                  <b>
-                    {"Medium"}
-                  </b>
-                </div>
-                <p className="sub">
-                  {"About 18% less water. Holds up best in hotter years."}
-                </p>
-                <Link href="/sim" className="btn  cta press">
-                  {"Try it in the simulator"}
-                  <span className="ar">
-                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M7 17 17 7M9 7h8v8" />
-                    </svg>
-                  </span>
-                </Link>
-              </section>
-              <section className="card rise " style={{"--d":"12"} as any}>
-                <i className={__v.sk} aria-hidden="true" style={{"--d":"12"} as any} />
-                <div className="row sp">
-                  <span className="row" style={{"gap":"10px"} as any}>
-                    <span style={{"width":"34px","height":"34px","borderRadius":"10px","background":"var(--inset)","color":"var(--ink)","display":"flex","alignItems":"center","justifyContent":"center","fontWeight":"700"} as any}>
-                      {"C"}
-                    </span>
-                    <span className="col">
-                      <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                        {"Feed the soil"}
-                      </b>
-                      <span className="tl">
-                        {"Berseem, then wheat, then maize"}
-                      </span>
-                    </span>
-                  </span>
-                </div>
-                <div className="inset">
-                  <span>
-                    {"Water need"}
-                  </span>
-                  <b>
-                    {"Medium"}
-                  </b>
-                </div>
-                <p className="sub">
-                  {"Berseem adds nitrogen for the wheat after it."}
-                </p>
-                <Link href="/sim" className="btn soft cta press">
-                  {"Try it in the simulator"}
-                  <span className="ar">
-                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M7 17 17 7M9 7h8v8" />
-                    </svg>
-                  </span>
-                </Link>
-              </section>
-            </div></>) : null}
+            <RotationExplorer id={id} />
             <footer className="foot">
               <span>
                 <T en="Bezra helps you think. It doesn&apos;t decide for you." ar="الأداة دي بتساعدك تفكر، مش بتقرر بدالك." />
