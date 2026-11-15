@@ -653,6 +653,25 @@ def get_health(field_id: str, user: dict = Depends(current_user)):
 
 
 # ---- engineer ------------------------------------------------------------------------------------
+@app.get("/fields/{field_id}/scale")
+def get_field_scale(field_id: str, feddan: float = 100.0, rice: bool = True, water: str = "canal", residue: str = "remove",
+                    priorities: str = "water,soil", current: str | None = None, user: dict = Depends(current_user)):
+    """Field Shift N1: this field's best rotation (same choices as the Rotation screen), scaled to N feddan like it."""
+    from .services import scale
+    out = scale.farmer(_ctx(field_id, user), max(1.0, min(feddan, 100000.0)), rice=rice, water=water, residue=residue,
+                       priorities=priorities, current=current)
+    if not out:
+        raise HTTPException(404, "No rotation result for this field yet")
+    return out
+
+
+@app.get("/engineer/scale")
+def get_engineer_scale(user: dict = Depends(engineer_only)):
+    """Field Shift N1: the engineer's real fields, each on its own best rotation, added up."""
+    from .services import scale
+    return scale.engineer([f["id"] for f in db.fields_for(user)])
+
+
 @app.get("/engineer/fields")
 def get_engineer_fields(user: dict = Depends(engineer_only)):
     return engineer.workspace([f["id"] for f in db.fields_for(user)])

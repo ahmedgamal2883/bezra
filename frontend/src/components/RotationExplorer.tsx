@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useT } from '@/lib/i18n';
+import ScaleCard from '@/components/ScaleCard';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Pair = [string, string];
@@ -209,6 +210,7 @@ function Card({ s, tr, ar, now }: { s: any; tr: (e: string, a: string) => string
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px' }}>
         <div className="inset"><span>{tr('Water a year', 'المية في السنة')}</span><b>{s.water_m3_feddan_year.toLocaleString('en-US')} {tr('m³/fed', 'م³/فدان')}</b></div>
         {!s.current && now ? <div className="inset"><span>{tr('Water vs now', 'المية عن دلوقتي')}</span><b>{signed(s.water_vs_current_pct)}%</b></div> : null}
+        {!s.current && s.co2_vs_current_t_ha != null ? <div className="inset" title={tr('Soil carbon in the top 30 cm by year 10, vs now (RothC)', 'كربون التربة في أول 30 سم في السنة العاشرة مقارنة بدلوقتي (RothC)')}><span>{tr('Soil carbon vs now', 'كربون التربة عن دلوقتي')}</span><b>{signed(s.co2_vs_current_t_ha)} t CO₂/ha</b></div> : null}
         <div className="inset"><span>{tr('Years with heat damage', 'سنين فيها ضرر حر')}</span><b>{s.heat_years} {tr('of', 'من')} {s.years_simulated}</b></div>
         {s.warming ? <div className="inset"><span>{tr('Same, ~2040 warming', 'نفسها، مع دفا ~2040')}</span><b>{s.warming.heat_years} {tr('of', 'من')} {s.warming.years_simulated}</b></div> : null}
         <div className="inset"><span>{tr('Bare days a year', 'أيام الأرض فاضية')}</span><b>{s.bare_days_year}</b></div>
@@ -374,6 +376,7 @@ export default function RotationExplorer({ id }: { id: string }) {
       {loading && !D ? <section className="card"><span className="sub">{tr('Running 10 years for each way on your field’s weather…', 'بنجرب 10 سنين لكل طريقة على جو أرضك…')}</span></section> : null}
       {error && !D ? <section className="card"><span className="sub">{tr('Could not run the rotations right now.', 'مقدرناش نشغّل الدورات دلوقتي.')}</span></section> : null}
 
+      {D?.strategies?.length ? <ScaleCard path={`/fields/${id}/scale?${q}`} /> : null}
       {D?.strategies?.length ? (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '12px' }}>
           {D.strategies.map((s: any) => <Card key={s.id} s={s} tr={tr} ar={ar} now={cur} />)}

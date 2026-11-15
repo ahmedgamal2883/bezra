@@ -111,3 +111,15 @@ def test_no_fertilizer_amounts_in_output():
     txt = json.dumps(r["years"]).lower()
     for bad in ("kg n", "kg/ha", "dose", "bag"):
         assert bad not in txt
+
+
+def test_scale_uses_each_fields_real_crops():
+    from app.services.scale import own_rotation
+
+    class C:
+        def __init__(self, crop, prev):
+            self.f = {"crop": crop, "prev_crop": prev}
+    assert own_rotation(C("wheat", "rice")) == {"current": "wheat-rice", "rice": True}
+    assert own_rotation(C("wheat", "maize")) == {"current": "wheat-maize", "rice": False}
+    assert own_rotation(C("berseem", "cotton"))["current"] == "berseem-cotton"
+    assert own_rotation(C("maize", "wheat"))["current"] is None      # not a winter -> summer pair

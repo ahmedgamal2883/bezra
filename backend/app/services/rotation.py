@@ -509,6 +509,11 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
             # how much more (or less) of the field's potential the soil lets through by years 8-10, vs what you grow now
             s["vs_current_pct"] = round(100 * (s["soil_level"] / base["soil_level"] - 1), 1)
             s["water_vs_current_pct"] = round(100 * (s["water_mm_year"] / base["water_mm_year"] - 1))
+            soc_s, soc_b = s["years"][-1]["soil"].get("soc"), base["years"][-1]["soil"].get("soc")
+            if soc_s is not None and soc_b is not None:
+                # carbon held in the top 30 cm by year 10, vs keeping today's rotation (RothC; 1 t C = 3.67 t CO2)
+                s["carbon_vs_current_t_ha"] = round(soc_s - soc_b, 2)
+                s["co2_vs_current_t_ha"] = round((soc_s - soc_b) * 44 / 12, 1)
     res = {"field": c.f["id"], "start": s0["sources"], "profile": s0["profile"],
            "soil_test": {"ec": c.f.get("soil_ec"), "om": c.f.get("soil_om"), "date": c.f.get("soil_test_date")},
            "inputs": {"rice": rice, "water": water, "water_ec": ecw, "water_ec_source": "your water test" if saved_wec else "typical for the source", "residue": residue, "priorities": prio, "current": current,

@@ -5,6 +5,7 @@ import { T, useT } from '@/lib/i18n';
 // Logic lives in ./Engineer.logic.js (verbatim from the design).
 import { Fragment, useEffect, useState } from 'react';
 import { useApi, API } from '@/lib/api';
+import ScaleCard from '@/components/ScaleCard';
 import { useField, FieldWho, UserName, UserInitials, useUser } from '@/lib/field';
 import Link from 'next/link';
 import DataLive from '@/components/DataLive';
@@ -203,6 +204,7 @@ export default function EngineerScreen() {
                 </span>
               </section>
             </div>
+            {ws.data ? <ScaleCard path="/engineer/scale" /> : null}
             <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 460px","alignItems":"stretch"} as any}>
               <section aria-label="Risk map" className="hero rise" style={{"--d":"3","minHeight":"600px","background":"#E3E0D4"} as any}>
                 <i className="sk map" aria-hidden="true" style={{"--d":"3"} as any} />
