@@ -477,3 +477,11 @@ html[dir="rtl"] .tour-line,[dir="rtl"] .tour-line{font-size:17px;line-height:1.5
 .tour-replay{width:100%;min-height:64px;border:0;cursor:pointer;justify-content:flex-start;gap:12px;font:inherit;text-align:start}
 .tour-play{width:40px;height:40px;flex:none;border-radius:12px;background:var(--green-tint);color:var(--green);display:flex;align-items:center;justify-content:center}
 @media (prefers-reduced-motion: reduce){.tour-sheet,.tour-coach,.tour-toast,.tour-tip{animation:tourFade .2s ease both!important}.tour-bars i{animation:none}}
+
+/* Field Shift N10: printable rotation card (components/ShareRotation.tsx) */
+.print-only{display:none}
+@media print{
+  body.printing > *:not(.print-only){display:none!important}
+  body.printing .print-only{display:block!important}
+  @page{size:A4;margin:0}
+}

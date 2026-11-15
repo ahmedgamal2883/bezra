@@ -480,7 +480,7 @@ export default function ProfileScreen() {
                     <span>
                       {"Easy mode: bigger icons, voice plays by itself"}
                     </span>
-                    <button type="button" role="switch" aria-checked={__s(__v?.easy) as any} onClick={__v?.toggleEasy} style={__css(__v?.sw)}>
+                    <button type="button" role="switch" aria-label="Easy mode: bigger icons, voice plays by itself" aria-checked={__s(__v?.easy) as any} onClick={__v?.toggleEasy} style={__css(__v?.sw)}>
                       <span style={__css(__v?.knob)} />
                     </button>
                   </label>

@@ -80,7 +80,7 @@ export default function CheckIn({ id, onlyIfDue = false }: { id: string; onlyIfD
             <span>{d.title}</span></span></div>
         )) : <span className="sub">{tr('Nothing ticked yet this week.', 'لسه معلّمتش على حاجة الأسبوع ده.')} <Link href={`/field/${id}/tasks`} style={{ textDecoration: 'underline' }}>{tr('My tasks', 'مهامي')}</Link></span>}
       </div>
-      <textarea className="input checkin-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={tr('Anything else? (optional)', 'حاجة تانية؟ (لو حابب)')} />
+      <textarea className="input checkin-note" rows={2} aria-label={tr('Anything else? (optional)', 'حاجة تانية؟ (لو حابب)')} value={note} onChange={(e) => setNote(e.target.value)} placeholder={tr('Anything else? (optional)', 'حاجة تانية؟ (لو حابب)')} />
       <div className="row wrap" style={{ gap: '8px' }}>
         <button type="button" className="btn press" disabled={!pick.length || busy} onClick={save}>{tr('Send', 'ابعت')}</button>
         <Link href={`/field/${id}/diagnose`} className="btn line press">{tr('Add a photo', 'صوّر')}</Link>

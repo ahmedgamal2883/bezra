@@ -114,6 +114,8 @@ export function UserInitials() {
 
 export async function signOut() {
   await fetch(API + '/auth/signout', { method: 'POST' });
+  // a shared phone: forget the results saved for offline use (public/sw.js)
+  try { for (const k of await caches.keys()) if (k.startsWith('bezra-')) await caches.delete(k); } catch { /* no cache storage */ }
   window.location.href = '/';
 }
 

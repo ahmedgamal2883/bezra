@@ -8,6 +8,8 @@ import { API, useApi } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 import ScaleCard from '@/components/ScaleCard';
 import SoilStory from '@/components/SoilStory';
+import ShareRotation from '@/components/ShareRotation';
+import { useField } from '@/lib/field';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Pair = [string, string];
@@ -159,7 +161,7 @@ function Path({ years }: { years: any[] }) {
   );
 }
 
-function Card({ s, tr, ar, now }: { s: any; tr: (e: string, a: string) => string; ar: boolean; now: any }) {
+function Card({ s, tr, ar, now, field, start }: { s: any; tr: (e: string, a: string) => string; ar: boolean; now: any; field: string; start: any }) {
   const face = FACE[s.soil_face] || FACE.steady;
   const names: [string, string | null][] = ar ? s.sequence_names_ar : s.sequence_names;
   const P = (p: Pair) => (ar ? p[1] : p[0]);
@@ -244,6 +246,7 @@ function Card({ s, tr, ar, now }: { s: any; tr: (e: string, a: string) => string
           <span><b>{tr('Check locally: ', 'اتأكد محلياً: ')}</b>{P(s.risks)}</span>
         </span>
       </details>
+      <ShareRotation s={s} field={field} start={start} />
       <span className="row sp wrap" style={{ gap: '6px' }}>
         <span className="tl">{tr('Estimates. A soil test and your engineer come first.', 'دي تقديرات. تحليل التربة ومهندسك الأول.')}</span>
         <span className="pill pv-est">{tr('Estimated', 'تقدير')}</span>
@@ -265,6 +268,7 @@ export default function RotationExplorer({ id }: { id: string }) {
   const [lab, setLab] = useState<{ ec?: string; om?: string }>({});
   const [past, setPast] = useState('');
   const [saved, setSaved] = useState('');
+  const { name: fieldName } = useField();
   const q = new URLSearchParams({ rice: rice === 'yes' ? 'true' : 'false', water, residue, priorities: prio.join(',') });
   if (now) q.set('current', now);
   if (lab.ec) q.set('lab_ec', lab.ec);
@@ -381,7 +385,7 @@ export default function RotationExplorer({ id }: { id: string }) {
       {D?.strategies?.length ? <ScaleCard path={`/fields/${id}/scale?${q}`} /> : null}
       {D?.strategies?.length ? (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '12px' }}>
-          {D.strategies.map((s: any) => <Card key={s.id} s={s} tr={tr} ar={ar} now={cur} />)}
+          {D.strategies.map((s: any) => <Card key={s.id} s={s} tr={tr} ar={ar} now={cur} field={fieldName} start={D.start} />)}
         </div>
       ) : null}
 

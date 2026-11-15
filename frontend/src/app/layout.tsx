@@ -6,6 +6,7 @@ import { LangProvider } from '@/lib/i18n';
 import DemoBadge from '@/components/DemoBadge';
 import KeyboardWatch from '@/components/KeyboardWatch';
 import RouteMotion from '@/components/RouteMotion';
+import Offline from '@/components/Offline';
 import WakeUp from '@/components/WakeUp';
 import { TourProvider } from '@/components/Tour';
 import './globals.css';
@@ -35,7 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <LangProvider initial={lang}>
           <ModeProvider>
-            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /><WakeUp /><RouteMotion /></FieldProvider>
+            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /><WakeUp /><RouteMotion /><Offline /></FieldProvider>
           </ModeProvider>
         </LangProvider>
       </body>
