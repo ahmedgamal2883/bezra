@@ -10,6 +10,7 @@ import Offline from '@/components/Offline';
 import WakeUp from '@/components/WakeUp';
 import { TourProvider } from '@/components/Tour';
 import './globals.css';
+import './v2.css';
 
 export const metadata: Metadata = {
   title: 'Bezra',
