@@ -56,12 +56,11 @@ export function useLanding() {
   out.guest = async (e: any) => {
     e?.preventDefault?.();
     try {
-      const d = await (await fetch(API + '/demo')).json();
-      if (!d.enabled) { window.location.href = '/signup'; return; }
-      const r = await fetch(API + '/auth/signin', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: d.email, password: d.password }) });
-      if (!r.ok) throw new Error('signin');
-      const fl = await (await fetch(API + '/fields')).json();
-      window.location.href = fl[0] ? `/field/${fl[0].id}/today?tour=welcome` : '/today';
+      // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days
+      const r = await fetch(API + '/auth/guest', { method: 'POST' });
+      if (!r.ok) throw new Error('guest');
+      const j = await r.json();
+      window.location.href = `/field/${j.field_id}/today?tour=welcome`;
     } catch { window.location.href = '/signup'; }
   };
   return out;

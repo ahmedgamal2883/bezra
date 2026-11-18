@@ -54,12 +54,10 @@ const guest = async (ev) => {
  if (S.busy) return;
  set({ busy: true });
  try {
-  const d = await (await fetch(API + '/demo')).json();
-  if (!d.enabled) return set({ busy: false, err: { form: 'The sample field is not open right now.' } });
-  const r = await post('/auth/signin', { email: d.email, password: d.password });
-  if (!r.ok) throw new Error('signin');
-  const fl = await (await fetch(API + '/fields')).json();
-  go(fl[0] ? '/field/' + fl[0].id + '/today?tour=welcome' : '/today');
+  // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days
+  const r = await post('/auth/guest', {});
+  if (!r.ok) throw new Error('guest');
+  go('/field/' + r.j.field_id + '/today?tour=welcome');
  } catch (x) { set({ busy: false, err: { form: 'Could not open the sample field. Try again.' } }); }
 };
 return Object.assign(base, { up: st === 'up', inn: st === 'in', code: false, name: S.name, phone: S.phone, pw: S.pw,

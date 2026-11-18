@@ -7,5 +7,5 @@ export function useWho() {
   const { field, name } = useField();
   const userName = user?.name || '';
   const initials = userName.split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
-  return { userName, initials, fieldLabel: (field?.name || name || '') + ' ▾', fieldName: field?.name || name || '' };
+  return { userName: user?.guest ? 'Guest' : userName, initials: user?.guest ? 'G' : initials, fieldLabel: (field?.name || name || '') + ' ▾', fieldName: field?.name || name || '', guest: !!user?.guest };
 }

@@ -71,7 +71,7 @@ export default function Tour({ page }: { page: Page }) {
 
   if (mode === 'off' || !id) return null;
   const nextPage = ORDER[ORDER.indexOf(page) + 1];
-  const guest = !!user?.demo_account;
+  const guest = !!(user?.guest || user?.demo_account);
   if (mode === 'welcome') {
     const ar = lang === 'ar';
     return (

@@ -100,6 +100,13 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"24px","paddingTop":"16px"} as any}>
+            {user?.guest ? (
+              <div className="gbanner" role="status">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8h.01M11 12h1v5h1" /></svg>
+                <span style={{"flex":"1","fontSize":"15px"} as any}><b style={{"fontWeight":"600"} as any}>{"You are using Bezra as a guest."}</b>{" This is your own copy of a sample field. It is kept for 7 days."}</span>
+                <Link href="/signup" className="btn press" style={{"height":"42px"} as any}>{"Create an account to keep it"}</Link>
+              </div>
+            ) : null}
             {__v?.simple ? (
               <>
                 <div className="col" style={{"gap":"20px"} as any}>
