@@ -44,9 +44,16 @@ const signed = (x: number) => (x > 0 ? `+${x}` : `${x}`);
 const cellColor = (v: number) => (v >= 0.98 ? 'var(--green)' : v >= 0.94 ? '#6FA383' : v >= 0.9 ? '#E8B04C' : '#D8664E');
 
 // What a 250 m MODIS pixel can tell (engine/history.py): rice (by its flooding), another green crop, or bare land.
-const CROP_COLOR: Record<string, string> = { crop: 'var(--green)', rice: 'var(--water)', bare: '#D9D6C8' };
+// 250 m MODIS (2001-2017) sees rice / a green crop / bare; 10 m Sentinel-2 (2018 ->) also sees the crop type.
+const CROP_COLOR: Record<string, string> = {
+  wheat: '#E8B04C', berseem: '#2E7D4F', fahl: '#6FA383', faba: '#9C7BB5', sugarbeet: '#C2416B', rice: 'var(--water)',
+  maize: '#B4660B', cotton: '#B9BCB4', crop: '#A9C9A4', bare: '#D9D6C8', longwinter: '#5E9B76',
+};
 const CROP_NAME: Record<string, [string, string]> = {
-  crop: ['A green crop (type not readable at 250 m)', 'محصول أخضر (نوعه مش باين على 250 م)'], rice: ['Rice (flooded)', 'رز (أرض متغرقة)'], bare: ['Bare', 'فاضية'],
+  wheat: ['Wheat', 'قمح'], berseem: ['Berseem', 'برسيم'], fahl: ['Short berseem', 'برسيم فحل'], faba: ['Faba bean', 'فول'],
+  sugarbeet: ['Sugar beet (unsure)', 'بنجر (مش أكيد)'], rice: ['Rice', 'رز'], maize: ['Maize', 'ذرة'], cotton: ['Cotton', 'قطن'],
+  crop: ['A green crop (type unclear)', 'محصول أخضر (نوعه مش واضح)'], bare: ['Bare', 'فاضية'],
+  longwinter: ['Berseem or sugar beet', 'برسيم أو بنجر'],
 };
 const WINTER_OPTS = ['wheat', 'berseem', 'fahl', 'faba', 'sugarbeet', 'bare'];
 const SUMMER_OPTS = ['rice', 'maize', 'cotton', 'bare'];
@@ -87,7 +94,7 @@ function Past({ H, tr, ar, onPast }: { H: any; tr: (e: string, a: string) => str
             </div>
             <div className="row sp tl" style={{ fontSize: '11px' }}><span>{H.seasons[0]?.year}</span><span>{tr('top: winter · bottom: summer', 'فوق: شتوي · تحت: صيفي')}</span><span>{H.seasons[H.seasons.length - 1]?.year}</span></div>
             <div className="row wrap tl" style={{ gap: '8px', fontSize: '11px' }}>
-              {Object.keys(CROP_COLOR).map((k) => (
+              {Object.keys(CROP_COLOR).filter((k) => H.seasons.some((x: any) => x.winter === k || x.summer === k)).map((k) => (
                 <span key={k} className="row" style={{ gap: '4px' }}><i style={{ width: '10px', height: '10px', borderRadius: '3px', background: CROP_COLOR[k], display: 'inline-block' }} />{P(CROP_NAME[k])}</span>
               ))}
             </div>

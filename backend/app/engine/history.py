@@ -83,6 +83,35 @@ def _seen(c: str | None) -> str | None:
     return {"rice": "rice", "bare": "bare"}.get(c, "crop")
 
 
+TYPES = {"wheat", "berseem", "fahl", "faba", "sugarbeet", "rice", "maize", "cotton"}
+
+
+def merge(modis: list[dict], fine: list[dict]) -> list[dict]:
+    """Pure: 10 m seasons (crop type) where they exist and are sure of the type; MODIS (rice / crop / bare) elsewhere."""
+    by = {x["year"]: dict(x, source="MODIS 250 m") for x in modis}
+    for f in fine:
+        x = by.setdefault(f["year"], {"year": f["year"], "winter": "crop", "summer": "crop", "winter_peak": None,
+                                      "summer_peak": None, "bare_days": None, "flood": None, "source": "MODIS 250 m"})
+        for slot in ("winter", "summer"):
+            v = f[slot]
+            if v in TYPES or (v == "bare" and f.get(slot + "_sure") == "high"):
+                x[slot] = v
+                x[slot + "_sure"] = f.get(slot + "_sure")
+                x["source"] = "Sentinel-2 10 m"
+    return [by[y] for y in sorted(by)]
+
+
+def type_counts(ss: list[dict]) -> dict:
+    """{"winter": {crop: n}, "summer": {crop: n}, "years": n} over the seasons read at 10 m."""
+    fine = [x for x in ss if x.get("source") == "Sentinel-2 10 m"]
+    out = {"years": len(fine), "from": fine[0]["year"] if fine else None, "to": fine[-1]["year"] if fine else None,
+           "winter": {}, "summer": {}}
+    for x in fine:
+        for slot in ("winter", "summer"):
+            out[slot][x[slot]] = out[slot].get(x[slot], 0) + 1
+    return out
+
+
 def agreement(ss: list[dict], farmer: dict[int, tuple[str | None, str | None]]) -> dict:
     """Satellite vs the farmer's memory, only on what 250 m can see (rice / another crop / bare) (plan §4.6)."""
     hit = miss = 0
@@ -93,10 +122,113 @@ def agreement(ss: list[dict], farmer: dict[int, tuple[str | None, str | None]]) 
             continue
         for slot, fv in (("winter", f[0]), ("summer", f[1])):
             if fv:
-                ok = _seen(fv) == x[slot]
+                sat = x[slot]
+                if sat in TYPES:          # read at 10 m: compare the crop itself (fahl counts as berseem)
+                    ok = {"fahl": "berseem"}.get(fv, fv) == {"fahl": "berseem"}.get(sat, sat)
+                else:
+                    ok = _seen(fv) == sat
                 hit += ok
                 miss += not ok
                 rows.append({"year": x["year"], "season": slot, "satellite": x[slot], "farmer": fv, "agree": ok})
     n = hit + miss
     return {"checked": n, "agree": hit, "share": round(hit / n, 2) if n else None, "rows": rows,
             "confidence": "high" if n and hit / n >= 0.8 else ("medium" if n and hit / n >= 0.6 else "low")}
+
+
+# ---- 10 m: the field's own pixels (Sentinel-2, 2017 -> now): crop type from the curve's shape -----------------------
+def _smooth(rows: list[dict]) -> list[tuple[date, float, float | None]]:
+    """Median of 3 neighbours (drops single cloudy-edge outliers)."""
+    pts = [(_d(r["date"]), r["ndvi"], r.get("lswi")) for r in rows if r.get("ndvi") is not None]
+    out = []
+    for i, (d, v, l) in enumerate(pts):
+        nb = sorted(x[1] for x in pts[max(0, i - 1):i + 2])
+        out.append((d, nb[len(nb) // 2], l))
+    return out
+
+
+def _between(pts, a: date, b: date):
+    return [p for p in pts if a <= p[0] <= b]
+
+
+def _mean(xs):
+    return sum(xs) / len(xs) if xs else None
+
+
+def winter_10m(pts, y: int, raw=None) -> tuple[str, str]:
+    """(crop, how sure) for the winter ending in year y (Oct 15 y-1 .. May 31 y)."""
+    w = _between(pts, date(y - 1, 10, 15), date(y, 5, 31))
+    if len(w) < 8:
+        return "unknown", "low"
+    # the winter crop's peak: up to 20 April (later greenness can be the next summer crop, e.g. cotton sown in March-April)
+    peak_d, peak = max(((d, v) for d, v, _ in w if d <= date(y, 4, 20)), key=lambda x: x[1])
+    if peak < 0.3:
+        return "bare", "high"
+    dec = _mean([v for d, v, _ in w if date(y - 1, 12, 1) <= d <= date(y, 1, 15)])
+    end = _mean([v for d, v, _ in w if date(y, 4, 15) <= d <= date(y, 5, 15)])
+    # berseem cuts, on the RAW series (smoothing erases them): a drop of >= 0.15 from a green level that lasts two
+    # looks in a row (>= ~10 days, unlike a one-image cloud edge) and then regrows
+    rw = _between(raw or w, date(y - 1, 12, 1), date(y, 4, 30))
+    cuts, i = 0, 1
+    while i < len(rw) - 2:
+        prev = max(x[1] for x in rw[max(0, i - 3):i])
+        a, b = rw[i][1], rw[i + 1][1]
+        nxt = [x[1] for x in rw[i + 2:i + 7] if (x[0] - rw[i][0]).days <= 50]
+        if prev >= 0.5 and prev - a >= 0.15 and prev - b >= 0.1 and nxt and max(nxt) - min(a, b) >= 0.12:
+            cuts += 1
+            i += 3
+        else:
+            i += 1
+    after = [d for d, v, _ in w if d > peak_d and v < 0.4]
+    senesce = after[0] if after else None
+    if cuts >= 1 and (dec or 0) >= 0.4:
+        return "berseem", "high" if cuts >= 2 else "medium"
+    if (dec or 0) >= 0.45 and senesce and senesce <= date(y, 3, 1):
+        return "fahl", "medium"
+    if (dec or 1) < 0.45 and date(y, 2, 1) <= peak_d <= date(y, 4, 5) and (senesce is None or senesce >= date(y, 4, 1)):
+        return "wheat", "high" if peak >= 0.6 else "medium"
+    if date(y, 1, 1) <= peak_d < date(y, 2, 20) and senesce and date(y, 3, 1) <= senesce < date(y, 4, 5):
+        return "faba", "medium"
+    if (end or 0) >= 0.5 and (dec or 0) >= 0.35:
+        # green from autumn to May with no clear cuts: berseem (cuts too shallow at the field median) or sugar beet;
+        # 10 m cannot tell which, so say so (the farmer's crop fills it in)
+        return "longwinter", "low"
+    return "crop", "low"
+
+
+def summer_10m(pts, y: int) -> tuple[str, str]:
+    """(crop, how sure) for the summer of year y (May 1 .. Oct 31)."""
+    s = _between(pts, date(y, 5, 1), date(y, 10, 31))
+    if len(s) < 8:
+        return "unknown", "low"
+    peak = max(v for _, v, _ in s)
+    if peak < 0.3:
+        return "bare", "high"
+    flood = any(l is not None and v < 0.4 and l + 0.05 >= v for d, v, l in s if date(y, 5, 15) <= d <= date(y, 7, 31))
+    if flood and peak >= 0.5:
+        return "rice", "high"
+    june1 = _mean([v for d, v, _ in s if date(y, 5, 20) <= d <= date(y, 6, 10)])
+    late = _mean([v for d, v, _ in s if date(y, 9, 15) <= d <= date(y, 10, 15)])
+    low_early = min([v for d, v, _ in s if date(y, 5, 15) <= d <= date(y, 6, 30)] or [1])
+    mid_peak = max([v for d, v, _ in s if date(y, 7, 15) <= d <= date(y, 9, 15)] or [0])
+    if (june1 or 0) >= 0.4 and (late or 0) >= 0.45:
+        return "cotton", "medium"
+    if low_early < 0.35 and mid_peak >= 0.55:
+        return "maize", "high" if mid_peak >= 0.65 else "medium"
+    return "crop", "low"
+
+
+def seasons_10m(rows: list[dict], first: int = 2018, last: int | None = None) -> list[dict]:
+    """[{year, winter, summer, winter_sure, summer_sure, flood}] from the field's own 10 m series."""
+    pts = _smooth(rows)
+    raw = [(_d(r["date"]), r["ndvi"], r.get("lswi")) for r in rows if r.get("ndvi") is not None]
+    if not pts:
+        return []
+    last = last or pts[-1][0].year
+    out = []
+    for y in range(first, last + 1):
+        w, ws = winter_10m(pts, y, raw)
+        s, ss = summer_10m(pts, y)
+        if w == "unknown" and s == "unknown":
+            continue
+        out.append({"year": y, "winter": w, "summer": s, "winter_sure": ws, "summer_sure": ss})
+    return out

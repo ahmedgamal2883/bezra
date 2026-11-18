@@ -133,6 +133,19 @@ def _claude():
     anthropic.Anthropic().models.retrieve("claude-opus-5-5")  # free call: checks the key works
 
 
+def _soilgrids():
+    _get("https://rest.isric.org/soilgrids/v2.0/properties/layers")
+
+
+def _cmip6():
+    _get("https://ds.nccs.nasa.gov/thredds/catalog/AMES/NEX/GDDP-CMIP6/catalog.html")
+
+
+def _prevruns():
+    _get("https://previous-runs-api.open-meteo.com/v1/forecast", params={"latitude": 30.55, "longitude": 30.99,
+         "hourly": "temperature_2m_previous_day1", "forecast_days": 1})
+
+
 # name, used for, check (None = planned but not used yet), note when not used
 APIS = [
     ("NASA POWER daily", "Heat, water need, rain, stages, calendar", _power_daily, ""),
@@ -153,8 +166,11 @@ APIS = [
     ("Sentinel-1 RTC (ESA, extra)", "Irrigation detection (Beta)", _s1, ""),
     ("NASA GPM IMERG", "Rain that fell", None, "Rain comes from NASA POWER for now"),
     ("NASA SRTM (AppEEARS)", "Slope and low spots", None, "Copernicus DEM used instead (same 30 m)"),
-    ("ISRIC SoilGrids", "Soil type", None, "Soil is a default guess for now"),
-    ("FAO GAEZ v4", "Rotation options A/B/C", None, "Not connected yet"),
+    ("ISRIC SoilGrids 2.0", "Starting soil 0-30 cm with its range (Rotation Explorer)", _soilgrids, ""),
+    ("NASA MODIS history (AppEEARS)", "The field's past seasons since 2000: rice and bare land", None, "Read once per field and stored"),
+    ("NASA NEX-GDDP-CMIP6", "2040 warming case for the 10-year rotations", _cmip6, ""),
+    ("Open-Meteo Previous Runs", "Hindcast: forecasts issued before each past heat wave", _prevruns, ""),
+    ("FAO GAEZ v4", "Crop suitability bound", None, "Not connected; rotations use the Soil Ledger on NASA weather"),
     ("Copernicus ERA5", "Hourly humidity for rust", None, "Optional; not used"),
 ]
 

@@ -17,7 +17,7 @@ import statistics as st
 import time
 from datetime import date, timedelta
 
-from ..connectors import cmip6, history as hist_conn, soilgrids
+from ..connectors import cmip6, history as hist_conn, s2history, soilgrids
 from ..engine import history as H
 from ..engine import soil as S
 from ..engine.crops import CROPS, CropP
@@ -153,7 +153,7 @@ def history_schedule(ss: list[dict], y0: int, cur: tuple[str, str]) -> list[tupl
             continue
         for slot, yr in (("winter", y0 + k), ("summer", y0 + k + 1)):
             seen = x[slot]
-            key = None if seen == "bare" else ("rice" if seen == "rice" else (w_now if slot == "winter" else s_other))
+            key = None if seen == "bare" else (seen if seen in CROPS else (w_now if slot == "winter" else s_other))
             if not key or key not in CROPS:
                 continue
             c = CROPS[key]
@@ -180,28 +180,50 @@ def read_history(c: Ctx, past: dict) -> dict | None:
     rec = hist_conn.get(c.f["lat"], c.f["lon"])
     if not rec or not rec.get("rows"):
         return None
-    ss = H.seasons(rec["rows"], last=c.w.power_last.year - (1 if c.w.power_last.month < 11 else 0))
+    last = c.w.power_last.year - (1 if c.w.power_last.month < 11 else 0)
+    ss = H.seasons(rec["rows"], last=last)
     if len(ss) < 10:
         return None
+    # 10 m (Sentinel-2, 2018 ->): the crop type from the field's own pixels, where the curve's shape is clear
+    from .satellite import grid as _grid
+    # Off until checked against an independent truth (ESA WorldCereal 2021 / farmer seasons): on 15-16 Nov 2026 the
+    # 10 m reader and MODIS disagreed at the Kafr El-Sheikh field (no flooding at the field's own pixels). Set
+    # USE_S2_HISTORY=1 to turn it on.
+    import os
+    fine_rec = s2history.get(c.f["lat"], c.f["lon"], _grid(c), c.today) if os.environ.get("USE_S2_HISTORY") == "1" else None
+    if fine_rec and fine_rec.get("rows"):
+        ss = H.merge(ss, H.seasons_10m(fine_rec["rows"], first=2018, last=last))
+    tc = H.type_counts(ss)
     sm = H.summary(ss)
     ag = H.agreement(ss, past)
     t = sm["winter_peak_trend"]
     falling = bool(t and t["t"] is not None and t["t"] <= -2)
     rising = bool(t and t["t"] is not None and t["t"] >= 2)
     n = sm["years"]
+    names = {"wheat": ("wheat", "قمح"), "berseem": ("berseem", "برسيم"), "fahl": ("short berseem", "برسيم فحل"),
+             "faba": ("faba bean", "فول"), "sugarbeet": ("sugar beet", "بنجر"), "rice": ("rice", "رز"), "maize": ("maize", "ذرة"),
+             "cotton": ("cotton", "قطن"), "crop": ("unclear", "مش واضح"), "bare": ("bare", "فاضية"),
+             "longwinter": ("berseem or sugar beet", "برسيم أو بنجر")}
+
+    def line(slot, i):
+        return "، ".join(f"{names[k][i]} {v}" for k, v in sorted(tc[slot].items(), key=lambda kv: -kv[1]) if k in names) if i else \
+            ", ".join(f"{names[k][i]} {v}" for k, v in sorted(tc[slot].items(), key=lambda kv: -kv[1]) if k in names)
+    fine_txt = ((f" On your field's own 10 m pixels since {tc['from']}: winters {line('winter', 0)}; summers {line('summer', 0)}.",
+                 f" على بكسلات أرضك نفسها (10 م) من {tc['from']}: الشتويات {line('winter', 1)}؛ الصيفيات {line('summer', 1)}.")
+                if tc["years"] else ("", ""))
     causes = (f"Around your field, {sm['summers_rice']} of the last {n} summers were rice (seen by the flooding) and "
               f"{sm['summers_bare'] + sm['winters_bare']} seasons were left bare. From space at 250 m we cannot tell wheat "
-              f"from berseem, or maize from cotton: your own seasons fill that in.",
+              f"from berseem, or maize from cotton: your own seasons fill that in." + fine_txt[0],
               f"حوالين أرضك، {sm['summers_rice']} من آخر {n} صيف كانوا رز (باين من غمر المية)، و"
               f"{sm['summers_bare'] + sm['winters_bare']} موسم الأرض اتسابت فاضية. من الفضاء على 250 م مانقدرش نفرّق القمح "
-              f"من البرسيم، ولا الذرة من القطن: مواسمك انت اللي بتكمّل ده.")
+              f"من البرسيم، ولا الذرة من القطن: مواسمك انت اللي بتكمّل ده." + fine_txt[1])
     tr_txt = None
     if t:
         word = ("falling", "بتقل") if falling else (("rising", "بتزيد") if rising else ("no clear change", "مفيش تغيير واضح"))
         tr_txt = (f"Peak winter greenness around your field {t['from']}-{t['to']}: {t['per_decade']:+.2f} NDVI per decade "
                   f"(± {t['se_per_decade']:.2f}), {word[0]}." + (" At 250 m a fall can also mean buildings spreading onto farmland nearby, not only tired soil." if falling else ""),
                   f"أعلى خضرة في الشتا حوالين أرضك {t['from']}-{t['to']}: {t['per_decade']:+.2f} NDVI كل 10 سنين (± {t['se_per_decade']:.2f})، {word[1]}." + (" على 250 م النزول ممكن يكون كمان مباني بتزحف على الأرض الزراعية حواليك، مش بس أرض تعبانة." if falling else ""))
-    return {"seasons": ss[-20:], "all": ss, "summary": sm, "agreement": ag, "causes": causes, "trend_text": tr_txt,
+    return {"seasons": ss[-20:], "all": ss, "summary": sm, "types_10m": tc, "agreement": ag, "causes": causes, "trend_text": tr_txt,
             "tiring_signal": falling, "source": rec.get("source", hist_conn.SOURCE),
             "confidence": ag["confidence"] if ag["checked"] else "low",
             "note": ("A 250 m MODIS pixel also covers your neighbours' land: this is the land around your field. "
