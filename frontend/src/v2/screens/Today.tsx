@@ -7,10 +7,16 @@ import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import Logic from './Today.logic';
+import { useTodayData, dayMonth } from '@/v2/data/today';
+import { useField, useUser } from '@/lib/field';
 
 export default function TodayScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
-  const __v = useDC(Logic, props);
+  const { id, field } = useField();
+  const { user } = useUser();
+  const d = useTodayData(id);
+  const who = { userName: user?.name || '', initials: (user?.name || '').split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase(), fieldLabel: (field?.name || '') + ' ▾' };
+  const __v = { ...useDC(Logic, { ...props, d: { ...d, dayMonth } }), ...who };
   return (
     <>
       <div className="v2 root">
@@ -73,14 +79,14 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
               </Link>
               <Link href={__r("V18-Profile") + ""} className="who" aria-label="Your profile, fields and settings">
                 <span className="av" aria-hidden="true">
-                  {"HF"}
+                  {__s(__v?.initials)}
                 </span>
                 <span>
                   <b>
-                    {"Hassan Farouk"}
+                    {__s(__v?.userName)}
                   </b>
                   <small>
-                    {"North plot ▾"}
+                    {__s(__v?.fieldLabel)}
                   </small>
                 </span>
               </Link>
@@ -93,14 +99,14 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                   <div className="fhead rise" style={{"--d":"0"} as any}>
                     <span className="row" style={{"gap":"14px","alignItems":"baseline"} as any}>
                       <h1 style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                        {"North plot"}
+                        {__s(__v?.headName)}
                       </h1>
                       <span className="meta" style={{"fontSize":"14px"} as any}>
-                        {"2.4 feddan · wheat, day 28"}
+                        {__s(__v?.headSub)}
                       </span>
                     </span>
                     <span className="pq sat">
-                      {"Last clear image 2 days ago"}
+                      {__s(__v?.fresh)}
                     </span>
                   </div>
                   <div className="today">
@@ -134,41 +140,8 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           {" "}
                         </defs>
                         {" "}
-                        <g transform="rotate(-9 680 260)">
-                          {" "}
-                          <g stroke="#D8D1BA" strokeWidth="1.1" strokeOpacity=".8">
-                            {((__v?.parcels) || []).map((p: any, i0: number) => (
-                              <Fragment key={i0}>
-                                <rect x={__s(p?.x) as any} y={__s(p?.y) as any} width={__s(p?.w) as any} height={__s(p?.h) as any} fill={__s(p?.fill) as any} />
-                              </Fragment>
-                            ))}
-                          </g>
-                          {" "}
-                          <g fill="url(#rows)">
-                            {((__v?.rowed) || []).map((p: any, i1: number) => (
-                              <Fragment key={i1}>
-                                <rect x={__s(p?.x) as any} y={__s(p?.y) as any} width={__s(p?.w) as any} height={__s(p?.h) as any} opacity={__s(p?.op) as any} />
-                              </Fragment>
-                            ))}
-                          </g>
-                          {" "}
-                          <rect x="1040" y="-80" width="300" height="190" rx="40" fill="#9A9485" />
-                          {" "}
-                          {((__v?.houses) || []).map((h: any, i2: number) => (
-                            <Fragment key={i2}>
-                              <rect x={__s(h?.x) as any} y={__s(h?.y) as any} width={__s(h?.w) as any} height={__s(h?.h) as any} fill={__s(h?.fill) as any} stroke="#5E594F" strokeWidth=".6" />
-                            </Fragment>
-                          ))}
-                          {" "}
-                          <rect x="596" y="-400" width="9" height="1400" fill="#DDD6C2" />
-                          {" "}
-                        </g>
-                        {" "}
-                        <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#4A6A35" strokeWidth="22" />
-                        {" "}
-                        <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#3B6E8F" strokeWidth="10" />
-                        {" "}
-                        <rect width="1360" height="520" filter="url(#grain)" opacity=".14" style={{"mixBlendMode":"multiply"} as any} />
+                        <rect x="-400" y="-400" width="2160" height="1320" fill="#55603F" />
+{__v?.photo ? <image href={__v.photo} x="0" y="0" width="1360" height="520" preserveAspectRatio="none" /> : <rect width="1360" height="520" fill="#C9CCBF" />}
                         {" "}
                         {__v?.dim ? (
                           <>
@@ -176,7 +149,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           </>
                         ) : null}
                         {" "}
-                        <g transform="rotate(-9 680 260)">
+                        <g>
                           {((__v?.cells) || []).map((c: any, i3: number) => (
                             <Fragment key={i3}>
                               <g className="cell" role="button" tabIndex={0} aria-label={__s(c?.aria) as any} aria-pressed={__s(c?.pressed) as any} onClick={c?.tap} onKeyDown={c?.key}>
@@ -187,8 +160,8 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                               </g>
                             </Fragment>
                           ))}
-                          <rect x="605" y="120" width="160" height="220" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeOpacity=".95" style={{"pointerEvents":"none"} as any} />
-                          <g transform={__s(__v?.mark) as any} style={{"pointerEvents":"none"} as any}>
+                          {__v?.outline ? <polygon points={__v.outline} fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeOpacity=".95" strokeLinejoin="round" style={{"pointerEvents":"none"} as any} /> : null}
+                          <g transform={__s(__v?.mark) as any} opacity={__v?.hasSel ? 1 : 0} style={{"pointerEvents":"none"} as any}>
                             <circle r="7" fill="#FFFFFF" className="pulse" />
                             <circle r="6" fill="#FFFFFF" />
                             <circle r="3" fill="#141A16" />
@@ -261,22 +234,22 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </g>
                           </svg>
                           <span className="meta" style={{"fontSize":"15px"} as any}>
-                            {"Thursday 3 December"}
+                            {__s(__v?.dateLong)}
                           </span>
                         </span>
                         <h2 style={{"fontSize":"44px","lineHeight":"1.08","fontWeight":"600","letterSpacing":"-1.6px"} as any}>
-                          {"Your field is doing well."}
+                          {__s(__v?.headT)}
                         </h2>
                         <p style={{"fontSize":"18px","color":"var(--ink2)"} as any}>
-                          {"Water today. Everything else is on track."}
+                          {__s(__v?.headS)}
                         </p>
                       </div>
                       <section className="col hair" aria-labelledby="todo-h">
                         <div className="tdh">
                           <h2 id="todo-h" className="sec">
-                            {"TO DO TODAY · THU 3 DEC"}
+                            {__s(__v?.todoTitle)}
                           </h2>
-                          <span className="row" style={{"gap":"10px"} as any}>
+                          <span className="row" style={{"gap":"10px","visibility":__v?.hasTodo ? "visible" : "hidden"} as any}>
                             <span className="meta">
                               {__s(__v?.nDone)}
                             </span>
@@ -339,6 +312,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </Fragment>
                           ))}
                         </div>
+                        {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
                         {__v?.allDone ? (
                           <>
                             <div className="alldone">
@@ -359,7 +333,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                 </g>
                               </svg>
                               <span>
-                                {"All done for today. Next: feed the crop on Mon 7 Dec."}
+                                {__s(__v?.allDoneTxt)}
                               </span>
                             </div>
                           </>
@@ -369,47 +343,19 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             <svg style={{"transform":"rotate(90deg)"} as any} aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="m9.5 6 6 6-6 6" />
                             </svg>
-                            {"Coming up · 3 tasks"}
+                            {__s(__v?.comingTxt)}
                           </summary>
-                          <div className="up">
-                            <span className="dpill">
-                              {"Mon 7 Dec"}
-                            </span>
-                            <span className="col" style={{"gap":"2px"} as any}>
-                              <b>
-                                {"Feed: urea, 45–60 kg per feddan"}
-                              </b>
-                              <span className="meta">
-                                {"Second dose. Check the amount with your engineer."}
+                          {((__v?.coming) || []).map((u: any, iu: number) => (
+                            <div className="up" key={iu}>
+                              <span className="dpill">{__s(u?.d)}</span>
+                              <span className="col" style={{"gap":"2px"} as any}>
+                                <b>{__s(u?.t)}</b>
+                                <span className="meta">{__s(u?.s)}</span>
                               </span>
-                            </span>
-                          </div>
-                          <div className="up">
-                            <span className="dpill">
-                              {"Wed 9 Dec"}
-                            </span>
-                            <span className="col" style={{"gap":"2px"} as any}>
-                              <b>
-                                {"Look for rust on the lower leaves"}
-                              </b>
-                              <span className="meta">
-                                {"If the nights stay damp."}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="up">
-                            <span className="dpill">
-                              {"Sun 13 Dec"}
-                            </span>
-                            <span className="col" style={{"gap":"2px"} as any}>
-                              <b>
-                                {"Water"}
-                              </b>
-                              <span className="meta">
-                                {"Based on your soil water."}
-                              </span>
-                            </span>
-                          </div>
+                            </div>
+                          ))}
+                          
+                          
                           <Link href={__r("V19-Season") + ""} className="row" style={{"gap":"6px","fontSize":"14px","fontWeight":"600","paddingTop":"6px"} as any}>
                             {"See the whole season"}
                             <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -425,17 +371,17 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
                               </svg>
-                              {"Seen from space this week"}
+                              {__s(__v?.ckLabel)}
                             </span>
                             <b style={{"fontSize":"18px","fontWeight":"600","lineHeight":"1.4"} as any}>
-                              {"Square A4, the lowest corner, still looks wetter than the rest. Is water standing there?"}
+                              {__s(__v?.ckQ)}
                             </b>
                             <div className="row" style={{"gap":"8px"} as any}>
                               <button type="button" className="btn press" onClick={__v?.openLeaf}>
-                                {"Yes, it is"}
+                                {__s(__v?.ckYesBtn)}
                               </button>
                               <button type="button" className="btn soft press" onClick={__v?.ckSayNo}>
-                                {"No, it is dry"}
+                                {__s(__v?.ckNoBtn)}
                               </button>
                               <button type="button" className="btn soft press" onClick={__v?.ckSayUnsure}>
                                 {"Not sure"}
@@ -448,7 +394,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <>
                           <div className="chk">
                             <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                              {"Thanks. We will look again after the next clear image, in about 5 days."}
+                              {__s(__v?.ckMsg)}
                             </b>
                           </div>
                         </>
@@ -457,7 +403,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <>
                           <div className="chk">
                             <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                              {"No problem. Next time you pass the south-west corner, take a look."}
+                              {__s(__v?.ckMsg)}
                             </b>
                           </div>
                         </>
@@ -466,7 +412,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <>
                           <div className="chk">
                             <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                              {"Thanks. It is in your journal. Next watering we will suggest less water for A4."}
+                              {__s(__v?.ckMsg)}
                             </b>
                           </div>
                         </>
@@ -476,45 +422,12 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           {"THIS WEEK"}
                         </h2>
                         <div className="wk">
-                          <Link href={__r("V18-Crop") + ""} className="press" style={{"display":"flex","flexDirection":"column","gap":"6px","padding":"16px","borderRadius":"16px","background":"#fff"} as any}>
-                            <span className="meta" style={{"fontSize":"14px"} as any}>
-                              {"Heat"}
-                            </span>
-                            <span className="lvl" style={{"color":"#2E7D45"} as any}>
-                              <i style={{"background":"#2E7D45"} as any} />
-                              {"Low"}
-                            </span>
-                          </Link>
-                          <Link href={__r("V18-Crop") + ""} className="press" style={{"display":"flex","flexDirection":"column","gap":"6px","padding":"16px","borderRadius":"16px","background":"#fff"} as any}>
-                            <span className="meta" style={{"fontSize":"14px"} as any}>
-                              {"Water"}
-                            </span>
-                            {__v?.waterTodo ? (
-                              <>
-                                <span className="lvl" style={{"color":"#B4660B"} as any}>
-                                  <i style={{"background":"#B4660B"} as any} />
-                                  {"Water today"}
-                                </span>
-                              </>
-                            ) : null}
-                            {__v?.waterDone ? (
-                              <>
-                                <span className="lvl" style={{"color":"#2E7D45"} as any}>
-                                  <i style={{"background":"#2E7D45"} as any} />
-                                  {"Done today"}
-                                </span>
-                              </>
-                            ) : null}
-                          </Link>
-                          <Link href={__r("V18-Crop") + ""} className="press" style={{"display":"flex","flexDirection":"column","gap":"6px","padding":"16px","borderRadius":"16px","background":"#fff"} as any}>
-                            <span className="meta" style={{"fontSize":"14px"} as any}>
-                              {"Rust"}
-                            </span>
-                            <span className="lvl" style={{"color":"#B4660B"} as any}>
-                              <i style={{"background":"#B4660B"} as any} />
-                              {"Medium"}
-                            </span>
-                          </Link>
+                          {((__v?.wk) || []).map((w: any, iw: number) => (
+                            <Link key={iw} href={__r("V18-Crop") + ""} className="press" style={{"display":"flex","flexDirection":"column","gap":"6px","padding":"16px","borderRadius":"16px","background":"#fff"} as any}>
+                              <span className="meta" style={{"fontSize":"14px"} as any}>{__s(w?.label)}</span>
+                              <span className="lvl" style={__css(w?.col)}><i style={__css(w?.sw)} />{__s(w?.value)}</span>
+                            </Link>
+                          ))}
                         </div>
                       </section>
                       <section className="col" style={{"gap":"6px"} as any} aria-labelledby="jn-h">
@@ -582,7 +495,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                 </b>
                                 <span className="meta">
                                   {__s(r?.w)}
-                                  {" · "}
+                                  {r?.w && r?.o ? " · " : ""}
                                   {__s(r?.o)}
                                 </span>
                               </span>
@@ -609,14 +522,14 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                 <div className="col" style={{"gap":"24px"} as any}>
                   <div className="fhead rise" style={{"--d":"0"} as any}>
                     <h1 style={{"fontSize":"15px","fontWeight":"600"} as any}>
-                      {"North plot"}
+                      {__s(__v?.headName)}
                     </h1>
                     <span className="row" style={{"gap":"18px"} as any}>
                       <span className="meta" style={{"fontSize":"14px"} as any}>
-                        {"2.4 feddan · 30.55° N, 31.01° E · wheat, day 28"}
+                        {__s(__v?.headSub)}
                       </span>
                       <span className="pq sat">
-                        {"Last clear image 2 days ago"}
+                        {__s(__v?.fresh)}
                       </span>
                     </span>
                   </div>
@@ -677,41 +590,8 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             {" "}
                           </defs>
                           {" "}
-                          <g transform="rotate(-9 680 260)">
-                            {" "}
-                            <g stroke="#D8D1BA" strokeWidth="1.1" strokeOpacity=".8">
-                              {((__v?.parcels) || []).map((p: any, i10: number) => (
-                                <Fragment key={i10}>
-                                  <rect x={__s(p?.x) as any} y={__s(p?.y) as any} width={__s(p?.w) as any} height={__s(p?.h) as any} fill={__s(p?.fill) as any} />
-                                </Fragment>
-                              ))}
-                            </g>
-                            {" "}
-                            <g fill="url(#rows)">
-                              {((__v?.rowed) || []).map((p: any, i11: number) => (
-                                <Fragment key={i11}>
-                                  <rect x={__s(p?.x) as any} y={__s(p?.y) as any} width={__s(p?.w) as any} height={__s(p?.h) as any} opacity={__s(p?.op) as any} />
-                                </Fragment>
-                              ))}
-                            </g>
-                            {" "}
-                            <rect x="1040" y="-80" width="300" height="190" rx="40" fill="#9A9485" />
-                            {" "}
-                            {((__v?.houses) || []).map((h: any, i12: number) => (
-                              <Fragment key={i12}>
-                                <rect x={__s(h?.x) as any} y={__s(h?.y) as any} width={__s(h?.w) as any} height={__s(h?.h) as any} fill={__s(h?.fill) as any} stroke="#5E594F" strokeWidth=".6" />
-                              </Fragment>
-                            ))}
-                            {" "}
-                            <rect x="596" y="-400" width="9" height="1400" fill="#DDD6C2" />
-                            {" "}
-                          </g>
-                          {" "}
-                          <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#4A6A35" strokeWidth="22" />
-                          {" "}
-                          <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#3B6E8F" strokeWidth="10" />
-                          {" "}
-                          <rect width="1360" height="520" filter="url(#grain)" opacity=".14" style={{"mixBlendMode":"multiply"} as any} />
+                          <rect x="-400" y="-400" width="2160" height="1320" fill="#55603F" />
+{__v?.photo ? <image href={__v.photo} x="0" y="0" width="1360" height="520" preserveAspectRatio="none" /> : <rect width="1360" height="520" fill="#C9CCBF" />}
                           {" "}
                           {__v?.dim ? (
                             <>
@@ -719,7 +599,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </>
                           ) : null}
                           {" "}
-                          <g transform="rotate(-9 680 260)">
+                          <g>
                             {((__v?.cells) || []).map((c: any, i13: number) => (
                               <Fragment key={i13}>
                                 <g className="cell" role="button" tabIndex={0} aria-label={__s(c?.aria) as any} aria-pressed={__s(c?.pressed) as any} onClick={c?.tap} onKeyDown={c?.key}>
@@ -730,8 +610,8 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                 </g>
                               </Fragment>
                             ))}
-                            <rect x="605" y="120" width="160" height="220" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeOpacity=".95" style={{"pointerEvents":"none"} as any} />
-                            <g transform={__s(__v?.mark) as any} style={{"pointerEvents":"none"} as any}>
+                            {__v?.outline ? <polygon points={__v.outline} fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeOpacity=".95" strokeLinejoin="round" style={{"pointerEvents":"none"} as any} /> : null}
+                            <g transform={__s(__v?.mark) as any} opacity={__v?.hasSel ? 1 : 0} style={{"pointerEvents":"none"} as any}>
                               <circle r="7" fill="#FFFFFF" className="pulse" />
                               <circle r="6" fill="#FFFFFF" />
                               <circle r="3" fill="#141A16" />
@@ -767,9 +647,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           </div>
                           <div className="col hair" style={{"gap":"8px","paddingTop":"10px"} as any}>
                             <span className="meta">
-                              {"Weakest part of the field in "}
                               {__s(__v?.dWeak)}
-                              {" seasons"}
                             </span>
                             <div className="dots10" aria-hidden="true">
                               {((__v?.dHist) || []).map((h: any, i14: number) => (
@@ -815,22 +693,22 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </g>
                           </svg>
                           <span className="meta">
-                            {"Thursday 3 December"}
+                            {__s(__v?.dateLong)}
                           </span>
                         </span>
                         <h1 className="big" style={{"fontSize":"44px","letterSpacing":"-1.6px"} as any}>
-                          {"You're on plan."}
+                          {__s(__v?.headT)}
                         </h1>
                         <p className="txt" style={{"fontSize":"17px"} as any}>
-                          {"Water today. Everything else is on track."}
+                          {__s(__v?.headS)}
                         </p>
                       </div>
                       <section className="col hair" aria-labelledby="todo-hd">
                         <div className="tdh">
                           <h2 id="todo-hd" className="sec">
-                            {"TO DO TODAY · THU 3 DEC"}
+                            {__s(__v?.todoTitle)}
                           </h2>
-                          <span className="row" style={{"gap":"10px"} as any}>
+                          <span className="row" style={{"gap":"10px","visibility":__v?.hasTodo ? "visible" : "hidden"} as any}>
                             <span className="meta">
                               {__s(__v?.nDone)}
                             </span>
@@ -893,6 +771,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </Fragment>
                           ))}
                         </div>
+                        {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
                         {__v?.allDone ? (
                           <>
                             <div className="alldone">
@@ -913,7 +792,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                 </g>
                               </svg>
                               <span>
-                                {"All done for today. Next: feed the crop on Mon 7 Dec."}
+                                {__s(__v?.allDoneTxt)}
                               </span>
                             </div>
                           </>
@@ -923,47 +802,19 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             <svg style={{"transform":"rotate(90deg)"} as any} aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="m9.5 6 6 6-6 6" />
                             </svg>
-                            {"Coming up · 3 tasks"}
+                            {__s(__v?.comingTxt)}
                           </summary>
-                          <div className="up">
-                            <span className="dpill">
-                              {"Mon 7 Dec"}
-                            </span>
-                            <span className="col" style={{"gap":"2px"} as any}>
-                              <b>
-                                {"Feed: urea, 45–60 kg per feddan"}
-                              </b>
-                              <span className="meta">
-                                {"Second dose. Check the amount with your engineer."}
+                          {((__v?.coming) || []).map((u: any, iu: number) => (
+                            <div className="up" key={iu}>
+                              <span className="dpill">{__s(u?.d)}</span>
+                              <span className="col" style={{"gap":"2px"} as any}>
+                                <b>{__s(u?.t)}</b>
+                                <span className="meta">{__s(u?.s)}</span>
                               </span>
-                            </span>
-                          </div>
-                          <div className="up">
-                            <span className="dpill">
-                              {"Wed 9 Dec"}
-                            </span>
-                            <span className="col" style={{"gap":"2px"} as any}>
-                              <b>
-                                {"Look for rust on the lower leaves"}
-                              </b>
-                              <span className="meta">
-                                {"If the nights stay damp."}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="up">
-                            <span className="dpill">
-                              {"Sun 13 Dec"}
-                            </span>
-                            <span className="col" style={{"gap":"2px"} as any}>
-                              <b>
-                                {"Water"}
-                              </b>
-                              <span className="meta">
-                                {"Based on your soil water."}
-                              </span>
-                            </span>
-                          </div>
+                            </div>
+                          ))}
+                          
+                          
                           <Link href={__r("V19-Season") + ""} className="row" style={{"gap":"6px","fontSize":"14px","fontWeight":"600","paddingTop":"6px"} as any}>
                             {"See the whole season"}
                             <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -979,17 +830,17 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
                               </svg>
-                              {"Seen from space this week"}
+                              {__s(__v?.ckLabel)}
                             </span>
                             <b style={{"fontSize":"18px","fontWeight":"600","lineHeight":"1.4"} as any}>
-                              {"Square A4, the lowest corner, still looks wetter than the rest. Is water standing there?"}
+                              {__s(__v?.ckQ)}
                             </b>
                             <div className="row" style={{"gap":"8px"} as any}>
                               <button type="button" className="btn press" onClick={__v?.openLeaf}>
-                                {"Yes, it is"}
+                                {__s(__v?.ckYesBtn)}
                               </button>
                               <button type="button" className="btn soft press" onClick={__v?.ckSayNo}>
-                                {"No, it is dry"}
+                                {__s(__v?.ckNoBtn)}
                               </button>
                               <button type="button" className="btn soft press" onClick={__v?.ckSayUnsure}>
                                 {"Not sure"}
@@ -1002,7 +853,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <>
                           <div className="chk" style={{"background":"#fff","marginTop":"8px"} as any}>
                             <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                              {"Thanks. We will look again after the next clear image, in about 5 days."}
+                              {__s(__v?.ckMsg)}
                             </b>
                           </div>
                         </>
@@ -1011,7 +862,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <>
                           <div className="chk" style={{"background":"#fff","marginTop":"8px"} as any}>
                             <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                              {"No problem. Next time you pass the south-west corner, take a look."}
+                              {__s(__v?.ckMsg)}
                             </b>
                           </div>
                         </>
@@ -1020,7 +871,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <>
                           <div className="chk" style={{"background":"#fff","marginTop":"8px"} as any}>
                             <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                              {"Thanks. It is in your journal. Next watering we will suggest less water for A4."}
+                              {__s(__v?.ckMsg)}
                             </b>
                           </div>
                         </>
@@ -1029,54 +880,16 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <h2 id="dr-h" className="sec" style={{"padding":"16px 0 4px"} as any}>
                           {"THIS WEEK"}
                         </h2>
-                        <div className="risk">
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"Heat"}
-                          </b>
-                          <span className="lvl" style={{"color":"#2E7D45"} as any}>
-                            <i style={{"background":"#2E7D45"} as any} />
-                            {"Low"}
-                          </span>
-                          <span className="meta">
-                            {"Hottest day in the next 7: 26 °C. Risk starts at 32 °C."}
-                          </span>
-                        </div>
-                        <div className="risk">
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"Water"}
-                          </b>
-                          <span className="lvl" style={{"color":"#B4660B"} as any}>
-                            <i style={{"background":"#B4660B"} as any} />
-                            {"Today"}
-                          </span>
-                          <span className="meta">
-                            {"Soil water 0.24, refill at 0.25: water today. Crop uses 1.9 mm a day."}
-                          </span>
-                        </div>
-                        <div className="risk">
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"Rust"}
-                          </b>
-                          <span className="lvl" style={{"color":"#B4660B"} as any}>
-                            <i style={{"background":"#B4660B"} as any} />
-                            {"Medium"}
-                          </span>
-                          <span className="meta">
-                            {"3 nights over 85% humidity and 10–20 °C."}
-                          </span>
-                        </div>
-                        <div className="risk">
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"Pests"}
-                          </b>
-                          <span className="lvl" style={{"color":"#2E7D45"} as any}>
-                            <i style={{"background":"#2E7D45"} as any} />
-                            {"Low"}
-                          </span>
-                          <span className="meta">
-                            {"Aphids in B2 and C2 on 26 Nov, fewer on 29 Nov."}
-                          </span>
-                        </div>
+                        {((__v?.wkD) || []).map((w: any, iw: number) => (
+                          <div className="risk" key={iw}>
+                            <b style={{"fontWeight":"600"} as any}>{__s(w?.label)}</b>
+                            <span className="lvl" style={__css(w?.col)}><i style={__css(w?.sw)} />{__s(w?.value)}</span>
+                            <span className="meta">{__s(w?.line)}</span>
+                          </div>
+                        ))}
+                        
+                        
+                        
                       </section>
                     </div>
                   </div>
@@ -1093,138 +906,17 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                       </Link>
                     </div>
                     <div className="kpis" style={{"gridTemplateColumns":"repeat(6, minmax(0, 1fr))"} as any}>
-                      <div className="kpi">
-                        <span className="kl">
-                          {"Greenness"}
-                        </span>
-                        <span className="kv">
-                          {"0.31"}
-                          <small>
-                            {"NDVI"}
-                          </small>
-                        </span>
-                        <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
-                          <span className="tag ok">
-                            {"Normal"}
-                          </span>
-                          <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true">
-                            <polyline points="0.0,23.0 17.5,18.4 35.0,13.8 52.5,9.2 70.0,3.0" fill="none" stroke="#3E7F35" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                          </svg>
+                      {((__v?.kpis) || []).map((q: any, iq: number) => (
+                        <div className="kpi" key={iq}>
+                          <span className="kl">{__s(q?.l)}</span>
+                          <span className="kv">{__s(q?.v)}<small>{__s(q?.u)}</small></span>
+                          <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
+                            <span className={__s(q?.tagCls) as any}>{__s(q?.tag)}</span>
+                            {q?.pts ? <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true"><polyline points={q.pts} fill="none" stroke={q.stroke} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" /></svg> : null}
+                          </div>
+                          <span className={__s(q?.srcCls) as any}>{__s(q?.src)}</span>
                         </div>
-                        <span className="pq sat">
-                          {"HLS · 2 days"}
-                        </span>
-                      </div>
-                      <div className="kpi">
-                        <span className="kl">
-                          {"Soil water"}
-                        </span>
-                        <span className="kv">
-                          {"0.24"}
-                          <small>
-                            {"m³/m³"}
-                          </small>
-                        </span>
-                        <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
-                          <span className="tag watch">
-                            {"Near refill"}
-                          </span>
-                          <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true">
-                            <polyline points="0.0,3.0 17.5,8.7 35.0,11.6 52.5,17.3 70.0,23.0" fill="none" stroke="#2F6FA8" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <span className="pq sat">
-                          {"SMAP · today"}
-                        </span>
-                      </div>
-                      <div className="kpi">
-                        <span className="kl">
-                          {"Rain, 30 days"}
-                        </span>
-                        <span className="kv">
-                          {"4"}
-                          <small>
-                            {"mm"}
-                          </small>
-                        </span>
-                        <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
-                          <span className="tag watch">
-                            {"Below normal"}
-                          </span>
-                          <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true">
-                            <polyline points="0.0,23.0 17.5,13.0 35.0,23.0 52.5,3.0 70.0,13.0" fill="none" stroke="#2F6FA8" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <span className="pq sat">
-                          {"GPM · yesterday"}
-                        </span>
-                      </div>
-                      <div className="kpi">
-                        <span className="kl">
-                          {"Crop water use"}
-                        </span>
-                        <span className="kv">
-                          {"1.9"}
-                          <small>
-                            {"mm/day"}
-                          </small>
-                        </span>
-                        <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
-                          <span className="tag ok">
-                            {"Normal"}
-                          </span>
-                          <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true">
-                            <polyline points="0.0,23.0 17.5,15.0 35.0,11.0 52.5,7.0 70.0,3.0" fill="none" stroke="#141A16" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <span className="pq sat">
-                          {"POWER · yesterday"}
-                        </span>
-                      </div>
-                      <div className="kpi">
-                        <span className="kl">
-                          {"Max, next 7 days"}
-                        </span>
-                        <span className="kv">
-                          {"26"}
-                          <small>
-                            {"°C"}
-                          </small>
-                        </span>
-                        <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
-                          <span className="tag ok">
-                            {"No heat risk"}
-                          </span>
-                          <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true">
-                            <polyline points="0.0,16.3 17.5,9.7 35.0,23.0 52.5,3.0 70.0,9.7" fill="none" stroke="#D9762B" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <span className="pq sat">
-                          {"POWER"}
-                        </span>
-                      </div>
-                      <div className="kpi">
-                        <span className="kl">
-                          {"Leaf heat"}
-                        </span>
-                        <span className="kv">
-                          {"23"}
-                          <small>
-                            {"°C"}
-                          </small>
-                        </span>
-                        <div className="row sp" style={{"alignItems":"flex-end","gap":"8px"} as any}>
-                          <span className="tag ok">
-                            {"Not stressed"}
-                          </span>
-                          <svg viewBox="0 0 70 26" width="70" height="26" aria-hidden="true">
-                            <polyline points="0.0,3.0 17.5,13.0 35.0,13.0 52.5,23.0 70.0,23.0" fill="none" stroke="#D9762B" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <span className="pq sat">
-                          {"ECOSTRESS · 5 days"}
-                        </span>
-                      </div>
+                      ))}
                     </div>
                   </section>
                 </div>
@@ -1617,7 +1309,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             <span className="meta">
                               {"A few words are enough. Optional."}
                             </span>
-                            <textarea rows={4} placeholder="For example: the water pump broke for two days" style={{"border":"0","borderRadius":"16px","padding":"14px 16px","font":"inherit","fontSize":"15px","resize":"none"} as any} />
+                            <textarea rows={4} value={__s(__v?.note)} onChange={__v?.setNote} aria-label="What happened" placeholder="For example: the water pump broke for two days" style={{"border":"0","borderRadius":"16px","padding":"14px 16px","font":"inherit","fontSize":"15px","resize":"none"} as any} />
                           </label>
                         </>
                       ) : null}

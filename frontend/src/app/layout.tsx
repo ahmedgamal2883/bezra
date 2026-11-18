@@ -11,6 +11,7 @@ import WakeUp from '@/components/WakeUp';
 import { TourProvider } from '@/components/Tour';
 import './globals.css';
 import './v2.css';
+import './v2-app.css';
 
 export const metadata: Metadata = {
   title: 'Bezra',

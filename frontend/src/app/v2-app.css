@@ -1,0 +1,4 @@
+/* Redesign (V18-V24): app-level rules that are not in the generated design CSS (v2.css). */
+
+/* No "Demo" labels on redesigned pages (HANDOFF §11): the old V11 badge stays on old pages only. */
+body:has(.v2) .demo-badge { display: none !important; }
