@@ -41,7 +41,7 @@ const save = async (ev) => {
    name: 'My field', polygon: c, place: P.place || '', crop: CROP[S.crop] || 'wheat', sow_date: sow }) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) return set({ busy: false, err: typeof j.detail === 'string' ? j.detail : 'Could not save your field. Check the answers.' });
-  window.location.assign('/field/' + j.id + '/today');
+  window.location.assign('/field/' + j.id + '/reading' + (st === 'not' ? '' : '?then=catch-up'));
  } catch (x) { set({ busy: false, err: 'No connection. Check your internet and try again.' }); }
 };
 const g = S.guess;
