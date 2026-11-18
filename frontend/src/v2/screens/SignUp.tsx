@@ -35,7 +35,7 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                         {"Create your free account"}
                       </h1>
                       <p className="txt" style={{"fontSize":"16px"} as any}>
-                        {"Your name and mobile number. No password: we send you a code."}
+                        {"Your name, mobile number and a password. No code to wait for."}
                       </p>
                     </div>
                     <div className="fld">

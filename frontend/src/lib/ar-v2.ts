@@ -188,6 +188,30 @@ export const V2_EXACT: Record<string, string> = {
   'Short berseem, then cotton': 'برسيم فحل، وبعدين قطن', 'Berseem one winter in two': 'برسيم شتا آه وشتا لأ', 'Sugar beet in winter': 'بنجر سكر في الشتا',
   'Your soil': 'تربتك',
   'PEAK WINTER GREENNESS AROUND YOUR FIELD (NDVI)': 'أعلى خضرة في الشتا حوالين أرضك (NDVI)',
+  // ---- Landing (wording from the Arabic landing design where it exists) ----
+  '36 years': '36 سنة', 'of NASA weather read for every field': 'من طقس ناسا بتتقري لكل أرض',
+  'Protects part of your harvest': 'بيحمي جزء من محصولك',
+  'Look at the leaves in the weakest square': 'بص على الورق في أضعف مربع',
+  'Check for aphids where you saw them': 'دوّر على المنّ مكان ما شفته',
+  'Water on your turn. Look at the weak square. Each task says what it protects. Tick it, and it goes into your journal.': 'اسقي في دورك. بص على المربع الضعيف. كل مهمة بتقول بتحمي إيه. علّم عليها، وهتروح في سجلك.',
+  'Skip a water turn or not? Sow earlier or later? Clover or wheat next winter? See the harvest and the soil for each answer, on your own weather.': 'تفوّت دور ري ولا لأ؟ تزرع بدري ولا متأخر؟ برسيم ولا قمح الشتا الجاي؟ شوف المحصول والتربة لكل إجابة، على طقسك إنت.',
+  'WHAT IF YOU SKIP WATER TURNS?': 'لو فوّت أدوار ري يحصل إيه؟',
+  "Every option is a run of the season model on your field's weather and soil. Open Try a season on any field to see it.": 'كل اختيار هو تشغيل لنموذج الموسم على طقس أرضك وتربتها. افتح «جرّب موسمك» في أي أرض عشان تشوفه.',
+  'Past heat waves, replayed.': 'موجات الحر اللي فاتت، بنعيدها.',
+  'Soil, 250 m': 'التربة، 250 متر',
+  'past heat waves warned days ahead, from archived forecasts': 'موجات حر فاتت اتنبّه ليها قبلها بأيام، من توقعات متأرشفة',
+  'The usual way': 'الطريقة المعتادة',
+  // ---- Sign up / sign in ----
+  'Create your free account': 'اعمل حسابك ببلاش',
+  'Your name, mobile number and a password. No code to wait for.': 'اسمك ورقم موبايلك وباسورد. من غير كود تستناه.',
+  'I am a': 'أنا', 'I grow crops': 'بزرع', 'Agricultural engineer': 'مهندس زراعي', 'I help farmers': 'بساعد المزارعين',
+  'Mobile number': 'رقم الموبايل', 'Your account works right away. Alerts can also come on WhatsApp.': 'حسابك بيشتغل على طول. والتنبيهات ممكن كمان تيجي على واتساب.',
+  'Create my account': 'اعمل حسابي', 'or': 'أو', 'Look around first': 'اتفرج الأول',
+  'Open a sample field as a guest. No phone needed.': 'افتح أرض تجريبية كضيف. من غير موبايل.',
+  'Already have an account?': 'عندك حساب؟', 'New to Bezra?': 'جديد على بذرة؟', 'Create an account': 'اعمل حساب',
+  'Use the mobile number you signed up with.': 'استخدم رقم الموبايل اللي سجلت بيه.',
+  'BEZRA EFFECT, THIS SEASON': 'فرق بذرة، الموسم ده', 'Expected, vs the usual way. Sample field.': 'المتوقع، قصاد الطريقة المعتادة. أرض تجريبية.',
+  'Password': 'الباسورد', 'At least 6 characters': '6 حروف على الأقل', 'Create your account': 'اعمل حسابك',
   // ---- Add field ----
   "Search for the nearest village, or use your phone's location if you are standing in the field.": 'دوّر على أقرب قرية، أو استخدم مكان موبايلك لو إنت واقف في الأرض.',
   'Village or area': 'القرية أو المنطقة', 'Use my location': 'استخدم مكاني', 'Search': 'دوّر', 'This is the area, next': 'دي المنطقة، التالي',
@@ -305,6 +329,14 @@ export function v2Patterns(D: string): [string, string][] {
     [`^Similarity (\\d+)%\\. What helps there: (.+)$`, 'التشابه $1%. اللي بيساعد هناك: $2'],
     [`^(.+), organic carbon (\\d+) t/ha in the top 30 cm$`, '$1، كربون عضوي $2 طن/هكتار في أول 30 سم'],
     [`^(\\d+) of 180$`, '$1 من 180'],
+    // Landing
+    [`^Square ([A-F]\\d)$`, 'المربع $1'],
+    [`^(\\d+)% under the rest of the field$`, 'أقل بـ $1% من باقي الأرض'],
+    [`^Water on time, ([A-F]\\d) first$`, 'الري في ميعاده، و$1 الأول'],
+    [`^(\\d+) of (\\d+)$`, '$1 من $2'],
+    [`^soil strength in (\\d+) seasons with the best rotation, instead of (\\d+)$`, 'قوة التربة بعد $1 مواسم مع أحسن دورة، بدل $2'],
+    [`^We gave Bezra only the forecasts that existed before each heat wave\\. On the sample field it warned (\\d+) of (\\d+) heat waves since 2021, and it missed (\\d+)\\. We show that too\\.$`,
+      'إدّينا بذرة بس التوقعات اللي كانت موجودة قبل كل موجة حر. في الأرض التجريبية نبّهت لـ $1 من $2 موجات حر من 2021، وفاتها $3. وبنوريك ده كمان.'],
   ];
 }
 
