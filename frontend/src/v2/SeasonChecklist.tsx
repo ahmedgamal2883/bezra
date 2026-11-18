@@ -82,7 +82,7 @@ export default function SeasonChecklist() {
                     {!isDone && impactOf(t) ? <ImpactLine {...(impactOf(t) as any)} /> : null}
                     {isDone && when ? <span className="meta" style={{ color: 'var(--green)' }}>{`Done ${shortDate(when)}`}</span> : null}
                   </span>
-                  <span className="pq" style={{ color: col, flex: '0 0 auto' }}>{cl}</span>
+                  <span className="pq" style={{ color: col, flex: '0 0 150px', justifyContent: 'flex-end', textAlign: 'end' }}>{cl}</span>
                 </div>
                 {open === t.id && !isDone ? (
                   <div className="row" style={{ gap: '8px', flexWrap: 'wrap', paddingInlineStart: '40px' }}>

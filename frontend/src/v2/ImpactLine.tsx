@@ -20,7 +20,7 @@ export function impactOf(t: any): Impact | null {
 export default function ImpactLine({ h, s }: Impact) {
   const f = (x: number) => (x >= 1 ? Math.round(x) : Math.round(x * 10) / 10);
   return (
-    <span className="row sp meta" style={{ fontSize: '12.5px', color: 'var(--muted)', gap: '12px', paddingTop: '2px' }}>
+    <span className="row sp meta" style={{ fontSize: '12.5px', color: 'var(--muted)', gap: '12px', paddingTop: '2px', width: '100%' }}>
       <span>{`Harvest +${f(h)}%`}</span>
       <span>{`Soil protection +${f(s)}%`}</span>
     </span>
