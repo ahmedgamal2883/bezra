@@ -1,7 +1,7 @@
 'use client';
 // Soil (V19): read from GET /fields/{id}/rotation (Soil Ledger: SoilGrids start, MODIS history 2000-now, 10-year runs
 // of each rotation on NASA POWER weather) + /seasons (weak spots of the last season) + the field's next-winter choice.
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
 
@@ -12,11 +12,16 @@ const CROP_NAME: Record<string, string> = { berseem: 'Egyptian clover (berseem)'
 export function useSoilData() {
   const { id } = useField();
   const [ver, setVer] = useState(0);
-  const ro = useApi<any>(id ? `/fields/${id}/rotation` : null).data;
+  // the farmer's priority ranks the rotation cards; kept per field in this browser (soil = Bezra's default order)
+  const [prio, setPrioS] = useState<string>(() => { try { return (id && localStorage.getItem('bezra.prio.' + id)) || 'soil'; } catch { return 'soil'; } });
+  const setPrio = (p: string) => { setPrioS(p); try { if (id) localStorage.setItem('bezra.prio.' + id, p); } catch { /* private mode */ } };
+  useEffect(() => { try { const v = id && localStorage.getItem('bezra.prio.' + id); if (v) setPrioS(v); } catch { /* private mode */ } }, [id]);
+  const bp = prio === 'water' || prio === 'fodder' ? `?priorities=${prio},soil` : ''; // backend picks its best rotation for this priority
+  const ro = useApi<any>(id ? `/fields/${id}/rotation${bp}` : null).data;
   const se = useApi<any>(id ? `/fields/${id}/seasons` : null).data;
   const fd = useApi<any>(id ? `/fields/${id}${ver ? `?v=${ver}` : ''}` : null).data;
   const reload = useCallback(() => setVer((v) => v + 1), []);
-  const out: any = { ready: !!ro, field: fd?.name || '', next: fd?.next_winter || null };
+  const out: any = { prio, setPrio, ready: !!ro, field: fd?.name || '', next: fd?.next_winter || null };
   if (!ro) return out;
 
   const all = [...ro.strategies, ...(ro.more || [])];
@@ -59,6 +64,8 @@ export function useSoilData() {
       s.vs_current_pct ? `Soil: ${s.vs_current_pct > 0 ? '+' : ''}${s.vs_current_pct}% for the harvest in 10 years` : 'Soil stays where it is',
       s.water_vs_current_pct ? `Water: ${s.water_vs_current_pct > 0 ? '+' : ''}${s.water_vs_current_pct}% a year` : 'Water about the same',
       s.risks?.[0] || '',
+      s.fodder ? 'Gives fodder for animals' : '',
+      s.bare_days_year != null ? `Soil left bare about ${s.bare_days_year} days a year` : '',
     ].filter(Boolean),
     // the full reasoning the challenge asks for: why, evidence, gaps, risks (backend rotation.py, English; Arabic via ar-v2)
     why: s.why?.[0] || '', evidence: s.evidence || [], gaps: s.gaps?.[0] || '', risks: s.risks?.[0] || '', warn: s.warning ? `Year ${s.warning.year}: about ${s.warning.pct}% less ${s.warning.crops?.[0] || ''}` : '' });
@@ -67,6 +74,22 @@ export function useSoilData() {
     card(faba, 'faba', 'Good', 'g'),
     card(cur, firstWinter(cur) || 'wheat', cur.vs_current_pct === 0 && (clover || faba) ? 'What you do now' : 'Good', 'o'),
   ].filter(Boolean);
+  // another priority: the two best rotations for it, then what you do now (same cards, same plan button)
+  if (prio !== 'soil') {
+    const KEY: Record<string, [(s: any) => number, string]> = {
+      water: [(s) => -(s.water_vs_current_pct ?? 0), 'Saves the most water'],
+      money: [(s) => s.vs_current_pct ?? 0, 'Biggest harvest'],
+      fodder: [(s) => (s.fodder ? 1000 : 0) + (s.vs_current_pct ?? 0), 'Most fodder'],
+    };
+    const [score, label] = KEY[prio] || KEY.water;
+    const winterCrop = (s: any) => (s.sequence.find((q: any) => q[0] !== 'wheat') || s.sequence[0])[0];
+    const top = all.filter((s: any) => !s.current).sort((x: any, y: any) => score(y) - score(x) || (y.vs_current_pct - x.vs_current_pct)).slice(0, 2);
+    out.options = [
+      ...top.map((s: any, i: number) => card(s, winterCrop(s), i === 0 ? label : 'Good', 'g')),
+      card(cur, firstWinter(cur) || 'wheat', 'What you do now', 'o'),
+    ].filter(Boolean);
+    if (prio === 'money') out.moneyNote = 'Crop prices are not in Bezra yet. Check them with your market before you choose.';
+  }
   const now = new Date(), thisYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
   out.nextYear = yy(thisYear + 1);
   out.restTxt = out.options.slice(0, 2).map((o: any) => o.mid).join(' or ');
