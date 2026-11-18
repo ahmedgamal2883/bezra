@@ -4,7 +4,7 @@ Same tools, same rules and the same answer shape as the Claude path in bezra.py,
   chat()     : function calling over the field's real data (summary, alerts, simulator, calendar, plan,
                irrigation detection, notes), then one JSON answer {text, mood, cards, sources}
   diagnose() : photo check -> {candidates, why, ladder, photo_tip}
-REST API (generativelanguage.googleapis.com), key in backend/.env only. Model: GEMINI_MODEL or gemini-3.5-flash (the newest names time out; 2.5 is closed to new keys).
+REST API (generativelanguage.googleapis.com), key in backend/.env only. Model: GEMINI_MODEL or gemini-3.5-flash-lite (about 1 s an answer; gemini-3.5-flash took ~30 s in Nov 2026, so it is only a fallback).
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ API = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
 def model() -> str:
-    return os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
+    return os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 
 def available() -> bool:
@@ -42,7 +42,7 @@ def _schema(s: dict) -> dict:
     return s
 
 
-FALLBACK = ["gemini-3.5-flash-lite", "gemini-3-flash-preview"]
+FALLBACK = ["gemini-3.5-flash", "gemini-3-flash-preview"]
 _last = {"model": None}
 
 
