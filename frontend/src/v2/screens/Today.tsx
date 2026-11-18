@@ -9,6 +9,8 @@ import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
 import Logic from './Today.logic';
 import SeasonChecklist from '@/v2/SeasonChecklist';
+import WatchList from '@/v2/WatchList';
+import ImpactLine from '@/v2/ImpactLine';
 import { useTodayData, dayMonth } from '@/v2/data/today';
 import { useField, useUser } from '@/lib/field';
 
@@ -296,6 +298,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                       </span>
                                     </>
                                   ) : null}
+                                  {k?.imp ? <ImpactLine {...k.imp} /> : null}
                                   {k?.askOpen ? (
                                     <>
                                       <div className="achips">
@@ -755,6 +758,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                       </span>
                                     </>
                                   ) : null}
+                                  {k?.imp ? <ImpactLine {...k.imp} /> : null}
                                   {k?.askOpen ? (
                                     <>
                                       <div className="achips">
@@ -1019,7 +1023,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                 </section>
               </>
             ) : null}
-            <div style={{"paddingTop":"32px"} as any}><SeasonChecklist /></div>
+            <div className="col" style={{"paddingTop":"32px","gap":"32px"} as any}><WatchList /><SeasonChecklist /></div>
             <footer className="foot" style={{"paddingTop":"24px"} as any}>
               <span>
                 {"Bezra helps you think. It doesn't decide for you."}

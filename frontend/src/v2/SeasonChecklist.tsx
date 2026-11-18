@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
 import { dayMonth, shortDate } from '@/v2/data/today';
+import ImpactLine, { impactOf } from '@/v2/ImpactLine';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const CAT: Record<string, [string, string]> = {
@@ -78,6 +79,7 @@ export default function SeasonChecklist() {
                   <span className="col" style={{ gap: '3px', flex: 1, minWidth: 0 }}>
                     <b style={{ fontWeight: 600, fontSize: '16px', textDecoration: isDone ? 'line-through' : 'none', color: isDone ? 'var(--muted)' : 'inherit' }}>{t.title}</b>
                     <span className="meta">{[t.window ? `${dayMonth(t.window[0])} – ${dayMonth(t.window[1])}` : shortDate(t.date), amount].filter(Boolean).join(' · ')}</span>
+                    {!isDone && impactOf(t) ? <ImpactLine {...(impactOf(t) as any)} /> : null}
                     {isDone && when ? <span className="meta" style={{ color: 'var(--green)' }}>{`Done ${shortDate(when)}`}</span> : null}
                   </span>
                   <span className="pq" style={{ color: col, flex: '0 0 auto' }}>{cl}</span>

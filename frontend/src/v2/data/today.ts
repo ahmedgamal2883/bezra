@@ -4,6 +4,7 @@
 // The slow /today endpoint (season runs) is not used here: /summary carries the same decisions.
 import { useCallback, useState } from 'react';
 import { API, useApi } from '@/lib/api';
+import { impactOf } from '@/v2/ImpactLine';
 import { useFieldPhoto } from '@/lib/fieldPhoto';
 import { farmerEntries, deleteEntry } from './journal';
 
@@ -24,7 +25,7 @@ const TAG: Record<string, [string, string]> = {
 };
 const LEVEL_TONE: Record<string, string> = { Low: '#2E7D45', Medium: '#B4660B', High: '#C2412A' };
 
-export type Todo = { id: string; done: boolean; t: string; s: string; ds: string; g: string; tag: string; tc: string; category: string; ask?: string[] };
+export type Todo = { id: string; done: boolean; t: string; s: string; ds: string; g: string; tag: string; tc: string; category: string; ask?: string[]; imp?: { h: number; s: number } | null };
 
 export function useTodayData(id: string) {
   const [ver, setVer] = useState(0);
@@ -73,7 +74,7 @@ export function useTodayData(id: string) {
       const g = isWater && Array.isArray(protects) && s?.action?.next_turn === t.date ? `Protects about ${protects[0]}–${protects[1]}% of your harvest` : '';
       return { id: t.id, category: t.category, done: doneToday(t), t: t.title, s: [t.amount && !/engineer/i.test(t.amount) ? t.amount[0].toUpperCase() + t.amount.slice(1) + '.' : '', t.why].filter(Boolean).join(' '),
         ds: [t.source, t.date !== today ? 'Planned for ' + shortDate(t.date) : ''].filter(Boolean).join(' · '), g, tag, tc,
-        ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined };
+        ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t) };
     });
     coming = tk.data.tasks.filter((t: any) => open(t) && t.date > today).slice(0, 3)
       .map((t: any) => ({ d: shortDate(t.date), t: t.title, s: t.amount && /engineer/i.test(t.amount) ? 'Check the amount with your engineer.' : (t.why || '') }));

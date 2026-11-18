@@ -79,6 +79,14 @@ def season_runs(c: Ctx):
     return nt, base, skip
 
 
+def _watch(c: Ctx) -> list[dict]:
+    try:
+        from .pests import watch
+        return watch(c)
+    except Exception:  # noqa: BLE001  the rest of the summary never fails because of this list
+        return []
+
+
 def _stage_spans(res) -> list[dict]:
     """The season's stages with their dates, from the season run (any crop): [{name, from, to}]."""
     out: list[dict] = []
@@ -256,6 +264,7 @@ def build(c: Ctx) -> dict:
         "today": today.isoformat(),
         "day_n": day_n, "season_days": season_len, "stage": stage,
         "stages": _stage_spans(base),
+        "watch": _watch(c),
         "action": action | {
             "protects": num(protect, "%", est, "Season model: with vs without this turn, FAO-56 water balance + yield index", as_of),
             "apply_m3": num(apply_m3, "m3", est, "Depletion at the turn x 4.2 m3/mm/feddan x area", as_of),
