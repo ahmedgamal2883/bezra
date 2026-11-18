@@ -42,9 +42,34 @@ def _rng(lo: float, hi: float) -> str:
 
 def log_entries(f: dict) -> list[dict]:
     """The farmer's log: every watering (also the ones entered at onboarding / seeded) + logged actions."""
-    out = [{"kind": "water", "date": w["date"], "m3": w.get("m3"), "source": w.get("source", "You")} for w in f.get("waterings", [])]
-    out += [x for x in f.get("log", []) if x["kind"] != "water"]
+    out = [{"kind": "water", "date": w["date"], "m3": w.get("m3"), "source": w.get("source", "You"), "id": f"water:{w['date']}"}
+           for w in f.get("waterings", [])]
+    out += [{**x, "id": f"log:{i}:{x['date']}:{x['kind']}"} for i, x in enumerate(f.get("log", [])) if x["kind"] != "water"]
     return sorted(out, key=lambda x: x["date"])
+
+
+def delete_log(c: Ctx, entry_id: str) -> dict:
+    """Remove one journal entry (id from log_entries). Returns what was removed, so the screen can offer Undo by
+    posting it again. The id carries the date and kind, so a stale id never removes a different entry."""
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    parts = entry_id.split(":")
+    removed = None
+    if parts[0] == "water" and len(parts) == 2:
+        keep = [w for w in f.get("waterings", []) if w["date"] != parts[1]]
+        if len(keep) != len(f.get("waterings", [])):
+            removed = next(w for w in f["waterings"] if w["date"] == parts[1]) | {"kind": "water"}
+            f["waterings"] = keep
+    elif parts[0] == "log" and len(parts) == 4 and parts[1].isdigit():
+        i, log = int(parts[1]), f.get("log", [])
+        if i < len(log) and log[i]["date"] == parts[2] and log[i]["kind"] == parts[3]:
+            removed = log.pop(i)
+    if removed is None:
+        raise ValueError("This note is no longer in the journal")
+    db.save_field(f, owner)
+    return removed
 
 
 def add_log(c: Ctx, kind: str, when: str, amount: float | None, unit: str | None, note: str | None = None,

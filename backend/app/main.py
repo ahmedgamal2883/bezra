@@ -383,6 +383,16 @@ def post_log(field_id: str, req: LogReq, user: dict = Depends(current_user)):
     return entry
 
 
+@app.delete("/fields/{field_id}/log/{entry_id}")
+def delete_log(field_id: str, entry_id: str, user: dict = Depends(current_user)):
+    """Redesign: delete a journal note (the removed entry comes back, so the screen can Undo by posting it again)."""
+    c = _ctx(field_id, user)
+    try:
+        return plan.delete_log(c, entry_id)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+
+
 @app.get("/fields/{field_id}/mapframe")
 def get_mapframe(field_id: str, user: dict = Depends(current_user)):
     """Today map: the field's 30 m grid in its UTM zone (+ the drawn outline), so the real satellite photo
@@ -436,6 +446,18 @@ def answer_task(field_id: str, task_id: str, req: TaskAnswer, user: dict = Depen
         raise HTTPException(422, str(e))
     return {"saved": rec, "tasks": tasks.build(_ctx(field_id, user))}
 
+
+
+@app.post("/fields/{field_id}/tasks/{task_id}/undo")
+def undo_task(field_id: str, task_id: str, user: dict = Depends(current_user)):
+    """Redesign: untick a task (a mis-tap). Removes the answer and the journal entry it wrote."""
+    from .services import tasks
+    c = _ctx(field_id, user)
+    cur = next((t for t in tasks.build(c)["tasks"] if t["id"] == task_id), None)
+    try:
+        return tasks.undo(c, task_id, cur)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
 
 @app.get("/fields/{field_id}/field-alerts")
 def get_field_alerts(field_id: str, user: dict = Depends(current_user)):

@@ -182,6 +182,30 @@ def answer(c: Ctx, task_id: str, ans: str, postpone_to: str | None = None, note:
     return rec
 
 
+def undo(c: Ctx, task_id: str, task: dict | None = None) -> dict:
+    """Take back the farmer's answer (a mis-tap). If 'done' had written a journal entry, that entry goes too."""
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    prev = (f.get("task_answers") or {}).pop(task_id, None)
+    if not prev:
+        raise ValueError("Nothing to undo")
+    day = prev.get("log_date")
+    if prev.get("answer") == "done" and day and task:
+        kind = LOG_KIND.get(task["category"])
+        if kind == "water":
+            f["waterings"] = [w for w in f.get("waterings", []) if w["date"] != day]
+        elif kind:
+            note = f"From the checklist: {task['title']}"
+            for i, x in enumerate(f.get("log", [])):
+                if x["kind"] == kind and x["date"] == day and x.get("note") == note:
+                    f["log"].pop(i)
+                    break
+    db.save_field(f, owner)
+    return {"undone": task_id}
+
+
 def _remember_log_date(c: Ctx, task_id: str, day: str) -> None:
     f = db.get_field(c.f["id"])
     owner = f.pop("owner_id")

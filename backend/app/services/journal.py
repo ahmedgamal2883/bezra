@@ -47,8 +47,11 @@ def build(c: Ctx) -> dict:
     start = min(sow, today) - timedelta(days=15)
     ev: list[dict] = []
 
-    def add(d, src, kind, title, detail="", value=None):
-        ev.append({"date": d if isinstance(d, str) else d.isoformat(), "source": src, "kind": kind, "title": title, "detail": detail, "value": value})
+    def add(d, src, kind, title, detail="", value=None, eid=None):
+        e = {"date": d if isinstance(d, str) else d.isoformat(), "source": src, "kind": kind, "title": title, "detail": detail, "value": value}
+        if eid:
+            e["id"] = eid
+        ev.append(e)
 
     # ---- farmer --------------------------------------------------------------------------------------
     for x in planmod.log_entries(f):
@@ -65,7 +68,7 @@ def build(c: Ctx) -> dict:
             det.append(x["note"])
         if k == "harvest" and x.get("amount"):
             t = f"Harvest: {x['amount']:g} ardeb per feddan"
-        add(x["date"], "farmer", k, t, ". ".join(d for d in det if d))
+        add(x["date"], "farmer", k, t, ". ".join(d for d in det if d), eid=x.get("id"))
 
     # ---- satellite: every clear image, and waterings seen from space -----------------------------------
     _, scenes = satellite._scenes(c)
