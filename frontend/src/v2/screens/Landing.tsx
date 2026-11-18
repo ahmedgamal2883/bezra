@@ -8,11 +8,13 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Landing.logic';
+import { useLanding } from '@/v2/data/landing';
 
 export default function LandingScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const ld = useLanding();
+  const __v = { ...useDC(Logic, props), ...ld };
   return (
     <>
       <div className="v2 root">
@@ -43,7 +45,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   </Link>
                 </nav>
                 <div className="row" style={{"gap":"10px"} as any}>
-                  <Link href={__r("V22-AR-Landing") + ""} className="lk" style={{"fontSize":"14px","fontWeight":"600"} as any} lang="ar">
+                  <Link href="#" onClick={__v?.toArabic} className="lk" style={{"fontSize":"14px","fontWeight":"600"} as any} lang="ar">
                     {"عربي"}
                   </Link>
                   <Link href={__r("V19-SignIn") + ""} className="btn soft press">
@@ -92,7 +94,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                         </svg>
                       </span>
                     </Link>
-                    <Link href={__r("V21-Tour-Welcome-Guest") + ""} className="btn soft press" style={{"height":"58px","borderRadius":"29px","fontSize":"16px"} as any}>
+                    <Link href="#" onClick={__v?.guest} className="btn soft press" style={{"height":"58px","borderRadius":"29px","fontSize":"16px"} as any}>
                       {"See a sample field"}
                     </Link>
                   </div>
@@ -172,53 +174,53 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                         <rect x="530" y="-120" width="90" height="820" fill="#34503A" fillOpacity=".9" />
                         <rect x="620" y="-120" width="80" height="820" fill="#34503A" fillOpacity=".9" />
                         <rect x="700" y="-120" width="90" height="820" fill="#34503A" fillOpacity=".9" />
-                        <rect x="250" y="90" width="70" height="92" fill="#7FA65A" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="250" y="90" width="70" height="92" fill={__v?.lens?.[0]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="285" y="141" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#141A16" transform="rotate(8 285 136)">
-                          {"0.33"}
+                          {__s(__v?.lens?.[0]?.v)}
                         </text>
-                        <rect x="320" y="90" width="70" height="92" fill="#C9C77A" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="320" y="90" width="70" height="92" fill={__v?.lens?.[1]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="355" y="141" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#141A16" transform="rotate(8 355 136)">
-                          {"0.29"}
+                          {__s(__v?.lens?.[1]?.v)}
                         </text>
-                        <rect x="390" y="90" width="70" height="92" fill="#E8962C" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="390" y="90" width="70" height="92" fill={__v?.lens?.[2]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="425" y="141" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#141A16" transform="rotate(8 425 136)">
-                          {"0.24"}
+                          {__s(__v?.lens?.[2]?.v)}
                         </text>
-                        <rect x="250" y="182" width="70" height="92" fill="#5E9842" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="250" y="182" width="70" height="92" fill={__v?.lens?.[3]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="285" y="233" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#fff" transform="rotate(8 285 228)">
-                          {"0.34"}
+                          {__s(__v?.lens?.[3]?.v)}
                         </text>
-                        <rect x="320" y="182" width="70" height="92" fill="#7FA65A" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="320" y="182" width="70" height="92" fill={__v?.lens?.[4]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="355" y="233" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#141A16" transform="rotate(8 355 228)">
-                          {"0.31"}
+                          {__s(__v?.lens?.[4]?.v)}
                         </text>
-                        <rect x="390" y="182" width="70" height="92" fill="#C9C77A" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="390" y="182" width="70" height="92" fill={__v?.lens?.[5]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="425" y="233" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#141A16" transform="rotate(8 425 228)">
-                          {"0.27"}
+                          {__s(__v?.lens?.[5]?.v)}
                         </text>
-                        <rect x="250" y="274" width="70" height="92" fill="#3E7F35" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="250" y="274" width="70" height="92" fill={__v?.lens?.[6]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="285" y="325" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#fff" transform="rotate(8 285 320)">
-                          {"0.35"}
+                          {__s(__v?.lens?.[6]?.v)}
                         </text>
-                        <rect x="320" y="274" width="70" height="92" fill="#5E9842" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="320" y="274" width="70" height="92" fill={__v?.lens?.[7]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="355" y="325" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#fff" transform="rotate(8 355 320)">
-                          {"0.33"}
+                          {__s(__v?.lens?.[7]?.v)}
                         </text>
-                        <rect x="390" y="274" width="70" height="92" fill="#7FA65A" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="390" y="274" width="70" height="92" fill={__v?.lens?.[8]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="425" y="325" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#141A16" transform="rotate(8 425 320)">
-                          {"0.30"}
+                          {__s(__v?.lens?.[8]?.v)}
                         </text>
-                        <rect x="250" y="366" width="70" height="92" fill="#3E7F35" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="250" y="366" width="70" height="92" fill={__v?.lens?.[9]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="285" y="417" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#fff" transform="rotate(8 285 412)">
-                          {"0.36"}
+                          {__s(__v?.lens?.[9]?.v)}
                         </text>
-                        <rect x="320" y="366" width="70" height="92" fill="#3E7F35" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="320" y="366" width="70" height="92" fill={__v?.lens?.[10]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="355" y="417" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#fff" transform="rotate(8 355 412)">
-                          {"0.35"}
+                          {__s(__v?.lens?.[10]?.v)}
                         </text>
-                        <rect x="390" y="366" width="70" height="92" fill="#5E9842" stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
+                        <rect x="390" y="366" width="70" height="92" fill={__v?.lens?.[11]?.fill || "#7FA65A"} stroke="#fff" strokeOpacity=".7" strokeWidth="1.5" />
                         <text x="425" y="417" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="15" fontWeight="700" fill="#fff" transform="rotate(8 425 412)">
-                          {"0.33"}
+                          {__s(__v?.lens?.[11]?.v)}
                         </text>
                         <rect x="250" y="90" width="210" height="368" fill="none" stroke="#fff" strokeWidth="3" strokeOpacity=".95" />
                         <circle cx="440" cy="108" r="9" fill="#fff" />
@@ -241,10 +243,10 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   </span>
                   <div className="fchip" style={{"right":"24px","bottom":"96px"} as any}>
                     <span className="meta" style={{"fontSize":"12px"} as any}>
-                      {"Square C1"}
+                      {__s(__v?.weak?.name)}
                     </span>
                     <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
-                      {"Weakest in 7 of 10 seasons"}
+                      {__s(__v?.weak?.txt)}
                     </b>
                     <span className="meta" style={{"fontSize":"12px"} as any}>
                       {"NASA HLS · 30 m"}
@@ -255,10 +257,10 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                       {"To do today"}
                     </span>
                     <b style={{"fontSize":"17px","fontWeight":"600"} as any}>
-                      {"Water, C1 first"}
+                      {__s(__v?.weak?.todo)}
                     </b>
                     <span style={{"fontSize":"12px","color":"var(--green)","fontWeight":"600"} as any}>
-                      {"Protects about 8–12% of the harvest"}
+                      {__s(__v?.weak?.gain)}
                     </span>
                   </div>
                   <input type="range" min="0" max="100" value={__s(__v?.pos) as any} onInput={__v?.move} aria-label="Move the lens" />
@@ -267,7 +269,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
               <div className="tick4 rise" style={{"--d":"5"} as any}>
                 <div>
                   <b>
-                    {"+18%"}
+                    {__s(__v?.t1)}
                   </b>
                   <span>
                     {"more wheat on our sample field this season"}
@@ -275,26 +277,26 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                 </div>
                 <div>
                   <b>
-                    {"3 of 4"}
+                    {__s(__v?.t2)}
                   </b>
                   <span>
-                    {"past heat waves warned 5–7 days early"}
+                    {__s(__v?.t2s)}
                   </span>
                 </div>
                 <div>
                   <b>
-                    {"−45 kg"}
+                    {__s(__v?.t3)}
                   </b>
                   <span>
-                    {"urea per feddan, for the same harvest"}
+                    {__s(__v?.t3s)}
                   </span>
                 </div>
                 <div>
                   <b>
-                    {"10 seasons"}
+                    {"36 years"}
                   </b>
                   <span>
-                    {"of satellite history read for every field"}
+                    {"of NASA weather read for every field"}
                   </span>
                 </div>
               </div>
@@ -317,7 +319,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                     {"THE USUAL WAY"}
                   </span>
                   <b style={{"fontSize":"56px","fontWeight":"600","letterSpacing":"-2px"} as any}>
-                    {"15.6 "}
+                    {__s(__v?.usual)}{" "}
                     <span style={{"fontSize":"18px","color":"var(--muted)","letterSpacing":"0"} as any}>
                       {"ardab / feddan"}
                     </span>
@@ -370,7 +372,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                     {"WITH BEZRA"}
                   </span>
                   <b style={{"fontSize":"56px","fontWeight":"600","letterSpacing":"-2px"} as any}>
-                    {"18.4 "}
+                    {__s(__v?.withB)}{" "}
                     <span style={{"fontSize":"18px","color":"rgba(255,255,255,.6)","letterSpacing":"0"} as any}>
                       {"ardab / feddan"}
                     </span>
@@ -435,83 +437,19 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                     {"WHERE THE EXTRA WHEAT COMES FROM"}
                   </span>
                   <div className="col" style={{"gap":"2px"} as any}>
-                    <div className="wf">
-                      <span className="meta">
-                        {"Your usual way"}
-                      </span>
-                      <span className="wfbar">
-                        <i style={{"left":"0","width":"32.3%","background":"#C9CBC4"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600"} as any}>
-                        {"15.6"}
-                      </b>
+                    {((__v?.wf) || []).map((x: any, ix: number) => (
+                    <div className="wf" key={ix}>
+                      <span className={x.cls}>{x.l}</span>
+                      <span className="wfbar"><i className={x.cls ? "" : "growx"} style={__css(x.sty)} /></span>
+                      <b style={__css("font-weight:600;" + x.b)}>{x.v}</b>
                     </div>
-                    <div className="wf">
-                      <span>
-                        {"Sow on 5 Nov, not 20 Nov"}
-                      </span>
-                      <span className="wfbar">
-                        <i className="growx" style={{"left":"32.3%","width":"13.8%","background":"#6FAE52"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                        {"+0.9"}
-                      </b>
-                    </div>
-                    <div className="wf">
-                      <span>
-                        {"Water today, C1 first"}
-                      </span>
-                      <span className="wfbar">
-                        <i className="growx" style={{"left":"46.2%","width":"9.2%","background":"#6FAE52"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                        {"+0.6"}
-                      </b>
-                    </div>
-                    <div className="wf">
-                      <span>
-                        {"Water before the April heat"}
-                      </span>
-                      <span className="wfbar">
-                        <i className="growx" style={{"left":"55.4%","width":"15.4%","background":"#6FAE52"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                        {"+1.0"}
-                      </b>
-                    </div>
-                    <div className="wf">
-                      <span>
-                        {"Catch rust early"}
-                      </span>
-                      <span className="wfbar">
-                        <i className="growx" style={{"left":"70.8%","width":"3.1%","background":"#6FAE52"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                        {"+0.2"}
-                      </b>
-                    </div>
-                    <div className="wf">
-                      <span>
-                        {"Right amount of urea"}
-                      </span>
-                      <span className="wfbar">
-                        <i className="growx" style={{"left":"73.8%","width":"1.5%","background":"#6FAE52"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                        {"+0.1"}
-                      </b>
-                    </div>
-                    <div className="wf" style={{"borderTop":"1px solid var(--line)","marginTop":"4px","paddingTop":"14px"} as any}>
-                      <b style={{"fontWeight":"600"} as any}>
-                        {"With Bezra"}
-                      </b>
-                      <span className="wfbar">
-                        <i style={{"left":"0","width":"75.4%","background":"var(--dark)"} as any} />
-                      </span>
-                      <b style={{"fontWeight":"600"} as any}>
-                        {"18.4"}
-                      </b>
-                    </div>
+                  ))}
+                    
+                    
+                    
+                    
+                    
+                    
                     <span className="meta" style={{"paddingTop":"8px"} as any}>
                       {"Ardab of wheat per feddan. Each line is one thing Bezra told you to do."}
                     </span>
@@ -521,46 +459,16 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   <span className="sec">
                     {"AND THE SOIL, 5 SEASONS LATER"}
                   </span>
-                  <svg viewBox="0 0 620 230" width="100%" role="img" aria-label="Soil strength for the next 5 seasons. Same as always falls to 47. With Bezra rotation it stays about 65.">
-                    <line x1="40" x2="480" y1="44.9" y2="44.9" stroke="#E8E8E3" />
-                    <text x="0" y="48.9" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"Strong"}
-                    </text>
-                    <line x1="40" x2="480" y1="84.6" y2="84.6" stroke="#E8E8E3" />
-                    <text x="0" y="88.6" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"OK"}
-                    </text>
-                    <line x1="40" x2="480" y1="144.3" y2="144.3" stroke="#E8E8E3" />
-                    <text x="0" y="148.3" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"Tired"}
-                    </text>
-                    <path className="draw" pathLength="1" style={{"--d":"1"} as any} d="M40.0 94.6 L128.0 109.5 L216.0 124.4 L304.0 139.3 L392.0 149.3 L480.0 159.2" stroke="#C9A06A" strokeWidth="2.6" fill="none" strokeDasharray="6 5" />
-                    <path className="draw" pathLength="1" style={{"--d":"2"} as any} d="M40.0 94.6 L128.0 64.7 L216.0 74.7 L304.0 84.6 L392.0 59.8 L480.0 69.7" stroke="#3E7F35" strokeWidth="3" fill="none" />
-                    <text x="488.0" y="73.7" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#3E7F35">
-                      {"65 With Bezra"}
-                    </text>
-                    <text x="488.0" y="163.2" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#B4660B">
-                      {"47 Same as always"}
-                    </text>
-                    <text x="40.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"now"}
-                    </text>
-                    <text x="128.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"27/28"}
-                    </text>
-                    <text x="216.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"28/29"}
-                    </text>
-                    <text x="304.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"29/30"}
-                    </text>
-                    <text x="392.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"30/31"}
-                    </text>
-                    <text x="480.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                      {"31/32"}
-                    </text>
-                  </svg>
+                  {__v?.five ? (<svg viewBox="0 0 620 230" width="100%" role="img" aria-label={__s(__v?.fiveSay)}>
+                    <line x1="40" x2="480" y1="30" y2="30" stroke="#E8E8E3" />
+                    <line x1="40" x2="480" y1="115" y2="115" stroke="#E8E8E3" />
+                    <line x1="40" x2="480" y1="200" y2="200" stroke="#E8E8E3" />
+                    <path className="draw" pathLength="1" d={__v.five.cur} stroke="#B4660B" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
+                    <path className="draw" pathLength="1" d={__v.five.best} stroke="#3E7F35" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
+                    <text x={__v.five.endX} y={Number(__v.five.bestEnd.y) + 4} fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#3E7F35">{__v.five.bestEnd.t}</text>
+                    <text x={__v.five.endX} y={Number(__v.five.curEnd.y) + 4} fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#B4660B">{__v.five.curEnd.t}</text>
+                    {__v.five.labs.map((l: string, il: number) => <text key={il} x={__v.five.xs[il]} y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">{l}</text>)}
+                  </svg>) : null}
                 </div>
               </div>
             </section>
@@ -622,7 +530,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   <div className="mcard" style={{"position":"relative","width":"380px"} as any}>
                     <div style={{"padding":"22px 24px","display":"flex","flexDirection":"column","gap":"12px"} as any}>
                       <span className="meta" style={{"fontSize":"12px"} as any}>
-                        {"Thursday 3 December"}
+                        {__s(__v?.todayLong)}
                       </span>
                       <b style={{"fontSize":"24px","fontWeight":"600","letterSpacing":"-.6px"} as any}>
                         {"Your field is doing well."}
@@ -641,7 +549,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                             {"Water the whole field"}
                           </b>
                           <span style={{"fontSize":"12px","color":"var(--green)"} as any}>
-                            {"Protects about 8–12% of your harvest"}
+                            {"Protects part of your harvest"}
                           </span>
                         </span>
                       </div>
@@ -653,7 +561,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                         </span>
                         <span className="col" style={{"gap":"2px"} as any}>
                           <b style={{"fontSize":"14px","fontWeight":"600"} as any}>
-                            {"Look at the leaves in square C1"}
+                            {"Look at the leaves in the weakest square"}
                           </b>
                           <span style={{"fontSize":"12px","color":"var(--muted)"} as any}>
                             {"From your journal"}
@@ -668,7 +576,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                         </span>
                         <span className="col" style={{"gap":"2px"} as any}>
                           <b style={{"fontSize":"14px","fontWeight":"600"} as any}>
-                            {"Check B2 and C2 for aphids"}
+                            {"Check for aphids where you saw them"}
                           </b>
                           <span style={{"fontSize":"12px","color":"var(--muted)"} as any}>
                             {"From your journal"}
@@ -686,7 +594,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                     {"One short to-do every day"}
                   </h3>
                   <p className="txt" style={{"fontSize":"18px"} as any}>
-                    {"Water today. Look at C1. Each task says what it protects. Tick it, and it goes into your journal."}
+                    {"Water on your turn. Look at the weak square. Each task says what it protects. Tick it, and it goes into your journal."}
                   </p>
                 </div>
               </div>
@@ -699,50 +607,13 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                     {"Try it before you do it"}
                   </h3>
                   <p className="txt" style={{"fontSize":"18px"} as any}>
-                    {"How much urea? Water every 12 days or 16? Clover or wheat next winter? See the harvest and the soil for each answer."}
+                    {"Skip a water turn or not? Sow earlier or later? Clover or wheat next winter? See the harvest and the soil for each answer, on your own weather."}
                   </p>
                 </div>
                 <div className="fvis">
                   <div className="mcard" style={{"position":"relative","width":"440px","padding":"22px"} as any}>
-                    <span className="sec" style={{"fontSize":"11px"} as any}>
-                      {"HOW MUCH UREA ON MON 7 DEC?"}
-                    </span>
-                    <div className="row sp" style={{"padding":"12px 0","borderTop":"1px solid var(--line)","marginTop":"8px"} as any}>
-                      <b style={{"fontWeight":"600"} as any}>
-                        {"45 kg"}
-                      </b>
-                      <span className="meta">
-                        {"2.2 bags"}
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"16.5–18"}
-                      </b>
-                    </div>
-                    <div className="row sp" style={{"padding":"12px 0","borderTop":"1px solid var(--line)","marginTop":"8px"} as any}>
-                      <b style={{"fontWeight":"600"} as any}>
-                        {"60 kg"}
-                      </b>
-                      <span className="meta">
-                        {"2.9 bags · Bezra's pick"}
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                        {"17.5–19.5"}
-                      </b>
-                    </div>
-                    <div className="row sp" style={{"padding":"12px 0","borderTop":"1px solid var(--line)","marginTop":"8px"} as any}>
-                      <b style={{"fontWeight":"600"} as any}>
-                        {"90 kg"}
-                      </b>
-                      <span className="meta">
-                        {"4.3 bags"}
-                      </span>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"17.5–19.8"}
-                      </b>
-                    </div>
-                    <span className="meta">
-                      {"Ardab per feddan, 30 weather years"}
-                    </span>
+                    <span className="sec" style={{"fontSize":"11px"} as any}>{"WHAT IF YOU SKIP WATER TURNS?"}</span>
+                    <p className="txt" style={{"marginTop":"10px"} as any}>{"Every option is a run of the season model on your field's weather and soil. Open Try a season on any field to see it."}</p>
                   </div>
                 </div>
               </div>
@@ -753,14 +624,12 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   {"Proof, not promises"}
                 </span>
                 <h2 className="h2x">
-                  {"10 past seasons, replayed."}
+                  {"Past heat waves, replayed."}
                 </h2>
                 <p className="txt" style={{"fontSize":"18px"} as any}>
-                  {"We gave Bezra only the data from before each decision. On the sample field it would have made about "}
-                  <b style={{"color":"var(--ink)"} as any}>
-                    {"44 more ardab"}
-                  </b>
-                  {" in 8 wheat seasons and warned 3 of 4 heat waves. It missed one, and we show that too."}
+                  {__s(__v?.proof)}
+                  
+                  {""}
                 </p>
                 <Link href={__r("V19-Try") + ""} className="row" style={{"gap":"6px","fontWeight":"600"} as any}>
                   {"Replay it yourself"}
@@ -769,114 +638,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   </svg>
                 </Link>
               </div>
-              <div className="col" style={{"gap":"12px"} as any}>
-                <div className="row" style={{"gap":"8px","alignItems":"flex-end"} as any}>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"121px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"0","width":"14px","height":"138px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"16/17"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"4px","borderRadius":"4px","background":"#CFE3C6"} as any} />
-                      <i className="grow" style={{"--i":"1","width":"14px","height":"4px","borderRadius":"4px","background":"#CFE3C6"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"17/18"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"131px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"2","width":"14px","height":"145px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"18/19"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"124px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"3","width":"14px","height":"131px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"19/20"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"4px","borderRadius":"4px","background":"#CFE3C6"} as any} />
-                      <i className="grow" style={{"--i":"4","width":"14px","height":"4px","borderRadius":"4px","background":"#CFE3C6"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"20/21"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"128px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"5","width":"14px","height":"143px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"21/22"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"104px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"6","width":"14px","height":"134px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"22/23"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"123px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"7","width":"14px","height":"136px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"23/24"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"113px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"8","width":"14px","height":"135px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"24/25"}
-                    </span>
-                  </div>
-                  <div className="col" style={{"gap":"6px","alignItems":"center","flex":"1"} as any}>
-                    <div className="row" style={{"gap":"3px","alignItems":"flex-end","height":"160px"} as any}>
-                      <i style={{"width":"14px","height":"104px","borderRadius":"4px","background":"#C9CBC4"} as any} />
-                      <i className="grow" style={{"--i":"9","width":"14px","height":"132px","borderRadius":"4px","background":"#3E7F35"} as any} />
-                    </div>
-                    <span className="meta" style={{"fontSize":"11px"} as any}>
-                      {"25/26"}
-                    </span>
-                  </div>
-                </div>
-                <span className="leg">
-                  <span>
-                    <i style={{"background":"#C9CBC4","height":"10px"} as any} />
-                    {"What the farmer got"}
-                  </span>
-                  <span>
-                    <i style={{"background":"#3E7F35","height":"10px"} as any} />
-                    {"With Bezra"}
-                  </span>
-                  <span>
-                    <i style={{"background":"#CFE3C6","height":"10px"} as any} />
-                    {"Clover year"}
-                  </span>
-                </span>
-              </div>
+              {null}
             </section>
             <section className="col" style={{"gap":"24px"} as any}>
               <span className="kicker">
@@ -908,9 +670,9 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   </small>
                 </div>
                 <div className="dataset">
-                  {"GPM IMERG"}
+                  {"SoilGrids"}
                   <small>
-                    {"Rain · 2000→"}
+                    {"Soil, 250 m"}
                   </small>
                 </div>
                 <div className="dataset">
@@ -920,7 +682,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   </small>
                 </div>
                 <div className="dataset">
-                  {"SRTM"}
+                  {"Copernicus DEM"}
                   <small>
                     {"Land height"}
                   </small>
@@ -951,7 +713,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                 <Link href={__r("V19-SignUp") + ""} className="btn sun press" style={{"height":"58px","borderRadius":"29px","fontSize":"16px","padding":"0 26px"} as any}>
                   {"Add your field, it's free"}
                 </Link>
-                <Link href={__r("V21-Tour-Welcome-Guest") + ""} className="btn soft press" style={{"height":"58px","borderRadius":"29px","fontSize":"16px"} as any}>
+                <Link href="#" onClick={__v?.guest} className="btn soft press" style={{"height":"58px","borderRadius":"29px","fontSize":"16px"} as any}>
                   {"See a sample field"}
                 </Link>
               </div>
