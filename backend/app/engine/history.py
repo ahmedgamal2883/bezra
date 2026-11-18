@@ -43,7 +43,9 @@ def seasons(rows: list[dict], first: int = 2000, last: int | None = None) -> lis
         summer = "bare" if s_peak < 0.35 else ("rice" if flood else "crop")
         bare = round(16 * sum(1 for r in yr if r["ndvi"] < 0.25))
         out.append({"year": y, "winter": winter, "summer": summer, "winter_peak": round(w_peak, 3),
-                    "summer_peak": round(s_peak, 3), "bare_days": min(365, bare), "flood": flood, "n": len(yr)})
+                    "summer_peak": round(s_peak, 3), "bare_days": min(365, bare), "flood": flood, "n": len(yr),
+                    # months (1-12) where the field looked bare (NDVI < 0.25) at least once: the "bare-field periods"
+                    "bare_months": sorted({_d(r["date"]).month for r in yr if r["ndvi"] < 0.25})})
     return out
 
 
@@ -72,6 +74,8 @@ def summary(ss: list[dict], recent: int = 20) -> dict:
             "summers_rice": cnt("summer", "rice"), "summers_other": cnt("summer", "crop"), "summers_bare": cnt("summer", "bare"),
             "winters_green": cnt("winter", "crop"), "winters_bare": cnt("winter", "bare"),
             "bare_days_year": round(sum(x["bare_days"] for x in s) / len(s)) if s else None,
+            # months bare in at least half of these years (missing on old cached seasons: then empty)
+            "bare_months": [m for m in range(1, 13) if s and sum(1 for x in s if m in x.get("bare_months", [])) * 2 >= len(s)],
             "winter_peak_trend": trend([x["year"] for x in green_w], [x["winter_peak"] for x in green_w]),
             "all_peak_trend": trend([x["year"] for x in ss], [max(x["winter_peak"], x["summer_peak"]) for x in ss])}
 

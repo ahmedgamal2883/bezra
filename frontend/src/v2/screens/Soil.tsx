@@ -100,6 +100,7 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
                       <span className="meta" style={{"fontSize":"15px"} as any}>
                         {__s(__v?.field)}{__v?.histYears ? " · read from " + __v.histYears + " seasons of satellite images and your journal" : ""}
                       </span>
+                      {__v?.bareSay ? <span className="txt" style={{"fontSize":"15px"} as any}>{__v.bareSay}</span> : null}
                       {__v?.ready ? (
                         <>
                           <h1 className="h1x">{__v?.falling ? "Your soil is getting tired." : "Your soil is holding up."}</h1>

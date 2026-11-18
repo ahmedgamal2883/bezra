@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
+import { useLang } from '@/lib/i18n';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const yy = (y: number) => `${String(y).slice(2)}/${String(y + 1).slice(2)}`;
@@ -11,6 +12,7 @@ const CROP_NAME: Record<string, string> = { berseem: 'Egyptian clover (berseem)'
 
 export function useSoilData() {
   const { id } = useField();
+  const { lang } = useLang();
   const [ver, setVer] = useState(0);
   // the farmer's priority ranks the rotation cards; kept per field in this browser (soil = Bezra's default order)
   const [prio, setPrioS] = useState<string>(() => { try { return (id && localStorage.getItem('bezra.prio.' + id)) || 'soil'; } catch { return 'soil'; } });
@@ -46,6 +48,12 @@ export function useSoilData() {
     out.trendPerDecade = t?.per_decade;
     out.histYears = h.summary?.years;
     out.histSrc = h.source;
+    // bare-field periods (NDVI < 0.25 in at least half the years): when a cover crop could protect the soil
+    const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const bm: number[] = h.summary?.bare_months || [];
+    const MA = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    if (bm.length && lang === 'ar') out.bareSay = `من الفضاء، أرضك غالبًا بتبقى مكشوفة في ${bm.map((m) => MA[m - 1]).join('، ')}. محصول تغطية وقتها يحميها.`;
+    else if (bm.length) out.bareSay = `From space, your soil is usually bare in ${bm.map((m) => MN[m - 1]).join(', ')}. A cover crop then would protect it.`;
   }
 
   // ---- next 5 seasons: soil effect on the harvest, now vs best (shared with Try a season) ----

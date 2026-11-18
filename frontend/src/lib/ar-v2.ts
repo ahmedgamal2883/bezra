@@ -380,7 +380,7 @@ export function v2Patterns(D: string): [string, string][] {
     [`^WHAT TO PLANT NEXT WINTER · (\\d+/\\d+)$`, 'تزرع إيه الشتا الجاي · $1'],
     [`^Soil: ([+−-]?[\\d.]+)% for the harvest in 10 years$`, 'التربة: $1% للمحصول بعد 10 سنين'],
     [`^Water: ([+−-]?\\d+)% a year$`, 'المية: $1% في السنة'],
-    [`^Soil left bare about (\d+) days a year$`, 'الأرض بتفضل مكشوفة حوالي $1 يوم في السنة'],
+    [`^Soil left bare about (\\d+) days a year$`, 'الأرض بتفضل مكشوفة حوالي $1 يوم في السنة'],
     [`^Weaker greenness in the (.+)$`, 'خضرة أضعف في $1'],
     [`^(\\d+) times last season$`, '$1 مرات الموسم اللي فات'],
     // Season
