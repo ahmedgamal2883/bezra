@@ -22,7 +22,7 @@ const PAGES: Record<string, To> = {
   'Tour-Welcome': (id) => `/field/${id}/today?tour=welcome`, 'Tour-Welcome-Guest': (id) => `/field/${id}/today?tour=welcome`,
   'Tour-Today': (id) => `/field/${id}/today?tour=today`, 'Tour-Finish': f('today'),
   Ask: () => '/ask', Profile: () => '/profile', Engineer: () => '/engineer', Notifications: () => '/notifications',
-  Landing: () => '/', SignUp: () => '/signup', 'SignUp-Code': () => '/signup', SignIn: () => '/signin',
+  Landing: () => '/', SignUp: () => '/signup', 'SignUp-Code': () => '/signup', SignIn: () => '/signin', 'SignIn-NoAcct': () => '/signin',
   'Add-Find': () => '/fields/new', 'Add-Draw': () => '/fields/new', 'Add-Stage': () => '/fields/new',
   Waking: () => '/waking', States: () => '/states',
 };
