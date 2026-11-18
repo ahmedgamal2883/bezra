@@ -63,14 +63,15 @@ def _pg_connect():
             try:
                 from psycopg_pool import ConnectionPool
                 _pg_pool = ConnectionPool(_url(), min_size=1, max_size=5, kwargs={"row_factory": dict_row,
-                                                                                    "prepare_threshold": None},
-                                          open=True)
+                                                                                    "prepare_threshold": None,
+                                                                                    "connect_timeout": 10},
+                                          open=True, timeout=30)
             except ImportError:
                 _pg_pool = False
     if _pg_pool:
         return _pg_pool.connection()
     # no pool package: one short connection per call (prepare_threshold=None works with Supabase's pooler)
-    return psycopg.connect(_url(), row_factory=dict_row, prepare_threshold=None)
+    return psycopg.connect(_url(), row_factory=dict_row, prepare_threshold=None, connect_timeout=10)
 
 
 @contextmanager

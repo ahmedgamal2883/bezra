@@ -106,7 +106,8 @@ def run(only: list[str] | None = None) -> dict:
         context._mem.clear()  # fresh weather, not the 10-minute memory copy
         t0 = time.time()
         res = {}
-        for fid in only or fields.all_ids():
+        # guest copies (g-...) share the sample field's data: refreshing each one only slows the server
+        for fid in only or [f for f in fields.all_ids() if not f.startswith("g-")]:
             try:
                 res[fid] = refresh_field(fid)
             except Exception as e:  # one field must not stop the job
