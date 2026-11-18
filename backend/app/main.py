@@ -314,6 +314,28 @@ def get_field(field_id: str, user: dict = Depends(current_user)):
                 "demo": f.get("farmer") == "Hassan Farouk" and f["id"] in ("north-plot", "south-plot")}
 
 
+class NextWinter(BaseModel):
+    crop: str | None = None       # berseem / fahl / faba / wheat / sugarbeet ..., or None to clear
+    strategy: str | None = None   # the rotation it came from (R0..R5), for the Season page
+
+
+@app.post("/fields/{field_id}/next-winter")
+def post_next_winter(field_id: str, req: NextWinter, user: dict = Depends(current_user)):
+    """Redesign (Soil > What to plant next winter): the farmer's choice for next winter, kept with the field.
+    Only this key changes. Read it back from GET /fields/{field_id} as next_winter."""
+    from .engine.crops import CROPS
+    _ctx(field_id, user)
+    if req.crop is not None and req.crop not in CROPS:
+        raise HTTPException(422, "Unknown crop")
+    f = db.get_field(field_id)
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    f["next_winter"] = {"crop": req.crop, "strategy": req.strategy} if req.crop else None
+    db.save_field(f, owner)
+    return {"next_winter": f["next_winter"]}
+
+
 @app.get("/fields/{field_id}/summary")
 def get_summary(field_id: str, user: dict = Depends(current_user)):
     return summary.build(_ctx(field_id, user))
