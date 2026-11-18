@@ -254,9 +254,20 @@ def build(c: Ctx) -> dict:
             for i, t in enumerate(after):
                 d = t - timedelta(days=1)
                 done = _match(log, ("fertilizer",), d - timedelta(days=4), d + timedelta(days=4), used)
+                # the same amount Today shows (MALR rates, crop_rules.fert_amount); only the label, never the date
+                amt = {"label": "Your engineer sets it"}
+                try:
+                    from ..connectors import soilgrids
+                    from ..rules import crop_rules as R
+                    sand = (c.f.get("soil_texture") or soilgrids.texture_cached(c.f["lat"], c.f["lon"]) or {}).get("sand")
+                    fa = R.fert_amount("wheat", f"n{i + 1}", c.f["area_feddan"], c.f.get("prev_crop"), sand)
+                    if fa:
+                        amt = {"label": f"{fa['label']} {fa['check']}".strip()}
+                except Exception:
+                    pass
                 task(f"fert-{i + 1}", "fertilizer", f"Fertilizer, {'first' if i == 0 else 'second'} dose",
                      "Put it the day before the water turn so the water carries it to the roots.", d, done=done,
-                     amount={"label": "Your engineer sets it"}, benefit={"text": "Feeds the crop when it grows fastest", "kind": "harvest"},
+                     amount=amt, benefit={"text": "Feeds the crop when it grows fastest", "kind": "harvest"},
                      source="Timing from MALR wheat guide; amount from your engineer", pill="agronomist")
     # 4. weeding window: weeks 3 to 6 after sowing, before fertilizer
     ws, we = c.sow + timedelta(days=21), c.sow + timedelta(days=42)
