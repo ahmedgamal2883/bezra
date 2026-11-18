@@ -727,18 +727,18 @@ body:has(.v2){background:var(--shell)}
 .v2 .gs{display:flex;flex-direction:column;gap:6px;padding:20px 22px;border-radius:22px;background:#fff}
 .v2 .gsr{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
 .v2 .gsr .tbox{width:24px;height:24px;border-radius:8px}
-.v2 [dir=rtl] body,.v2 [dir=rtl] .root,.v2 [dir=rtl] .tcard,.v2 [dir=rtl] .welcome,.v2 [dir=rtl] .toast{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',system-ui,sans-serif}
-.v2 [dir=rtl] *{letter-spacing:0!important}
-.v2 [dir=rtl] .display,.v2 [dir=rtl] .h1x,.v2 [dir=rtl] .big,.v2 [dir=rtl] .h2x,.v2 [dir=rtl] .hh{line-height:1.25}
-.v2 [dir=rtl] .fab{right:auto;left:28px}
-.v2 [dir=rtl] .drawer{right:auto;left:0;box-shadow:30px 0 60px -30px rgba(20,26,22,.5)}
-.v2 [dir=rtl] .tbl th{text-align:right}
-.v2 [dir=rtl] .mapbox .mfloat.lgd{left:auto!important;right:16px}
-.v2 [dir=rtl] .rp,.v2 [dir=rtl] .seasons,.v2 [dir=rtl] .dots10,.v2 [dir=rtl] .months,.v2 [dir=rtl] .stages,.v2 [dir=rtl] .seasondots,.v2 [dir=rtl] .code,.v2 [dir=rtl] .wfbar,.v2 [dir=rtl] .mini,.v2 [dir=rtl] .lens{direction:ltr}
-.v2 [dir=rtl] .months button{direction:rtl}
-.v2 [dir=rtl] .ltag,.v2 [dir=rtl] .fchip{direction:rtl}
-.v2 [dir=rtl] .meta,.v2 [dir=rtl] .txt{line-height:1.6}
-.v2 [dir=rtl] .tdots,.v2 [dir=rtl] .steps{direction:ltr}
+:is([dir=rtl] .v2, .v2[dir=rtl]),:is([dir=rtl] .v2, .v2[dir=rtl]),:is([dir=rtl] .v2, .v2[dir=rtl]) .tcard,:is([dir=rtl] .v2, .v2[dir=rtl]) .welcome,:is([dir=rtl] .v2, .v2[dir=rtl]) .toast{font-family:'IBM Plex Sans Arabic','Hanken Grotesk',system-ui,sans-serif}
+:is([dir=rtl] .v2, .v2[dir=rtl]) *{letter-spacing:0!important}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .display,:is([dir=rtl] .v2, .v2[dir=rtl]) .h1x,:is([dir=rtl] .v2, .v2[dir=rtl]) .big,:is([dir=rtl] .v2, .v2[dir=rtl]) .h2x,:is([dir=rtl] .v2, .v2[dir=rtl]) .hh{line-height:1.25}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .fab{right:auto;left:28px}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .drawer{right:auto;left:0;box-shadow:30px 0 60px -30px rgba(20,26,22,.5)}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .tbl th{text-align:right}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .mapbox .mfloat.lgd{left:auto!important;right:16px}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .rp,:is([dir=rtl] .v2, .v2[dir=rtl]) .seasons,:is([dir=rtl] .v2, .v2[dir=rtl]) .dots10,:is([dir=rtl] .v2, .v2[dir=rtl]) .months,:is([dir=rtl] .v2, .v2[dir=rtl]) .stages,:is([dir=rtl] .v2, .v2[dir=rtl]) .seasondots,:is([dir=rtl] .v2, .v2[dir=rtl]) .code,:is([dir=rtl] .v2, .v2[dir=rtl]) .wfbar,:is([dir=rtl] .v2, .v2[dir=rtl]) .mini,:is([dir=rtl] .v2, .v2[dir=rtl]) .lens{direction:ltr}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .months button{direction:rtl}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .ltag,:is([dir=rtl] .v2, .v2[dir=rtl]) .fchip{direction:rtl}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .meta,:is([dir=rtl] .v2, .v2[dir=rtl]) .txt{line-height:1.6}
+:is([dir=rtl] .v2, .v2[dir=rtl]) .tdots,:is([dir=rtl] .v2, .v2[dir=rtl]) .steps{direction:ltr}
 .v2 .jn-stage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .v2 .jn-card{display:flex;flex-direction:column;gap:6px;padding:18px;border:0;border-radius:20px;background:#fff;text-align:left;font:inherit;color:var(--ink);cursor:pointer;transition:background-color .2s,color .2s}
 .v2 .jn-card b{font-size:17px;font-weight:600}

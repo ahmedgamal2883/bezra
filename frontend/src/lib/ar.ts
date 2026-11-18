@@ -2,6 +2,10 @@
 // when the page language is Arabic. Three layers: exact sentences, templates with numbers / dates / names,
 // and date pieces ("Tue 17 Nov"). Sentences not found stay in English (the translator logs them in dev).
 /* eslint-disable quotes */
+// The redesign's own strings (design-handoff/design/i18n/en-ar.json) come first: the designer's wording wins.
+import DESIGN_AR from './ar-design.json';
+const DESIGN = DESIGN_AR as Record<string, string>;
+import { V2_EXACT, v2Patterns } from './ar-v2';
 
 export const EXACT: Record<string, string> = {
   "Multi-cut berseem, about 30 t green fodder per feddan over the season's cuts (typical Delta, to verify with ARC)": 'برسيم متعدد الحشات، حوالي 30 طن علف أخضر للفدان على حشات الموسم (المعتاد في الدلتا، يتأكد مع مركز البحوث الزراعية)',
@@ -824,14 +828,19 @@ export const PATTERNS: [RegExp, string][] = ([
   [`^Heat on (.+)$`, 'حر يوم $d1'],
 ] as [string, string][]).map(([p, r]) => [new RegExp(p), r]);
 
+// the redesign's templates are tried first
+PATTERNS.unshift(...v2Patterns(D).map(([p, r]) => [new RegExp(p), r] as [RegExp, string]));
+
 export function toArabic(s: string): string | null {
   const t = s.trim();
   if (!t || /[؀-ۿ]/.test(t)) return null;
+  if (DESIGN[t]) return DESIGN[t];
+  if (V2_EXACT[t]) return V2_EXACT[t];
   if (EXACT[t]) return EXACT[t];
   for (const [re, rep] of PATTERNS) {
     const m = t.match(re);
     if (m) {
-      const piece = (x: string | undefined): string => (x === undefined ? '' : EXACT[x] || CROP[x] || (x !== t ? toArabic(x) : null) || x);
+      const piece = (x: string | undefined): string => (x === undefined ? '' : V2_EXACT[x] || EXACT[x] || CROP[x] || (x !== t ? toArabic(x) : null) || x);
       return rep.replace(/\$d(\d)/g, (_, i) => arDate(piece(m[+i]))).replace(/\$(\d)/g, (_, i) => piece(m[+i]));
     }
   }

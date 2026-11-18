@@ -60,7 +60,11 @@ function translatePage() {
       const out = v.replace(v.trim(), a);
       done.set(n, out);
       n.nodeValue = out;
-    } else done.set(n, v);
+    } else {
+      done.set(n, v);
+      // dev: collect sentences that stayed English (window.__arMissing) to fill lib/ar.ts
+      if (process.env.NODE_ENV !== 'production' && /[A-Za-z]{2}/.test(v)) ((window as any).__arMissing ||= new Set()).add(v.trim()); // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
   };
   const el = (e: Element) => {
     if (e.closest('script,style,[data-no-tr]')) return;

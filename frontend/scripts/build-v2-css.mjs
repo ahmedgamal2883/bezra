@@ -22,6 +22,12 @@ const ROOTSEL = '.v2';
 const scopeNew = (sel) => {
   sel = sel.trim();
   if (sel === ':root') return ':root';
+  // Arabic: `dir` sits on <html> (or on the page root), above .v2: [dir=rtl] X -> :is([dir=rtl] .v2, .v2[dir=rtl]) X
+  const rtl = sel.match(/^(?:html)?\[dir=["']?rtl["']?\]\s*(.*)$/);
+  if (rtl) {
+    const rest = rtl[1].replace(/^(html|body|\.root)\b/, '').trim();
+    return `:is([dir=rtl] ${ROOTSEL}, ${ROOTSEL}[dir=rtl])${rest ? ' ' + rest : ''}`;
+  }
   if (/^(html|body)\b/.test(sel)) return sel.replace(/^(html|body)/, '$1:has(.v2)');
   if (sel.startsWith('.root')) return ROOTSEL + sel.slice(5);          // .root.ar -> .v2.ar
   return `${ROOTSEL} ${sel}`;
