@@ -2,3 +2,7 @@
 
 /* No "Demo" labels on redesigned pages (HANDOFF §11): the old V11 badge stays on old pages only. */
 body:has(.v2) .demo-badge { display: none !important; }
+
+/* Provenance labels are short in the design; real source names can be long (e.g. the Soil Ledger method), so they
+   wrap instead of pushing the page sideways. */
+.v2 .pq { white-space: normal; max-width: 100%; }
