@@ -20,7 +20,7 @@ Thumbs.db
 .pytest_cache/
 
 # engineer approvals (runtime data)
-data/
+/data/
 
 frontend/.next-build/
 cache/s1_sas_token.json
