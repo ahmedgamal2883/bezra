@@ -15,7 +15,7 @@ import './v2-app.css';
 
 export const metadata: Metadata = {
   title: 'Bezra',
-  description: 'Try your season before you plant it.',
+  description: 'Healthy soil, stronger harvests. NASA satellite data for every field in Egypt.',
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

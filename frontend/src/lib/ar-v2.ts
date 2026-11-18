@@ -283,6 +283,7 @@ export const V2_EXACT: Record<string, string> = {
   'When did you do it?': 'عملتها امتى؟', 'Today': 'النهارده', 'Yesterday': 'امبارح', 'Save this day': 'احفظ اليوم ده', 'I did not do it': 'ما عملتهاش',
   'Pests and weeds': 'آفات وحشايش', 'Check': 'كشف', 'Stage': 'مرحلة', 'Task': 'مهمة',
   'The day you did it': 'اليوم اللي عملتها فيه', 'Could not save. Try again.': 'ما اتحفظش. جرّب تاني.',
+  'Healthy soil, stronger harvests': 'تربة سليمة، ومحصول أقوى',
   // ---- Landing (wording from the Arabic landing design where it exists) ----
   '36 years': '36 سنة', 'of NASA weather read for every field': 'من طقس ناسا بتتقري لكل أرض',
   'Protects part of your harvest': 'بيحمي جزء من محصولك',
