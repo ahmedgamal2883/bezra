@@ -120,6 +120,60 @@ def signin(req: SignIn, resp: Response):
     return db.user_public(r)
 
 
+# ---- redesign: sign up / sign in with a mobile number and a password (no SMS code; the account works at once) ----
+class PhoneSignIn(BaseModel):
+    phone: str
+    password: str
+
+
+class PhoneSignUp(PhoneSignIn):
+    name: str
+    role: str = "farmer"          # farmer / engineer (an engineer only sees the farmers assigned to them)
+
+
+def _phone_key(phone: str) -> str:
+    """Egyptian mobile 01XXXXXXXXX (spaces, +20 or 0020 allowed) -> the account key. Raises ValueError."""
+    d = re.sub(r"[\s-]", "", phone)
+    d = re.sub(r"^(\+20|0020)", "0", d)
+    if not re.fullmatch(r"01[0125]\d{8}", d):
+        raise ValueError("Use an Egyptian mobile number, 11 digits, starting with 01.")
+    return f"{d}@phone.bezra.app"
+
+
+@app.post("/auth/phone/signup")
+def phone_signup(req: PhoneSignUp, resp: Response):
+    try:
+        key = _phone_key(req.phone)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    if not req.name.strip():
+        raise HTTPException(422, "Write your name.")
+    if len(req.password) < 6:
+        raise HTTPException(422, "Use at least 6 characters for your password.")
+    if req.role not in ("farmer", "engineer"):
+        raise HTTPException(422, "Unknown role")
+    if db.find_user(key):
+        raise HTTPException(409, "This number already has an account. Sign in instead.")
+    u = db.create_user(key, req.name.strip(), req.password, req.role)
+    _start_session(resp, u["id"])
+    return u
+
+
+@app.post("/auth/phone/signin")
+def phone_signin(req: PhoneSignIn, resp: Response):
+    try:
+        key = _phone_key(req.phone)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    r = db.find_user(key)
+    if not r:
+        raise HTTPException(404, "No account with this number.")
+    if not db.check_pw(req.password, r["pw"]):
+        raise HTTPException(401, "Wrong password.")
+    _start_session(resp, r["id"])
+    return db.user_public(r)
+
+
 @app.post("/auth/signout")
 def signout(request: Request, resp: Response):
     db.end_session(request.cookies.get(COOKIE))
