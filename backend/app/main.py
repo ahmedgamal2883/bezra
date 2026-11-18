@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 from contextlib import asynccontextmanager
 from datetime import date
 
@@ -172,6 +173,38 @@ def phone_signin(req: PhoneSignIn, resp: Response):
         raise HTTPException(401, "Wrong password.")
     _start_session(resp, r["id"])
     return db.user_public(r)
+
+
+# ---- redesign: guests. Each guest gets an own account and an own copy of the sample field (so no guest ever sees
+# another guest's notes, and nobody can change the real sample field). Guests and their copies go after 7 days.
+GUEST_DOMAIN = "@guest.bezra.app"
+GUEST_DAYS = 7
+
+
+def _sweep_guests() -> int:
+    cutoff = time.time() - GUEST_DAYS * 86400
+    with db.conn() as k:
+        old = [r["id"] for r in k.execute("SELECT id FROM users WHERE email LIKE ? AND created < ?", ("%" + GUEST_DOMAIN, cutoff)).fetchall()]
+    for uid in old:
+        db.delete_user(uid)
+    return len(old)
+
+
+@app.post("/auth/guest")
+def guest_start(resp: Response):
+    """Look around first: a guest account with its own copy of the sample field. Nothing is kept after 7 days."""
+    import secrets as _sec
+    _sweep_guests()
+    src = fields.get(os.environ.get("SAMPLE_FIELD_ID", "north-plot"))
+    if not src:
+        raise HTTPException(503, "The sample field is not available right now.")
+    tag = _sec.token_hex(5)
+    u = db.create_user(f"guest-{tag}{GUEST_DOMAIN}", "Guest", _sec.token_urlsafe(24), "farmer")
+    f = {k: v for k, v in src.items() if k not in ("owner_id", "farmer", "engineer_id")}
+    f["id"] = f"g-{tag}"
+    db.save_field(f, u["id"])
+    _start_session(resp, u["id"])
+    return {"user": u, "field_id": f["id"], "days": GUEST_DAYS}
 
 
 @app.post("/auth/signout")

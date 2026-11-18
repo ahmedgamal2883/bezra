@@ -45,3 +45,14 @@ def test_delete_field_only_by_its_owner(tmp_db):
     assert cl.delete("/fields/f-nope").status_code == 404
     assert cl.delete("/fields/f-test1").json() == {"deleted": "f-test1"}
     assert db.get_field("f-test1") is None
+
+
+def test_guest_gets_an_own_copy_of_the_sample_field(tmp_db, monkeypatch):
+    from app import db
+    owner = db.create_user("sample@demo.bezra.app", "Sample", "x" * 8)
+    db.save_field({"id": "north-plot", "name": "North plot", "crop": "wheat"}, owner["id"])
+    a, b = TestClient(main.app), TestClient(main.app)
+    ra, rb = a.post("/auth/guest").json(), b.post("/auth/guest").json()
+    assert ra["field_id"] != rb["field_id"] and ra["field_id"].startswith("g-")
+    assert db.get_field(ra["field_id"])["name"] == "North plot"
+    assert db.get_field("north-plot")["owner_id"] == owner["id"]          # the real sample field is untouched
