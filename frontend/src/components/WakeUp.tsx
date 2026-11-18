@@ -58,6 +58,14 @@ export default function WakeUp() {
     return () => clearInterval(id);
   }, [st.phase]);
 
+  // Redesign: on a redesigned page the visitor waits on /waking (two choices, rough time) instead of this banner.
+  useEffect(() => {
+    if (st.phase !== 'waking' || typeof document === 'undefined' || !document.querySelector('.v2')) return;
+    const path = window.location.pathname;
+    if (path.startsWith('/waking') || path.startsWith('/sign')) return;
+    window.location.replace('/waking?next=' + encodeURIComponent(path + window.location.search));
+  }, [st.phase]);
+
   if (st.phase === 'idle') return null;
   const secs = Math.max(0, Math.round((now - st.t0) / 1000));
   const text =

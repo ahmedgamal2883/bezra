@@ -8,11 +8,14 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Waking.logic';
+import { useWaking } from '@/v2/data/waking';
 
 export default function WakingScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const nx = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('next');
+  const w = useWaking(nx && nx.startsWith('/') && !nx.startsWith('//') ? nx : null);
+  const __v = useDC(Logic, { ...props, w });
   return (
     <>
       <div className="v2 root">
@@ -49,7 +52,7 @@ export default function WakingScreen(props: Record<string, unknown> = {}) {
                 </svg>
                 <span className="col" style={{"gap":"2px"} as any}>
                   <span className="meta">
-                    {"North plot · Shibin El Kom"}
+                    {"Your field"}
                   </span>
                   <h1 className="h1x" style={{"fontSize":"36px"} as any}>
                     {"Getting your field ready."}

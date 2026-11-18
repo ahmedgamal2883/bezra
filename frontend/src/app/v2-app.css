@@ -6,3 +6,6 @@ body:has(.v2) .demo-badge { display: none !important; }
 /* Provenance labels are short in the design; real source names can be long (e.g. the Soil Ledger method), so they
    wrap instead of pushing the page sideways. */
 .v2 .pq { white-space: normal; max-width: 100%; }
+
+/* The old "waking up" banner is replaced by the /waking page on redesigned pages. */
+body:has(.v2) .wake { display: none !important; }
