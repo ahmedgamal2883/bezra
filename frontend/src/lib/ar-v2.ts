@@ -186,6 +186,7 @@ export const V2_EXACT: Record<string, string> = {
   'ROTATIONS · 10 YEARS ON YOUR WEATHER': 'الدورات · 10 سنين على طقسك', 'Rotation': 'الدورة', 'Soil, year 10': 'التربة، سنة 10',
   'Water m³/feddan/yr': 'المية م³/فدان/سنة', 'What you grow now': 'اللي بتزرعه دلوقتي', '· now': '· دلوقتي', '· best': '· الأحسن',
   'Short berseem, then cotton': 'برسيم فحل، وبعدين قطن', 'Berseem one winter in two': 'برسيم شتا آه وشتا لأ', 'Sugar beet in winter': 'بنجر سكر في الشتا',
+  'Your soil': 'تربتك',
   'PEAK WINTER GREENNESS AROUND YOUR FIELD (NDVI)': 'أعلى خضرة في الشتا حوالين أرضك (NDVI)',
   // ---- Add field ----
   "Search for the nearest village, or use your phone's location if you are standing in the field.": 'دوّر على أقرب قرية، أو استخدم مكان موبايلك لو إنت واقف في الأرض.',
