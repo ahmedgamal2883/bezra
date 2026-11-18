@@ -7,12 +7,14 @@ import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
+import { useLanding } from '@/v2/data/landing';
 import Logic from './SignUp.logic';
 
 export default function SignUpScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
   const __v = useDC(Logic, props);
+  const __L = useLanding(); // the sample field's real numbers for the preview panel
   return (
     <>
       <div className="v2 root">
@@ -375,7 +377,7 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                 <div className="mcard rise" style={{"--d":"3","right":"0","top":"170px","width":"330px"} as any}>
                   <div style={{"padding":"22px 24px","display":"flex","flexDirection":"column","gap":"12px"} as any}>
                     <span className="meta" style={{"fontSize":"12px"} as any}>
-                      {"Thursday 3 December"}
+                      {__L.todayLong}
                     </span>
                     <b style={{"fontSize":"24px","fontWeight":"600","letterSpacing":"-.6px"} as any}>
                       {"Your field is doing well."}
@@ -394,7 +396,7 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                           {"Water the whole field"}
                         </b>
                         <span style={{"fontSize":"12px","color":"var(--green)"} as any}>
-                          {"Protects about 8–12% of your harvest"}
+                          {__L.protectTxt || "Every task says what it protects"}
                         </span>
                       </span>
                     </div>
@@ -406,29 +408,14 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                       </span>
                       <span className="col" style={{"gap":"2px"} as any}>
                         <b style={{"fontSize":"14px","fontWeight":"600"} as any}>
-                          {"Look at the leaves in square C1"}
+                          {__L.weakSq ? "Look at the leaves in square " + __L.weakSq : "Look at the weakest square"}
                         </b>
                         <span style={{"fontSize":"12px","color":"var(--muted)"} as any}>
                           {"From your journal"}
                         </span>
                       </span>
                     </div>
-                    <div className="row" style={{"gap":"12px","alignItems":"flex-start","padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                      <span className="tbox" style={{"width":"24px","height":"24px","borderRadius":"8px","flex":"0 0 auto"} as any}>
-                        <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12.5 4.5 4.5L19 7.5" />
-                        </svg>
-                      </span>
-                      <span className="col" style={{"gap":"2px"} as any}>
-                        <b style={{"fontSize":"14px","fontWeight":"600"} as any}>
-                          {"Check B2 and C2 for aphids"}
-                        </b>
-                        <span style={{"fontSize":"12px","color":"var(--muted)"} as any}>
-                          {"From your journal"}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
+                                      </div>
                 </div>
                 <div className="mcard rise" style={{"--d":"5","left":"50px","bottom":"10px","width":"320px","padding":"20px 22px","background":"#fff"} as any}>
                   <span className="meta" style={{"fontSize":"12px","fontWeight":"600"} as any}>
@@ -436,7 +423,7 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                   </span>
                   <div className="row" style={{"gap":"10px","alignItems":"baseline","marginTop":"6px"} as any}>
                     <b style={{"fontSize":"40px","fontWeight":"600","letterSpacing":"-1.4px","color":"var(--green)"} as any}>
-                      {"+2.8"}
+                      {__L.deltaA || "—"}
                     </b>
                     <span className="meta">
                       {"ardab per feddan"}

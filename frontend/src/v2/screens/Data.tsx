@@ -9,6 +9,7 @@ import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Data.logic';
 import { useDataSheet } from '@/v2/data/datasheet';
+import ReviewBox from '@/v2/ReviewBox';
 
 export default function DataScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
@@ -121,28 +122,51 @@ export default function DataScreen(props: Record<string, unknown> = {}) {
                     </b>
                     {" at the top."}
                   </span>
+                  <section id="ask" className="col" style={{"gap":"10px","scrollMarginTop":"90px"} as any}>
+                    <h2 className="sec">{"CHECK THIS WITH YOUR ENGINEER"}</h2>
+                    <ReviewBox v={__v} />
+                  </section>
                 </div>
               </>
             ) : null}
             {__v?.details ? (
               <>
-                <div className="col" style={{"gap":"24px"} as any}>
+                <div className="col" style={{"gap":"28px"} as any}>
                   <div className="row sp" style={{"alignItems":"flex-end","gap":"16px","flexWrap":"wrap"} as any}>
                     <div className="col" style={{"gap":"8px"} as any}>
                       <span className="meta" style={{"fontSize":"15px"} as any}>{__s(__v?.name)}{" · data sheet"}</span>
-                      <h1 className="h1x" style={{"fontSize":"clamp(28px, 6vw, 40px)","overflowWrap":"anywhere"} as any}>{"Everything satellites know about this field."}</h1>
+                      <h1 className="h1x" style={{"fontSize":"clamp(28px, 6vw, 40px)","overflowWrap":"anywhere"} as any}>{"Everything Bezra knows about this field."}</h1>
                     </div>
                     <span className="row" style={{"gap":"10px"} as any}>
                       <button type="button" className="btn soft press" onClick={() => __v?.csv?.()} disabled={!__v?.ready}>{"Download CSV"}</button>
-                      <Link href="/messages" className="btn press">{"Share with engineer"}</Link>
+                      <a href="#ask" className="btn press">{"Check with my engineer"}</a>
                     </span>
                   </div>
+                  {__v?.loadingSome && __v?.ready ? <span className="pq est">{"Some numbers are still being read from NASA. They appear when you open this page again."}</span> : null}
+                  {__v?.ready ? ([["NOW", __v?.now], ["EXPECTED", __v?.expected], ["BEFORE THIS SEASON AND SO FAR", __v?.past]] as any[]).map(([h, rows]: any, js: number) => (
+                    <section className="col" key={js} style={{"gap":"8px"} as any}>
+                      <h2 className="sec">{h}</h2>
+                      <div style={{"overflowX":"auto","maxWidth":"100%"} as any}><table className="tbl">
+                        <thead><tr><th>{"What"}</th><th>{"Value"}</th><th>{"Source"}</th></tr></thead>
+                        <tbody>{(rows || []).map((f: any, jf: number) => <tr key={jf}><td>{f[0]}</td><td><b>{f[1]}</b></td><td className="meta">{f[2]}</td></tr>)}</tbody>
+                      </table></div>
+                    </section>
+                  )) : <div className="sk" style={{"height":"420px","borderRadius":"16px"} as any} aria-busy="true" />}
                   {__v?.ready ? (
-                    <div style={{"overflowX":"auto","maxWidth":"100%"} as any}><table className="tbl">
-                      <thead><tr><th>{"What"}</th><th>{"Value"}</th><th>{"Source"}</th></tr></thead>
-                      <tbody>{((__v?.facts) || []).map((f: any, jf: number) => <tr key={jf}><td>{f[0]}</td><td><b>{f[1]}</b></td><td className="meta">{f[2]}</td></tr>)}</tbody>
-                    </table></div>
-                  ) : <div className="sk" style={{"height":"420px","borderRadius":"16px"} as any} aria-busy="true" />}
+                    <section className="col" style={{"gap":"8px"} as any}>
+                      <h2 className="sec">{"WHAT YOU TOLD BEZRA"}</h2>
+                      {((__v?.feedback) || []).length ? (
+                        <div style={{"overflowX":"auto","maxWidth":"100%"} as any}><table className="tbl">
+                          <tbody>{(__v?.feedback || []).map((f: any, jf: number) => <tr key={jf}><td className="meta">{f[0]}</td><td>{f[1]}</td></tr>)}</tbody>
+                        </table></div>
+                      ) : <p className="meta">{"Nothing logged yet. Log waterings, fertilizer and what you see from Today."}</p>}
+                      {__v?.feedbackNote ? <span className="meta">{__v.feedbackNote}</span> : null}
+                    </section>
+                  ) : null}
+                  <section id="ask" className="col" style={{"gap":"10px","scrollMarginTop":"90px"} as any}>
+                    <h2 className="sec">{"CHECK THIS WITH YOUR ENGINEER"}</h2>
+                    <ReviewBox v={__v} />
+                  </section>
                 </div>
               </>
             ) : null}

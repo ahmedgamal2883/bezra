@@ -11,18 +11,22 @@ export function useLanding() {
   const sp = useApi<any>('/sample').data;
   const hc = useApi<any>('/hindcast').data;
   const { setLang } = useLang();
-  const out: any = {};
+  const out: any = { todayLong: new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) };
   const cells = (sp?.squares?.cells || []).filter((x: any) => x.class !== 'outside' && x.ndvi != null);
   if (cells.length) {
     const med = sp.squares.median;
     out.lens = cells.slice(0, 12).map((x: any) => ({ v: x.ndvi.toFixed(2), fill: x.class === 'less' ? '#E0A43A' : x.ndvi > med * 1.02 ? '#7FA65A' : '#C9C77A' }));
     const w = cells.reduce((a: any, b: any) => (b.ndvi < a.ndvi ? b : a));
+    out.weakSq = nm(w.r, w.c);
     out.weak = { name: 'Square ' + nm(w.r, w.c), txt: `${Math.round((med - w.ndvi) / med * 100)}% under the rest of the field`, todo: `Water on time, ${nm(w.r, w.c)} first`, gain: sp.squares.source || '' };
   }
   const im = sp?.impact;
   if (im?.with_bezra?.ardeb != null && im?.without_bezra?.ardeb != null) {
     const W = im.with_bezra.ardeb, WO = im.without_bezra.ardeb, d = Math.round((W - WO) * 10) / 10;
     out.usual = String(WO); out.withB = String(W);
+    out.deltaA = `${d >= 0 ? '+' : ''}${d}`;
+    const prot = (im.actions || []).find((a: any) => a.gain_pct > 0);
+    out.protectTxt = prot ? `Protects about ${Math.max(1, Math.round(prot.gain_pct))}% of your harvest` : '';
     out.t1 = `+${Math.round(d / WO * 100)}%`;
     const u = im.usual?.value || WO;
     const steps = (im.actions || []).map((a: any) => ({ l: a.what, v: Math.round(u * a.gain_pct / 100 * 10) / 10 }));

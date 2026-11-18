@@ -8,6 +8,7 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
 import Logic from './Today.logic';
+import SeasonChecklist from '@/v2/SeasonChecklist';
 import { useTodayData, dayMonth } from '@/v2/data/today';
 import { useField, useUser } from '@/lib/field';
 
@@ -1018,6 +1019,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                 </section>
               </>
             ) : null}
+            <div style={{"paddingTop":"32px"} as any}><SeasonChecklist /></div>
             <footer className="foot" style={{"paddingTop":"24px"} as any}>
               <span>
                 {"Bezra helps you think. It doesn't decide for you."}

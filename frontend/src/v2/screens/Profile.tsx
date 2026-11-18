@@ -8,6 +8,7 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Profile.logic';
+import EngineerLink from '@/v2/EngineerLink';
 import { useProfile } from '@/v2/data/profile';
 
 export default function ProfileScreen(props: Record<string, unknown> = {}) {
@@ -151,14 +152,15 @@ export default function ProfileScreen(props: Record<string, unknown> = {}) {
                           {__v?.engineer || "No engineer yet"}
                         </b>
                         <span className="meta">
-                          {__v?.engineer ? "Sees your journal and alerts" : "When an engineer follows your field, they will appear here."}
+                          {__v?.engineer ? "Sees your fields, journal and your questions" : __v?.isEngineer ? "You are an engineer. Farmers add you by your mobile number." : "Add your engineer so you can send them questions from Bezra."}
                         </span>
                       </span>
                     </span>
-                    {__v?.engineer ? (<Link href="/messages" className="btn soft sm press">
-                      {"Message"}
+                    {__v?.engineer ? (<Link href={__v?.askHref || "/today?to=data"} className="btn soft sm press">
+                      {"Ask a question"}
                     </Link>) : null}
                   </div>
+                  {!__v?.engineer && !__v?.isEngineer && !__v?.guest ? <EngineerLink /> : null}
                 </section>
               </div>
               <div className="col">

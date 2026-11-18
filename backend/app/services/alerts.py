@@ -65,7 +65,8 @@ def _build(c: Ctx) -> dict:
         "kind": "water", "chip": "w", "level": LV_KEY[lv], "level_label": lv,
         "title": f"Water turn {nt.strftime('%A')}, don't skip it" if lv != "Low" else f"Next water turn {nt.strftime('%A')} {_dm(nt)}",
         "when": f"{_wd(nt)} {_dm(nt)}",
-        "why": f"{fields.CROP_LABEL[f['crop']]} is {s['stage'].lower()}. Soil at {sw}%, {'under' if below else 'above'} the 50% refill point. "
+        "why": (f"{fields.CROP_LABEL[f['crop']]} is not sown yet. Water just after sowing. " if s["day_n"] < 0 else
+                f"{fields.CROP_LABEL[f['crop']]} is {s['stage'].lower()}. " + (f"Soil at {sw}%, {'under' if below else 'above'} the 50% refill point. " if sw is not None else ""))
                + ("No rain in the forecast." if rain7 < 1 else f"About {round(rain7)} mm of rain in the forecast, not certain."),
         "steps": [f"Water on your turn {nt.strftime('%A')}, early morning."]
                  + ([f"Make sure water reaches the {spot['where'].lower()}."] if spot else [])

@@ -128,12 +128,17 @@ def clean_details(category: str, details: dict | None) -> dict | None:
 
 
 def answer(c: Ctx, task_id: str, ans: str, postpone_to: str | None = None, note: str | None = None,
-           case_id: str | None = None, task: dict | None = None, details: dict | None = None) -> dict:
+           case_id: str | None = None, task: dict | None = None, details: dict | None = None,
+           done_on: str | None = None) -> dict:
     """Save the farmer's answer. 'done' also writes the matching log entry (so the water balance and the plan
     know), dated on the task's day if it was in the past, else today. Saying 'done' again with details (how much
     water, which fertilizer) only updates those details: it never logs the same work twice."""
     if ans not in ANSWERS:
         raise ValueError("Answer must be done, later or not_done")
+    if done_on:
+        d_on = date.fromisoformat(done_on)
+        if d_on > c.today or d_on < c.today - timedelta(days=120):
+            raise ValueError("Pick a day in the last 4 months, not in the future")
     f = db.get_field(c.f["id"])
     owner = f.pop("owner_id")
     for k in ("farmer", "engineer_id"):
@@ -147,6 +152,8 @@ def answer(c: Ctx, task_id: str, ans: str, postpone_to: str | None = None, note:
         db.save_field(f, owner)
         return rec
     rec = {"answer": ans, "at": datetime.now().isoformat(timespec="minutes")}
+    if done_on:
+        rec["done_on"] = done_on
     if det:
         rec["details"] = det
     if ans == "later":
@@ -164,8 +171,11 @@ def answer(c: Ctx, task_id: str, ans: str, postpone_to: str | None = None, note:
         kind = LOG_KIND.get(task["category"])
         if kind:
             from . import plan
-            when = min(c.today, date.fromisoformat(task["date"])) if task.get("date") else c.today
-            when = max(when, c.today - timedelta(days=10))
+            if done_on:
+                when = date.fromisoformat(done_on)          # the day the farmer says it was done
+            else:
+                when = min(c.today, date.fromisoformat(task["date"])) if task.get("date") else c.today
+                when = max(when, c.today - timedelta(days=10))
             try:
                 plan.add_log(c, kind, when.isoformat(), None, None, note=f"From the checklist: {task['title']}")
                 _remember_log_date(c, task_id, when.isoformat())

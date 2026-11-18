@@ -121,6 +121,17 @@ export default function EngineerScreen(props: Record<string, unknown> = {}) {
                 </div>
               ))}
             </div>
+            {((__v?.reviews) || []).length ? (
+              <section className="col" style={{"gap":"6px","marginBottom":"20px"} as any}>
+                <h2 className="sec">{"QUESTIONS FROM YOUR FARMERS" + (__v?.reviewsOpen ? " · " + __v.reviewsOpen + " waiting" : "")}</h2>
+                {__v.reviews.map((r: any) => (
+                  <Link key={r.id} href={r.href} className="row sp press" style={{"padding":"12px 0","borderTop":"1px solid var(--line)","gap":"16px"} as any}>
+                    <span className="col" style={{"gap":"2px","minWidth":0} as any}><b style={{"fontWeight":"600"} as any}>{r.note}</b><span className="meta">{r.who + " · " + r.when}</span></span>
+                    <span className={"pq " + (r.open ? "est" : "farm")}>{r.open ? "Answer" : "Answered"}</span>
+                  </Link>
+                ))}
+              </section>
+            ) : null}
             <div className="fchips" role="group" aria-label="Show">
               {((__v?.filters) || []).map((f: any, jf: number) => <button key={jf} type="button" className={f.cls} aria-pressed={f.pressed} onClick={f.pick}>{f.label}</button>)}
             </div>

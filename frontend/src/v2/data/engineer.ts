@@ -9,6 +9,7 @@ import { shortDate } from './today';
 export function useEngineer() {
   const { user } = useUser();
   const ws = useApi<any>('/engineer/fields').data;
+  const rv = useApi<any[]>('/engineer/reviews').data;
   const rows = (ws?.fields || []).filter((r: any) => !r.error);
   const today = new Date().toISOString().slice(0, 10);
   const lvl = (r: any) => (r.status === 'Visit first' ? ['High', 'high'] : r.status === 'This week' ? ['Medium', 'med'] : ['Low', 'low']);
@@ -31,6 +32,11 @@ export function useEngineer() {
       { l: 'Photos from farmers', v: String(k.cases_total), s: `${k.cases_new} new` },
     ] : [],
     list,
+    // questions farmers sent with "Check this with my engineer" (newest first; open ones on top)
+    reviews: (rv || []).slice().sort((a: any, b: any) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1)).slice(0, 8)
+      .map((r: any) => ({ id: r.id, who: `${r.from} · ${r.field_name}`, note: r.note || 'Please check my field', open: r.status === 'open',
+        when: shortDate(r.created.slice(0, 10)), href: `/field/${r.field_id}/data#ask`, topic: r.topic })),
+    reviewsOpen: (rv || []).filter((r: any) => r.status === 'open').length,
     exportCsv: (shown: any[]) => {
       const q = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
       const lines = ['farmer,field,village,governorate,area_feddan,status,score,why', ...shown.map((r: any) => r.csv.map(q).join(','))];

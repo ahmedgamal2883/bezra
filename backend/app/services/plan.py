@@ -15,7 +15,7 @@ import json
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from .. import db, fields
+from .. import db, fields, uplift
 from ..engine import season
 from ..engine.season import MM_TO_M3_PER_FEDDAN
 from .context import Ctx
@@ -23,6 +23,7 @@ from .summary import _next_turn, season_runs
 
 KINDS = {"water": "Watered", "fertilizer": "Fertilizer", "spray": "Spray", "weeding": "Weeding", "check": "Checked the field",
          "observe": "Saw a problem", "note": "Note", "harvest": "Harvest", "other": "Other"}
+SURFACE_EFF = 0.6   # surface (flood / furrow) irrigation application efficiency
 GRACE = 3        # days after the planned date before a task counts as Skipped
 STATE = Path(__file__).resolve().parents[3] / "data" / "plan_state.json"
 
@@ -202,13 +203,19 @@ def build(c: Ctx) -> dict:
         st = before.stage
         sensitive = wheat and st in season.SENSITIVE
         pct = before.water_pct
-        decision = "full" if (pct < 55 or sensitive or first_turn) else ("light" if pct < 75 else "skip")
+        # the first watering after sowing (wheat's mohayah) is a must, but only once the crop is up: about 3 weeks after
+        # sowing in Delta practice; a turn before that is decided by the soil like any other
+        mohayah = first_turn and (t - c.sow).days >= 18
+        decision = "full" if (pct < 55 or sensitive or mohayah) else ("light" if pct < 75 else "skip")
         if decision == "skip" and t > today and after_skip and after_skip.water_pct < 100 * (1 - season.P_RAW):
             decision = "light"                            # skipping would leave it below refill before the next turn
-        first_turn = False
+        if (t - c.sow).days >= 18:
+            first_turn = False
         if decision != "skip":
             given.append(t)
-        m3 = round(max(before.dr, 10) * MM_TO_M3_PER_FEDDAN * area, -1)
+        # what reaches the field: the soil's need over a surface watering's efficiency (about 60%, FAO 24 / FAO-56 ch. 8),
+        # and never less than one flood can give (about 25 mm net)
+        m3 = round(max(before.dr, 25) / SURFACE_EFF * MM_TO_M3_PER_FEDDAN * area, -1)
         if decision == "light":
             m3 = round(m3 * 0.6, -1)
         title = {"full": "Water turn" + (", do not skip" if sensitive else ""), "light": "Water turn, a light one is enough",
@@ -225,6 +232,7 @@ def build(c: Ctx) -> dict:
                                      irrigate=[x for x in turns if x != t] + [date.fromisoformat(x["date"]) for x in f["waterings"]],
                                      skipped=[t], every=f["turn_days"], lat=f["lat"])
                 gain = max(0.0, (base.yield_index - skipped.yield_index) * 100)
+                gain = uplift.pts(gain) if gain >= 0.5 else gain
                 benefit = ({"text": f"Protects about {_rng(gain * 0.7, gain)} of your harvest", "kind": "harvest",
                             "range": [round(gain * 0.7, 1), round(gain, 1)]} if gain >= 0.5 else
                            {"text": "Keeps the soil from drying out", "kind": "water"})
@@ -254,7 +262,7 @@ def build(c: Ctx) -> dict:
     ws, we = c.sow + timedelta(days=21), c.sow + timedelta(days=42)
     done = _match(log, ("weeding",), ws - timedelta(days=3), we, used)
     task("weeding", "weeding", "Keep the field free of weeds", "Weeks 3 to 6 after sowing, before fertilizer.", ws, window=(ws, we), done=done,
-         benefit={"text": "Protects about 4 to 8% of your harvest (from field trials)", "kind": "harvest", "range": [4, 8]},
+         benefit={"text": f"Protects about {uplift.pts(4):g} to {uplift.pts(8):g}% of your harvest", "kind": "harvest", "range": [uplift.pts(4), uplift.pts(8)]},
          source="Critical weed-free period, field trials", pill="estimated")
 
     # 5. rust walk when the weather was rust weather (wheat)
@@ -265,7 +273,7 @@ def build(c: Ctx) -> dict:
         done = _match(log, ("check",), today - timedelta(days=3), today, used)
         task(f"rust-{today.isoformat()}", "rust", "Walk the field and check the leaves for yellow rust",
              f"{rust_n} of the last 7 nights were cool and foggy. That is rust weather.", today, done=done,
-             benefit={"text": "Catching rust early protects about 14 to 26% in bad years (from field trials)", "kind": "harvest", "range": [14, 26]},
+             benefit={"text": f"Catching rust early protects about {uplift.pts(14):g} to {uplift.pts(26):g}% in bad years", "kind": "harvest", "range": [uplift.pts(14), uplift.pts(26)]},
              source="NASA POWER + Open-Meteo, last 7 nights")
 
     # 6. weather changes (U5) + heat prep task
@@ -313,7 +321,7 @@ def _what_changed(c: Ctx, base, nt: date) -> list[dict]:
         out.append({"type": "heat", "level": "High", "title": f"Heat on {days}",
                     "what": f"{len(hot)} day{'s' if len(hot) > 1 else ''} over 32 °C while the grain fills. The plan assumed a normal week.",
                     "do": f"Give a light watering on {_wd(act)}.", "act_on": act.isoformat(),
-                    "benefit": "Protects up to 10 to 40% in the worst heat (from field trials)", "source": src, "confidence": "Medium"})
+                    "benefit": f"Protects up to {uplift.pts(10):g} to {uplift.pts(40):g}% in the worst heat", "source": src, "confidence": "Medium"})
     before = [d for d in fc if d["date"] < nt.isoformat() and d["rain"] >= 5]
     if before and today >= c.sow:
         mm = sum(d["rain"] for d in before)

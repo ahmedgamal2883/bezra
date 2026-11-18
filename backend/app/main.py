@@ -10,7 +10,7 @@ import os
 import re
 import time
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime
 
 import anthropic
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
@@ -664,6 +664,7 @@ class TaskAnswer(BaseModel):
     note: str | None = None
     case_id: str | None = None      # a photo case made from this task
     details: dict | None = None     # water: {how: full|light|unknown}; fertilizer: {product, bags}
+    done_on: str | None = None      # done: the day it was really done (today, yesterday or a date); default as before
 
 
 @app.post("/fields/{field_id}/tasks/{task_id}")
@@ -674,7 +675,7 @@ def answer_task(field_id: str, task_id: str, req: TaskAnswer, user: dict = Depen
     if not cur:
         raise HTTPException(404, "No such task")
     try:
-        rec = tasks.answer(c, task_id, req.answer, req.postpone_to, req.note, req.case_id, cur, req.details)
+        rec = tasks.answer(c, task_id, req.answer, req.postpone_to, req.note, req.case_id, cur, req.details, req.done_on)
     except ValueError as e:
         raise HTTPException(422, str(e))
     return {"saved": rec, "tasks": tasks.build(_ctx(field_id, user))}
@@ -1090,3 +1091,100 @@ def sources(field_id: str, user: dict = Depends(current_user)):
     w = _ctx(field_id, user).w
     return {"power": {"last_date": w.power_last.isoformat(), "state": w.power_meta.get("state")},
             "openmeteo": {"generated": w.forecast_generated, "state": w.openmeteo_meta.get("state")}}
+
+
+# ---- Farmer <-> engineer (Nov 2026): link by mobile number, and "check this with my engineer" requests ----------
+class LinkEngineer(BaseModel):
+    phone: str
+
+
+@app.post("/me/engineer")
+def link_engineer(req: LinkEngineer, user: dict = Depends(current_user)):
+    """The farmer adds their engineer by the engineer's mobile number. The engineer then sees this farmer's fields in
+    the workspace (db.fields_for) and their review requests."""
+    try:
+        email = _phone_key(req.phone)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    eng = db.find_user(email)
+    if not eng or eng["role"] != "engineer":
+        raise HTTPException(404, "No engineer has a Bezra account with this number yet. Ask them to sign up as an engineer.")
+    if eng["id"] == user["id"]:
+        raise HTTPException(422, "That is your own number")
+    db.update_user(user["id"], engineer_id=eng["id"])
+    return {"engineer_id": eng["id"], "engineer_name": eng["name"]}
+
+
+@app.delete("/me/engineer")
+def unlink_engineer(user: dict = Depends(current_user)):
+    db.update_user(user["id"], engineer_id=None)
+    return {"engineer_id": None}
+
+
+class ReviewAsk(BaseModel):
+    note: str = ""
+    topic: str = "field"          # field / fertilizer / water / problem
+    snapshot: dict | None = None  # what the farmer was looking at (numbers from the data sheet)
+
+
+def _seen(field_id: str, user: dict) -> dict:
+    f = db.get_field(field_id)
+    if not db.can_see(user, f):
+        raise HTTPException(404, "Field not found")
+    return f
+
+
+def _reviews(field_id: str) -> list[dict]:
+    return db.kv_get(f"reviews:{field_id}") or []
+
+
+@app.post("/fields/{field_id}/reviews")
+def ask_review(field_id: str, req: ReviewAsk, user: dict = Depends(current_user)):
+    """'Check this with my engineer': goes to the engineer linked to the field's owner (their workspace lists it)."""
+    fld = _seen(field_id, user)
+    owner = fld["owner_id"]
+    with db.conn() as k:
+        r = k.execute("SELECT engineer_id FROM users WHERE id=?", (owner,)).fetchone()
+    if not r or not r["engineer_id"]:
+        raise HTTPException(409, "Add your engineer first (Profile, Your engineer).")
+    import secrets
+    rec = {"id": secrets.token_hex(4), "field_id": field_id, "field_name": fld["name"], "created": datetime.now().isoformat(timespec="minutes"),
+           "from": user["name"], "topic": req.topic[:20], "note": req.note.strip()[:600], "snapshot": req.snapshot or {},
+           "status": "open", "reply": None, "replied_at": None, "engineer_id": r["engineer_id"]}
+    db.kv_set(f"reviews:{field_id}", (_reviews(field_id) + [rec])[-50:])
+    return rec
+
+
+@app.get("/fields/{field_id}/reviews")
+def list_reviews(field_id: str, user: dict = Depends(current_user)):
+    _seen(field_id, user)
+    return list(reversed(_reviews(field_id)))
+
+
+class ReviewReply(BaseModel):
+    reply: str
+
+
+@app.get("/engineer/reviews")
+def engineer_reviews(user: dict = Depends(current_user)):
+    """Every open and answered request from the engineer's farmers, newest first."""
+    if user["role"] not in ("engineer", "admin"):
+        raise HTTPException(403, "Engineers only")
+    out = []
+    for f in db.fields_for(user):
+        out += [x for x in _reviews(f["id"]) if user["role"] == "admin" or x.get("engineer_id") == user["id"]]
+    return sorted(out, key=lambda x: x["created"], reverse=True)
+
+
+@app.post("/engineer/reviews/{field_id}/{rid}")
+def answer_review(field_id: str, rid: str, req: ReviewReply, user: dict = Depends(current_user)):
+    if user["role"] not in ("engineer", "admin"):
+        raise HTTPException(403, "Engineers only")
+    _seen(field_id, user)
+    rs = _reviews(field_id)
+    hit = next((x for x in rs if x["id"] == rid), None)
+    if not hit:
+        raise HTTPException(404, "Request not found")
+    hit.update(status="answered", reply=req.reply.strip()[:1000], replied_at=datetime.now().isoformat(timespec="minutes"), by=user["name"])
+    db.kv_set(f"reviews:{field_id}", rs)
+    return hit

@@ -18,7 +18,8 @@ export function useProfile() {
   return {
     sub: [role, place].filter(Boolean).join(' · '),
     fields: mine.map((f) => ({ id: f.id, name: f.name, line: `${f.area_feddan} feddan · ${String(f.crop).toLowerCase()}`, current: f.id === id, href: `/field/${f.id}/today` })),
-    engineer: me?.engineer_name || null,
+    engineer: me?.engineer_name || null, isEngineer: user?.role === 'engineer', guest: !!user?.guest,
+    askHref: id ? `/field/${id}/data#ask` : '/today?to=data',
     lang, setLang,
     demo: !!user?.demo_account,
     act: {

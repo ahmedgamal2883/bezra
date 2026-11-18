@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
       f('/alerts', 'crop'), f('/diagnose', 'crop/check'), f('/next', 'soil'),
       { source: '/sim', destination: '/today?to=season/try', permanent: false },
       { source: '/onboarding', destination: '/fields/new', permanent: false },
+      // the old Messages page was a demo chat that sent nothing: questions to the engineer now go from the data sheet
+      { source: '/messages', destination: '/today?to=data', permanent: false },
     ];
   },
   async rewrites() {

@@ -113,6 +113,9 @@ def build(c: Ctx) -> dict:
                         "gain_pct": round((catch_up.yield_index - stays.yield_index) * 100, 1),
                         "how": "Season model: catching the turn up today vs leaving it missed", "pending": True})
 
+    from .. import uplift
+    w_idx = uplift.index(w_idx, without_idx)
+
     def ardeb(idx):
         return round(usual * idx, 1) if usual else None
 

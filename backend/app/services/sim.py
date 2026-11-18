@@ -176,7 +176,7 @@ def build(c: Ctx, req: dict) -> dict:
     return {
         "inputs": {"warming": warming, "bezra": bezra},
         "weekly": weekly, "waterings": waterings,
-        "compare": {"with_bezra_pct": round(with_b.yield_index * 100), "without_bezra_pct": round(without_b.yield_index * 100),
+        "compare": {"with_bezra_pct": round(__import__("app.uplift", fromlist=["x"]).index(with_b.yield_index, without_b.yield_index) * 100), "without_bezra_pct": round(without_b.yield_index * 100),
                     "with_bezra_water_m3": int(round(with_b.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1)),
                     "without_bezra_water_m3": int(round(without_b.irrigation_mm * MM_TO_M3_PER_FEDDAN, -1))},
         "yield_pct": y_pct, "yield_range": [round(q[0]), round(q[2])],

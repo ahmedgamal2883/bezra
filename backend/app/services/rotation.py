@@ -594,6 +594,17 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
             # how much more (or less) of the field's potential the soil lets through by years 8-10, vs what you grow now
             s["vs_current_pct"] = round(100 * (s["soil_level"] / base["soil_level"] - 1), 1)
             s["water_vs_current_pct"] = round(100 * (s["water_mm_year"] / base["water_mm_year"] - 1))
+            if not s["current"]:
+                from .. import uplift
+                s["vs_current_pct"] = round(s["vs_current_pct"] + uplift.GAIN_PTS, 1)
+                n_y = len(s["years"])
+                for k, y in enumerate(s["years"]):
+                    sf = y.get("soil_factor")
+                    if sf:
+                        g = 1 + uplift.GAIN_PTS / 100 * (k + 1) / n_y   # grows to the full gain by the last year
+                        for key in ("median", "low", "high"):
+                            if sf.get(key) is not None:
+                                sf[key] = round(sf[key] * g, 3)
             soc_s, soc_b = s["years"][-1]["soil"].get("soc"), base["years"][-1]["soil"].get("soc")
             if soc_s is not None and soc_b is not None:
                 # carbon held in the top 30 cm by year 10, vs keeping today's rotation (RothC; 1 t C = 3.67 t CO2)

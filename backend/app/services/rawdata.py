@@ -39,49 +39,81 @@ def _weather(c: Ctx) -> dict:
             "forecast": {"rows": fc, "issued": c.w.forecast_generated, "source": "Open-Meteo forecast"}}
 
 
-def build(c: Ctx) -> dict:
+_pool = None
+_running: dict = {}
+
+
+def _part(key: str, fn, wait: float = 6.0):
+    """Run one source with a time limit. A slow first download keeps going in the background (it fills the cache),
+    so the sheet shows everything else now and that part on the next visit."""
+    global _pool
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as Late
+    _pool = _pool or ThreadPoolExecutor(6)
+    fut = _running.get(key)
+    if fut is None or fut.done():
+        fut = _pool.submit(fn)
+        _running[key] = fut
+    try:
+        out = fut.result(timeout=wait)
+        _running.pop(key, None)
+        return out
+    except Late:
+        return {"loading": True}
+    except Exception as e:  # noqa: BLE001
+        _running.pop(key, None)
+        return {"error": str(e)[:120]}
+
+
+def _sat(c: Ctx) -> dict:
     from . import satellite
+    nd = satellite.ndvi(c)
+    if not nd.get("available"):
+        return {"error": nd.get("reason")}
+    ix = nd["indices"]
+    by = {}
+    for name, block in ix.items():
+        for x in block["cells"]:
+            by.setdefault((x["r"], x["c"]), {})[name] = _r(x.get("value"), 3)
+    return {"date": nd["date"], "source": nd["source"], "pixel_m": nd["pixel_m"],
+            "clear_pct": _r((nd.get("field_clear") or 0) * 100, 0) if (nd.get("field_clear") or 0) <= 1 else _r(nd.get("field_clear"), 0),
+            "images_this_season": nd["images_this_season"],
+            "median": {k: _r(v["median"], 3) for k, v in ix.items()},
+            "squares": [{"square": f"{r + 1}-{cc + 1}", **v} for (r, cc), v in sorted(by.items())]}
+
+
+def _curve(c: Ctx) -> dict:
+    from . import satellite
+    h = satellite.health(c)["curve"]
+    return {"this_season": h["this_season"][-10:], "normal": h["normal"], "normal_seasons": h["normal_seasons"],
+            "source": h["this_source"], "normal_source": h["normal_source"], "season_start": h["season_start"]}
+
+
+def _layers(c: Ctx) -> dict:
+    from . import satellite
+    L = satellite.layers(c)
+    out = {}
+    for k in ("smap", "ecostress"):
+        v = L.get(k) or {}
+        out[k] = {"value": v.get("value"), "date": v.get("date"), "product": v.get("product")}
+    t = L.get("terrain") or {}
+    out["terrain"] = {k: t.get(k) for k in ("elevation_m", "range_m", "slope_pct", "field_vs_around_m", "source")}
+    return out
+
+
+def build(c: Ctx) -> dict:
     out: dict = {"field": c.f["id"], "lat": c.f["lat"], "lon": c.f["lon"], "today": c.today.isoformat()}
+    fid = c.f["id"]
     try:
         out |= _weather(c)
     except Exception as e:  # noqa: BLE001
         out["weather"] = {"error": str(e)[:120]}
-    try:
-        nd = satellite.ndvi(c)
-        if nd.get("available"):
-            ix = nd["indices"]
-            by = {}
-            for name, block in ix.items():
-                for x in block["cells"]:
-                    by.setdefault((x["r"], x["c"]), {})[name] = _r(x.get("value"), 3)
-            out["satellite"] = {"date": nd["date"], "source": nd["source"], "pixel_m": nd["pixel_m"],
-                                "clear_pct": _r((nd.get("field_clear") or 0) * 100, 0) if (nd.get("field_clear") or 0) <= 1 else _r(nd.get("field_clear"), 0),
-                                "images_this_season": nd["images_this_season"],
-                                "median": {k: _r(v["median"], 3) for k, v in ix.items()},
-                                "squares": [{"square": f"{r + 1}-{cc + 1}", **v} for (r, cc), v in sorted(by.items())]}
-        else:
-            out["satellite"] = {"error": nd.get("reason")}
-    except Exception as e:  # noqa: BLE001
-        out["satellite"] = {"error": str(e)[:120]}
-    try:
-        h = satellite.health(c)["curve"]
-        out["curve"] = {"this_season": h["this_season"][-10:], "normal": h["normal"], "normal_seasons": h["normal_seasons"],
-                        "source": h["this_source"], "normal_source": h["normal_source"], "season_start": h["season_start"]}
-    except Exception as e:  # noqa: BLE001
-        out["curve"] = {"error": str(e)[:120]}
-    try:
-        L = satellite.layers(c)
-        for k in ("smap", "ecostress"):
-            v = L.get(k) or {}
-            out[k] = {"value": v.get("value"), "date": v.get("date"), "product": v.get("product")}
-        t = L.get("terrain") or {}
-        out["terrain"] = {k: t.get(k) for k in ("elevation_m", "range_m", "slope_pct", "field_vs_around_m", "source")}
-    except Exception as e:  # noqa: BLE001
-        out["smap"] = {"error": str(e)[:120]}
-    try:
-        out["soil"] = soilgrids.texture(c.f["lat"], c.f["lon"])
-    except Exception as e:  # noqa: BLE001
-        out["soil"] = {"error": str(e)[:120]}
+    out["satellite"] = _part(f"{fid}:sat", lambda: _sat(c))
+    out["curve"] = _part(f"{fid}:curve", lambda: _curve(c), 3.0)
+    lay = _part(f"{fid}:layers", lambda: _layers(c))
+    for k in ("smap", "ecostress", "terrain"):
+        out[k] = lay.get(k) if k in lay else lay
+    out["soil"] = _part(f"{fid}:soil", lambda: soilgrids.texture(c.f["lat"], c.f["lon"]), 4.0)
+    out["loading"] = [k for k in ("satellite", "curve", "smap", "soil") if isinstance(out.get(k), dict) and out[k].get("loading")]
     out["season"] = {"sown": c.f["sow_date"], "days": (c.today - c.sow).days,
-                     "gdd": _r(sum(max(0.0, (c.w.day(c.sow + timedelta(days=i)) or {}).get("tmean", 0)) for i in range((c.today - c.sow).days)), 0)}
+                     "gdd": _r(sum(max(0.0, (c.w.day(c.sow + timedelta(days=i)) or {}).get("tmean", 0)) for i in range(max(0, (c.today - c.sow).days))), 0)}
     return out
