@@ -1,4 +1,5 @@
 import { SetField } from '@/lib/field';
+import Prefetch from '@/components/Prefetch';
 
 // Pre-build the demo fields' pages so they open instantly in production.
 export function generateStaticParams() {
@@ -10,6 +11,7 @@ export default async function FieldLayout({ children, params }: { children: Reac
   return (
     <>
       <SetField id={id} />
+      <Prefetch id={id} />
       {children}
     </>
   );

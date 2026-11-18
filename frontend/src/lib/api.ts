@@ -48,6 +48,15 @@ export function setDemoAccount(on: boolean) {
   demoAccount = on;
 }
 
+/** Fetch quietly into the same memory the screens read, so the next page opens without waiting. */
+const warming = new Set<string>();
+export function prefetch(path: string) {
+  if (memo.has(path) || warming.has(path)) return;
+  warming.add(path);
+  fetch(API + path).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d != null && !memo.has(path)) memo.set(path, d); })
+    .catch(() => {}).finally(() => warming.delete(path));
+}
+
 export function useApi<T = any>(path: string | null, body?: unknown, fresh = false): Loadable<T> {
   const key = path ? path + (body ? JSON.stringify(body) : '') : '';
   if (fresh) memo.delete(key); // e.g. plan approval status: always ask again
