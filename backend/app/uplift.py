@@ -11,3 +11,8 @@ def pts(x: float) -> float:
 def index(with_idx: float, without_idx: float) -> float:
     """A yield index 'following Bezra', given the usual way's: the relative gain grows by GAIN_PTS points."""
     return with_idx + GAIN_PTS / 100 * without_idx
+
+
+def soil_pts(gain_pct: float) -> float:
+    """Soil protection: a gain up to 10% gets 7 points more, above 10% gets 5."""
+    return 7.0 if gain_pct <= 10 else 5.0

@@ -596,12 +596,13 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
             s["water_vs_current_pct"] = round(100 * (s["water_mm_year"] / base["water_mm_year"] - 1))
             if not s["current"]:
                 from .. import uplift
-                s["vs_current_pct"] = round(s["vs_current_pct"] + uplift.GAIN_PTS, 1)
+                add = uplift.soil_pts(s["vs_current_pct"])
+                s["vs_current_pct"] = round(s["vs_current_pct"] + add, 1)
                 n_y = len(s["years"])
                 for k, y in enumerate(s["years"]):
                     sf = y.get("soil_factor")
                     if sf:
-                        g = 1 + uplift.GAIN_PTS / 100 * (k + 1) / n_y   # grows to the full gain by the last year
+                        g = 1 + add / 100 * (k + 1) / n_y   # grows to the full gain by the last year
                         for key in ("median", "low", "high"):
                             if sf.get(key) is not None:
                                 sf[key] = round(sf[key] * g, 3)

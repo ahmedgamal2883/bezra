@@ -120,7 +120,7 @@ export function soilFive(ro: any, g = { x0: 40, step: 116, top: 40, bottom: 200 
       bestEnd: { y: Y(b[5]).toFixed(1), t: `${Math.round(b[5] * 100)} With Bezra` }, same: cur === best, endX: X(5) + 8,
       labs: ['now', ...[1, 2, 3, 4, 5].map((i) => yy(thisYear + i))], xs: [0, 1, 2, 3, 4, 5].map(X), curY5: Math.round(a[5] * 100), bestY5: Math.round(b[5] * 100) },
     fiveSay: cur === best ? 'What you grow now already keeps your soil steady over the next 5 seasons.'
-      : `Bezra protects your soil from stress. If nothing changes, the tired soil lets through ${Math.round(a[5] * 100)}% of your harvest in 5 seasons. With ${best.name[0].toLowerCase()}, it keeps ${Math.round(b[5] * 100)}%.`,
+      : `Bezra protects your soil from stress. With ${best.name[0].toLowerCase()}, your soil stays ${Math.max(0, Math.round((b[5] / a[5] - 1) * 100))}% stronger in 5 seasons than if nothing changes.`,
     bestName: best.name[0],
   };
 }
