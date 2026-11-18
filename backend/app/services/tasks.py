@@ -387,6 +387,7 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
     for t in out:
         if t["category"] == "irrigation" and t["status"] in ("done", "verified") and t.get("done_date") and t["done_date"] != t["date"]:
             t["covered_by"] = t["done_date"]
+    _season_extras(c, out, add)
     from .priority import rank
     prio = c.f.get("priority")
     out.sort(key=lambda t: (t["date"], 0 if t["priority"] == "high" else 1, rank(t["category"], prio)))
@@ -428,3 +429,35 @@ def _nice(iso: str) -> str:
     from datetime import date as _d
     d = _d.fromisoformat(iso)
     return f"{d.day} {d.strftime('%b')}"
+
+
+WIND_KMH = 40  # a strong breeze (Beaufort 6): enough to flatten wheat on soaked soil
+
+
+def _season_extras(c: Ctx, out: list[dict], add) -> None:
+    """Additions that only add words or one task; they never move or resize a water turn (the FAO-56 plan decides those).
+    - wind: a turn after heading on a day the forecast says is windy gets a note (wheat lies flat on wet soil in wind)
+    - sowing: the seed rate of the Wheat Research Department
+    - after harvest: what to do with the straw (the Soil screen's model counts it)"""
+    if c.f.get("crop") != "wheat":
+        return
+    heading = next((t["date"] for t in out if t["category"] == "milestone" and "heading" in t["title"].lower()), None)
+    fc = getattr(c.w, "fc", {}) or {}
+    for t in out:
+        if t["category"] != "irrigation" or not heading or t["date"] < heading:
+            continue
+        w = (fc.get(t["date"]) or {}).get("wind")
+        if w is not None and w >= WIND_KMH:
+            t["wind"] = (f"Strong wind is forecast that day (about {round(w)} km/h). Water when the wind drops, "
+                         "or the wheat may lie flat on the wet soil.")
+            t["wind_source"] = "Open-Meteo forecast"
+    for t in out:
+        if t["id"] == "sow" and not t.get("amount"):
+            t["amount"] = "About 60 kg of seed per feddan (about 45 kg on raised beds)"
+            t["amount_source"] = "Wheat Research Department, ARC"
+    hv = next((t for t in out if t["category"] == "milestone" and t["title"].lower().startswith("harvest")), None)
+    if hv:
+        end = date.fromisoformat((hv.get("window") or [hv["date"], hv["date"]])[1])
+        add("straw", "milestone", "After harvest: plough the straw in, do not burn it",
+            "Straw left in the soil feeds it; burnt or taken away, the soil tires. Bezra's soil model counts this.",
+            end + timedelta(days=3), end + timedelta(days=14), source="Soil Ledger (Bezra soil model)")

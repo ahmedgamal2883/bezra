@@ -143,7 +143,7 @@ const flip = async (k) => {
  try { await D.act.answerTask(k.id, 'done'); }
  catch (e) { set({ td: Object.assign({}, S.td, { [k.id]: false }), toast: 'Could not save. Check your connection and try again.' }); }
 };
-const todo = TASKS.map((k) => ({ t: k.t, s: k.s, ds: k.ds, g: k.g, hasG: !!k.g, tag: k.tag, tc: k.tc, cls: 'tdrow' + (isDone(k) ? ' done' : ''), box: 'tbox press' + (isDone(k) ? ' on' : ''), checked: String(!!isDone(k)),
+const todo = TASKS.map((k) => ({ t: k.t, s: k.s, ds: k.ds, g: k.g, hasG: !!k.g, pl: k.pl || '', wind: k.wind || '', tag: k.tag, tc: k.tc, cls: 'tdrow' + (isDone(k) ? ' done' : ''), box: 'tbox press' + (isDone(k) ? ' on' : ''), checked: String(!!isDone(k)),
  toggle: () => flip(k), label: (isDone(k) ? 'Done: ' : 'Mark done: ') + k.t,
  askOpen: !!(isDone(k) && k.ask && !TA[k.id]), answered: isDone(k) && TA[k.id] ? 'Saved to your journal: ' + TA[k.id].toLowerCase() + '.' : '', hasAnswer: !!(isDone(k) && TA[k.id]),
  asks: (k.ask || []).map((a) => ({ label: a, pick: () => set({ ta: Object.assign({}, TA, { [k.id]: a }) }) })), askQ: 'What did you find?' }));
@@ -172,7 +172,7 @@ const ckNoTap = async () => {
 const ckUnsureTap = () => set({ ck: 'unsure', ckMsg: QW && QW.kind === 'water' ? 'No problem. If you remember later, add it in your journal.' : 'No problem. Next time you pass the field, take a look.' });
 
 const wk = (D.week || []).map((w) => ({ label: w.label, value: w.k === 'water' && waterDoneNow ? 'Done today' : w.value, sw: 'background: ' + (w.k === 'water' && waterDoneNow ? '#2E7D45' : w.tone) + ';', col: 'color: ' + (w.k === 'water' && waterDoneNow ? '#2E7D45' : w.tone) + ';' }));
-const wkD = (D.weekD || []).map((w) => ({ label: w.label, value: w.k === 'water' && waterDoneNow ? 'Done today' : w.value, line: w.line || '', sw: 'background: ' + w.tone + ';', col: 'color: ' + w.tone + ';' }));
+const wkD = (D.weekD || []).map((w) => ({ label: w.label, value: w.k === 'water' && waterDoneNow ? 'Done today' : w.value, line: w.line || '', pl: w.pl || '', sw: 'background: ' + w.tone + ';', col: 'color: ' + w.tone + ';' }));
 const kpis = D.kpis || [];
 const coming = (D.coming || []);
 
@@ -196,7 +196,7 @@ return Object.assign(MAPV, { lg: LG.open, lgConf: !!LG.conf, stWhat: LG.st === '
  waterDone: waterDoneNow, waterTodo: !waterDoneNow,
  coming, comingTxt: 'Coming up · ' + coming.length + (coming.length === 1 ? ' task' : ' tasks'), hasComing: coming.length > 0,
  wk, wkD, kpis, hasWeek: wk.length > 0,
- headName: D.head ? D.head.name : '', headSub: D.head ? D.head.sub : '', fresh: D.fresh || '', dateLong: D.dateLong || '', todoTitle: D.todoTitle || '',
+ headName: D.head ? D.head.name : '', headSub: D.head ? D.head.sub : '', fresh: D.fresh || '', dateLong: D.dateLong || '', todoTitle: D.todoTitle || '', sortedBy: D.sortedBy || '',
  headT: D.headline ? D.headline.t : '', headS: D.headline ? D.headline.s : '', headReady: !!(D.head && D.headline), headLoading: !(D.head && D.headline),
  toast: S.toast, hasToast: !!S.toast, closeToast: () => set({ toast: '' }) });
  })();

@@ -1,4 +1,5 @@
 'use client';
+import { usePriority, priorityLine, PRIORITY_LABEL } from '@/v2/PriorityPicker';
 // Today (V18): every number on the page comes from these API answers, in the load order of HANDOFF §9:
 // map frame + squares first (fast, cached on the server), then the summary, tasks, check-in, journal.
 // The slow /today endpoint (season runs) is not used here: /summary carries the same decisions.
@@ -25,10 +26,11 @@ const TAG: Record<string, [string, string]> = {
 };
 const LEVEL_TONE: Record<string, string> = { Low: '#2E7D45', Medium: '#B4660B', High: '#C2412A' };
 
-export type Todo = { id: string; done: boolean; t: string; s: string; ds: string; g: string; tag: string; tc: string; category: string; ask?: string[]; imp?: { h: number; s: number } | null };
+export type Todo = { id: string; done: boolean; t: string; s: string; ds: string; g: string; tag: string; tc: string; category: string; ask?: string[]; imp?: { h: number; s: number } | null; pl?: string; wind?: string };
 
 export function useTodayData(id: string) {
   const [ver, setVer] = useState(0);
+  const prio = usePriority(id, ver);
   const q = ver ? `?v=${ver}` : '';
   // 1. map and squares
   const { photo, outline } = useFieldPhoto(id);
@@ -74,7 +76,8 @@ export function useTodayData(id: string) {
       const g = isWater && Array.isArray(protects) && s?.action?.next_turn === t.date ? `Protects about ${protects[0]}–${protects[1]}% of your harvest` : '';
       return { id: t.id, category: t.category, done: doneToday(t), t: t.title, s: [t.amount && !/engineer/i.test(t.amount) ? t.amount[0].toUpperCase() + t.amount.slice(1) + '.' : '', t.why].filter(Boolean).join(' '),
         ds: [t.source, t.date !== today ? 'Planned for ' + shortDate(t.date) : ''].filter(Boolean).join(' · '), g, tag, tc,
-        ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t) };
+        ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t),
+        pl: priorityLine(t.id === 'straw' ? 'straw' : t.category, prio), wind: t.wind || '' };
     });
     coming = tk.data.tasks.filter((t: any) => open(t) && t.date > today).slice(0, 3)
       .map((t: any) => ({ d: shortDate(t.date), t: t.title, s: t.amount && /engineer/i.test(t.amount) ? 'Check the amount with your engineer.' : (t.why || '') }));
@@ -94,10 +97,10 @@ export function useTodayData(id: string) {
   if (s?.risks) {
     const turnToday = s.action?.kind === 'water' && s.action?.next_turn === today;
     week = [
-      { k: 'heat', label: 'Heat', value: s.risks.heat?.level || '—', tone: LEVEL_TONE[s.risks.heat?.level] || '#6A716C', line: s.risks.heat?.line },
+      { k: 'heat', label: 'Heat', value: s.risks.heat?.level || '—', tone: LEVEL_TONE[s.risks.heat?.level] || '#6A716C', line: s.risks.heat?.line, pl: priorityLine('heat', prio) },
       { k: 'water', label: 'Water', value: turnToday ? 'Water today' : (s.action?.next_turn ? 'Next turn ' + shortDate(s.action.next_turn) : (s.risks.water?.level || '—')),
-        tone: turnToday ? '#B4660B' : '#2E7D45', line: s.risks.water?.line },
-      { k: 'rust', label: 'Rust', value: s.risks.rust?.level || '—', tone: LEVEL_TONE[s.risks.rust?.level] || '#6A716C', line: s.risks.rust?.line },
+        tone: turnToday ? '#B4660B' : '#2E7D45', line: s.risks.water?.line, pl: priorityLine('water', prio) },
+      { k: 'rust', label: 'Rust', value: s.risks.rust?.level || '—', tone: LEVEL_TONE[s.risks.rust?.level] || '#6A716C', line: s.risks.rust?.line, pl: priorityLine('rust', prio) },
     ];
   }
 
@@ -189,6 +192,7 @@ export function useTodayData(id: string) {
     today, photo, outline, squares, fresh, head, headline, todo, coming, week, weekD, kpis, question, recent,
     images: J?.season?.images ?? null,
     dateLong: today ? longDate(today) : '', todoTitle: today ? 'TO DO TODAY · ' + shortDate(today).toUpperCase() : 'TO DO TODAY',
+    sortedBy: 'Ordered by your priority: ' + (PRIORITY_LABEL[prio] || PRIORITY_LABEL.soil),
     coords: f ? '' : '', loading: { squares: nd.loading && !nd.data, rest: (sm.loading && !s) || (tk.loading && !tk.data) },
     nextTurn: s?.action?.next_turn ? shortDate(s.action.next_turn) : null,
     act,

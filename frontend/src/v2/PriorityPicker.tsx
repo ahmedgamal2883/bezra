@@ -43,3 +43,37 @@ export default function PriorityPicker({ id, onSaved }: { id: string | null | un
     </div>
   );
 }
+
+export const PRIORITY_LABEL: Record<string, string> = Object.fromEntries(PRIORITY_CHOICES);
+
+// One line under each task or risk: how it serves the farmer's priority, or why it is still needed.
+// "Less water" never means skipping water the crop needs: the water plan (FAO-56) already gives only what the soil
+// is missing, so the line says that instead of dropping turns.
+const FOR: Record<string, Record<string, string>> = {
+  irrigation: {
+    water: 'Less water: Bezra gives only what the soil is missing, never less than the wheat needs.',
+    money: 'More harvest: a thirsty crop loses grain.',
+    soil: 'Stronger soil: watering by need, not by habit, keeps the soil from waterlogging and salt.',
+  },
+  fertilizer: {
+    soil: 'Stronger soil: the right amount feeds the crop without tiring the soil.',
+    fodder: 'Fodder: a well-fed field gives more straw for your animals.',
+    money: 'More harvest: the crop needs it to fill the grain.',
+  },
+  inspection: { money: 'More harvest: a problem found early costs less grain.' },
+  spray: { money: 'More harvest: weeds take water and food from the wheat.', water: 'Less water: weeds drink water meant for the wheat.' },
+  milestone: { money: 'More harvest: the right timing gives the full crop.' },
+  straw: { soil: 'Stronger soil: straw left in the soil feeds it.', fodder: 'Fodder: what you do not plough in can feed your animals; never burn it.' },
+  heat: { money: 'More harvest: heat at heading costs grain.', water: 'Less water: one turn before the heat saves the crop from losing more later.' },
+  rust: { money: 'More harvest: rust caught early is cheaper to stop.' },
+  water: { water: 'Less water: Bezra waters by need, never less than the wheat needs.', money: 'More harvest: a thirsty crop loses grain.' },
+};
+const ALSO: Record<string, string> = {
+  irrigation: 'Still needed: without it the crop goes thirsty.', fertilizer: 'Still needed: the crop cannot grow without it.',
+  inspection: 'Still needed: a problem found early is easier to fix.', spray: 'Still needed: weeds take what the wheat needs.',
+  milestone: 'Still needed: the season plan follows it.', straw: 'Still needed: burning straw tires the soil.', heat: 'Still needed: heat can cost grain.',
+  rust: 'Still needed: rust spreads fast in this weather.', water: 'Still needed: a thirsty crop loses grain.',
+};
+export function priorityLine(kind: string, prio: string): string {
+  return FOR[kind]?.[prio] || ALSO[kind] || '';
+}

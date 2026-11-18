@@ -299,6 +299,8 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                       </span>
                                     </>
                                   ) : null}
+                                  {k?.wind ? <span className="tg" style={{"color":"#B4660B"} as any}>{k.wind}</span> : null}
+                                  {k?.pl ? <span className="meta" style={{"fontSize":"13px"} as any}>{k.pl}</span> : null}
                                   {k?.imp ? <ImpactLine {...k.imp} /> : null}
                                   {k?.askOpen ? (
                                     <>
@@ -332,6 +334,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           ))}
                         </div>
                         {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
+                        {__v?.sortedBy && __v?.hasTodo ? <p className="meta" style={{"fontSize":"13px","marginTop":"6px"} as any}>{__v.sortedBy}</p> : null}
                         <PriorityPicker id={id} onSaved={() => d.reload?.()} />
                         {__v?.allDone ? (
                           <>
@@ -760,6 +763,8 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                       </span>
                                     </>
                                   ) : null}
+                                  {k?.wind ? <span className="tg" style={{"color":"#B4660B"} as any}>{k.wind}</span> : null}
+                                  {k?.pl ? <span className="meta" style={{"fontSize":"13px"} as any}>{k.pl}</span> : null}
                                   {k?.imp ? <ImpactLine {...k.imp} /> : null}
                                   {k?.askOpen ? (
                                     <>
@@ -793,6 +798,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           ))}
                         </div>
                         {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
+                        {__v?.sortedBy && __v?.hasTodo ? <p className="meta" style={{"fontSize":"13px","marginTop":"6px"} as any}>{__v.sortedBy}</p> : null}
                         <PriorityPicker id={id} onSaved={() => d.reload?.()} />
                         {__v?.allDone ? (
                           <>
@@ -907,6 +913,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             <b style={{"fontWeight":"600"} as any}>{__s(w?.label)}</b>
                             <span className="lvl" style={__css(w?.col)}><i style={__css(w?.sw)} />{__s(w?.value)}</span>
                             <span className="meta">{__s(w?.line)}</span>
+                            {w?.pl ? <span className="meta" style={{"fontSize":"13px","gridColumn":"1 / -1"} as any}>{w.pl}</span> : null}
                           </div>
                         ))}
                         
