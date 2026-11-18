@@ -13,9 +13,15 @@ import './globals.css';
 import './v2.css';
 import './v2-app.css';
 
+const TAGLINE = 'Healthy soil, stronger harvests';
+const SHARE = 'NASA satellite data for every field.';
+
 export const metadata: Metadata = {
   title: 'Bezra',
-  description: 'Healthy soil, stronger harvests. NASA satellite data for every field in Egypt.',
+  description: `${TAGLINE}. ${SHARE}`,
+  // what a shared link shows (WhatsApp, Facebook, X, Telegram): the tagline as the title, big
+  openGraph: { title: `Bezra: ${TAGLINE}`, description: SHARE, siteName: 'Bezra', type: 'website' },
+  twitter: { card: 'summary', title: `Bezra: ${TAGLINE}`, description: SHARE },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
