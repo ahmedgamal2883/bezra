@@ -390,6 +390,33 @@ def post_next_winter(field_id: str, req: NextWinter, user: dict = Depends(curren
     return {"next_winter": f["next_winter"]}
 
 
+@app.get("/greenup")
+def get_greenup(lat: float, lon: float, user: dict = Depends(current_user)):
+    """Redesign (Add field, 'Growing now'): when did this spot turn green this season? NASA MODIS MOD13Q1 (250 m,
+    16-day, ORNL web service, no login), from 15 September. Green-up = the first composite at least halfway from the
+    season's bare low to its latest value; wheat comes up about 10 days after sowing, so that is the sowing guess.
+    The farmer confirms or changes it. A 250 m pixel also covers the neighbours' land: it is a guess, not a reading."""
+    from datetime import timedelta as _td
+    from .connectors import modis
+    today = date.today()
+    start = date(today.year if today.month >= 9 else today.year - 1, 9, 15)
+    try:
+        pts = modis.series(lat, lon, start, today)
+    except Exception:
+        raise HTTPException(503, "The satellite service did not answer. Pick the date yourself.")
+    if len(pts) < 3:
+        return {"greenup": None, "sow_guess": None, "points": pts, "source": modis.SOURCE}
+    vals = [p["ndvi"] for p in pts]
+    lo_i = min(range(len(vals)), key=lambda i: vals[i])
+    lo, last = vals[lo_i], vals[-1]
+    if last - lo < 0.15:
+        return {"greenup": None, "sow_guess": None, "points": pts, "source": modis.SOURCE, "note": "No clear green-up yet."}
+    half = lo + (last - lo) / 2
+    g = next((p for p in pts[lo_i:] if p["ndvi"] >= half), pts[-1])
+    gd = date.fromisoformat(g["date"])
+    return {"greenup": gd.isoformat(), "sow_guess": (gd - _td(days=10)).isoformat(), "points": pts, "source": modis.SOURCE}
+
+
 @app.get("/fields/{field_id}/summary")
 def get_summary(field_id: str, user: dict = Depends(current_user)):
     return summary.build(_ctx(field_id, user))
