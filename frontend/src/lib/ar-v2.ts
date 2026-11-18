@@ -466,7 +466,7 @@ export function v2Patterns(D: string): [string, string][] {
     [`^(.+) is in season now, and (\\d+) of these 14 days suit it\\.$`, '$1 في موسمها دلوقتي، و$2 من الـ 14 يوم دول مناسبين ليها.'],
     [`^Done (.+)$`, 'اتعملت $d1'],
     [`^Bezra protects your soil from stress\\. If nothing changes, the tired soil lets through (\\d+)% of your harvest in 5 seasons\\. With (.+), it keeps (\\d+)%\\.$`, 'بذرة بتحمي تربتك من الإجهاد. لو مفيش حاجة اتغيرت، التربة التعبانة هتسيب $1% بس من محصولك بعد 5 مواسم. مع $2، هتحافظ على $3%.'],
-    [`^Bezra protects your soil from stress\. With (.+), your soil stays (\d+)% stronger in 5 seasons than if nothing changes\.$`, 'بذرة بتحمي تربتك من الإجهاد. مع $1، تربتك هتفضل أقوى بـ $2% بعد 5 مواسم من إنها تفضل زي ما هي.'],
+    [`^Bezra protects your soil from stress\\. With (.+), your soil stays (\\d+)% stronger in 5 seasons than if nothing changes\\.$`, 'بذرة بتحمي تربتك من الإجهاد. مع $1، تربتك هتفضل أقوى بـ $2% بعد 5 مواسم من إنها تفضل زي ما هي.'],
     [`^(Done|Undo): (.+)$`, '$1: $2'],
     // Today / Season: a field not sown yet, details
     [`^sowing in (\\d+) days?$`, 'الزراعة بعد $1 يوم'],
