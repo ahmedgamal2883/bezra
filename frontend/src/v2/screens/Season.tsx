@@ -8,11 +8,13 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Season.logic';
+import { useSeasonData } from '@/v2/data/season';
 
 export default function SeasonScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const season = useSeasonData();
+  const __v = { ...season, ...useDC(Logic, { ...props, d: season }) };
   return (
     <>
       <div className="v2 root">
@@ -95,10 +97,10 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                   <div className="pagehead rise" style={{"--d":"0"} as any}>
                     <div className="col" style={{"gap":"12px"} as any}>
                       <span className="meta" style={{"fontSize":"15px"} as any}>
-                        {"North plot · wheat 2026/27 · sown 5 Nov"}
+                        {__s(__v?.head)}
                       </span>
                       <h1 className="h1x">
-                        {"Day 28 of about 180. Harvest around early May."}
+                        {__s(__v?.title)}
                       </h1>
                     </div>
                     <Link href={__r("V19-Try") + ""} className="btn press" style={{"height":"52px","fontSize":"15px"} as any}>
@@ -109,42 +111,11 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                     </Link>
                   </div>
                   <section className="rise" style={{"--d":"1","paddingTop":"24px"} as any}>
-                    <div className="stages" role="img" aria-label="Season stages from sowing on 5 November to harvest around 5 May. Today is day 28, in tillering.">
-                      <div className="stg" style={{"background":"#E7D9A8","color":"#6B5410"} as any}>
-                        {"Sowing"}
-                        <small>
-                          {"5 Nov"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#CFE3C6","color":"#2D5B2A"} as any}>
-                        {"Tillering"}
-                        <small>
-                          {"Nov – Jan"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#B9D6A8","color":"#24501F"} as any}>
-                        {"Heading"}
-                        <small>
-                          {"Feb"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#F6E1BD","color":"#8A4B08"} as any}>
-                        {"Grain filling"}
-                        <small>
-                          {"Mar – Apr · heat risk"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#E9D38C","color":"#5C4A0C"} as any}>
-                        {"Harvest"}
-                        <small>
-                          {"about 5 May"}
-                        </small>
-                      </div>
-                      <span className="here" style={{"left":"15.5%"} as any}>
-                        <span>
-                          {"Today · day 28"}
-                        </span>
-                      </span>
+                    <div className="stages" role="img" aria-label={"Season stages. " + __s(__v?.here?.t)}>
+                      {((__v?.stages) || []).map((g: any, ig: number) => (
+                        <div className="stg" key={ig} style={__css(g.sty)}>{g.t}<small>{g.s}</small></div>
+                      ))}
+                      {__v?.here ? <span className="here" style={__css(__v.here.left)}><span>{__v.here.t}</span></span> : null}
                     </div>
                   </section>
                   <div className="grid" style={{"gridTemplateColumns":"minmax(0, 1fr) 360px","gap":"56px","alignItems":"start"} as any}>
@@ -205,47 +176,24 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         <span className="sec">
                           {"THIS SEASON SO FAR"}
                         </span>
-                        <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                          <span className="meta" style={{"fontSize":"14px"} as any}>
-                            {"Waterings"}
-                          </span>
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"2 of about 12"}
-                          </b>
-                        </div>
-                        <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                          <span className="meta" style={{"fontSize":"14px"} as any}>
-                            {"Urea used"}
-                          </span>
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"50 of 140–170 kg per feddan"}
-                          </b>
-                        </div>
-                        <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                          <span className="meta" style={{"fontSize":"14px"} as any}>
-                            {"Journal notes"}
-                          </span>
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"8"}
-                          </b>
-                        </div>
-                        <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                          <span className="meta" style={{"fontSize":"14px"} as any}>
-                            {"Crop vs normal"}
-                          </span>
-                          <b style={{"fontWeight":"600"} as any}>
-                            {"A little ahead"}
-                          </b>
-                        </div>
+                        {((__v?.soFar) || []).map((x: any, ix: number) => (
+                          <div className="row sp" key={ix} style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
+                            <span className="meta" style={{"fontSize":"14px"} as any}>{x.l}</span>
+                            <b style={{"fontWeight":"600"} as any}>{x.v}</b>
+                          </div>
+                        ))}
+                        
+                        
+                        
                         <div className="col" style={{"gap":"4px","padding":"14px 16px","marginTop":"8px","borderRadius":"16px","background":"var(--green-tint)","color":"var(--green)"} as any}>
                           <span style={{"fontSize":"13px","fontWeight":"600"} as any}>
                             {"Bezra effect, this season"}
                           </span>
                           <b style={{"fontSize":"26px","fontWeight":"600","letterSpacing":"-.8px"} as any}>
-                            {"+2.8 ardab per feddan"}
+                            {__s(__v?.effect?.v)}
                           </b>
                           <span style={{"fontSize":"13px"} as any}>
-                            {"expected, vs your usual way"}
+                            {__s(__v?.effect?.s)}
                           </span>
                         </div>
                       </div>
@@ -270,72 +218,25 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                       <span className="sec">
                         {"YOUR SPRINGS ARE GETTING HOTTER"}
                       </span>
-                      <div style={{"display":"flex","alignItems":"flex-end","gap":"3px","height":"110px"} as any} role="img" aria-label="Hot spring days per year from 1990 to 2026, rising.">
-                        <span className="grow" style={{"--i":"0","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"1","flex":"1","height":"18px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"2","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"3","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"4","flex":"1","height":"18px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"5","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"6","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"7","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"8","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"9","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"10","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"11","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"12","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"13","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"14","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"15","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"16","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"17","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"18","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"19","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"20","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"21","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"22","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"23","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"24","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"25","flex":"1","height":"78px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"26","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"27","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"28","flex":"1","height":"88px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"29","flex":"1","height":"78px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"30","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"31","flex":"1","height":"88px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"32","flex":"1","height":"98px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"33","flex":"1","height":"78px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"34","flex":"1","height":"88px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"35","flex":"1","height":"98px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"36","flex":"1","height":"98px","borderRadius":"3px","background":"#F29B1E"} as any} />
+                      <div style={{"display":"flex","alignItems":"flex-end","gap":"3px","height":"110px"} as any} role="img" aria-label={__s(__v?.hotSay)}>
+                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib} className="grow" title={b.l + ": " + b.v} style={__css(b.sty)} />)}
                       </div>
                       <div className="row sp meta">
-                        <span>
-                          {"1990"}
-                        </span>
-                        <span>
-                          {"2000"}
-                        </span>
-                        <span>
-                          {"2010"}
-                        </span>
-                        <span>
-                          {"2026"}
-                        </span>
+                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib}>{b.l}</span>)}
                       </div>
                     </div>
                     <div className="col" style={{"gap":"12px"} as any}>
                       <b style={{"fontSize":"22px","fontWeight":"600","lineHeight":"1.35"} as any}>
-                        {"Hot spring days went from about 3 a year to about 9."}
+                        {__s(__v?.hotSay)}
                       </b>
                       <p className="txt" style={{"fontSize":"16px"} as any}>
-                        {"Farmers in Beni Suef had this heat 15 years ago. What helped them: sowing in early November and a heat-tolerant wheat."}
+                        {__v?.twin ? "Fields near " + __v.twin.name + " already have springs like yours will. What helps there: " + __v.twin.practice : ""}
                       </p>
                       <span className="doneline" style={{"alignSelf":"flex-start"} as any}>
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                           <path d="m5 12.5 4.5 4.5L19 7.5" />
                         </svg>
-                        {"You already sowed on 5 Nov"}
+                        {__s(__v?.sownLine)}
                       </span>
                     </div>
                   </section>
@@ -348,10 +249,10 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                   <div className="pagehead rise" style={{"--d":"0"} as any}>
                     <div className="col" style={{"gap":"10px"} as any}>
                       <span className="meta">
-                        {"Wheat 2026/27 · Giza 171 · sown 5 Nov · 2.4 feddan"}
+                        {__s(__v?.headD)}
                       </span>
                       <h1 className="h1x" style={{"fontSize":"40px"} as any}>
-                        {"Day 28 · 412 growing degree days · 6% ahead of normal"}
+                        {__s(__v?.titleD)}
                       </h1>
                     </div>
                     <Link href={__r("V19-TryD") + ""} className="btn press">
@@ -362,58 +263,27 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                     </Link>
                   </div>
                   <section className="rise" style={{"--d":"1","paddingTop":"24px"} as any}>
-                    <div className="stages" role="img" aria-label="Season stages from sowing on 5 November to harvest around 5 May. Today is day 28, in tillering.">
-                      <div className="stg" style={{"background":"#E7D9A8","color":"#6B5410"} as any}>
-                        {"Sowing"}
-                        <small>
-                          {"5 Nov"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#CFE3C6","color":"#2D5B2A"} as any}>
-                        {"Tillering"}
-                        <small>
-                          {"Nov – Jan"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#B9D6A8","color":"#24501F"} as any}>
-                        {"Heading"}
-                        <small>
-                          {"Feb"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#F6E1BD","color":"#8A4B08"} as any}>
-                        {"Grain filling"}
-                        <small>
-                          {"Mar – Apr · heat risk"}
-                        </small>
-                      </div>
-                      <div className="stg" style={{"background":"#E9D38C","color":"#5C4A0C"} as any}>
-                        {"Harvest"}
-                        <small>
-                          {"about 5 May"}
-                        </small>
-                      </div>
-                      <span className="here" style={{"left":"15.5%"} as any}>
-                        <span>
-                          {"Today · day 28"}
-                        </span>
-                      </span>
+                    <div className="stages" role="img" aria-label={"Season stages. " + __s(__v?.here?.t)}>
+                      {((__v?.stages) || []).map((g: any, ig: number) => (
+                        <div className="stg" key={ig} style={__css(g.sty)}>{g.t}<small>{g.s}</small></div>
+                      ))}
+                      {__v?.here ? <span className="here" style={__css(__v.here.left)}><span>{__v.here.t}</span></span> : null}
                     </div>
                     <div className="row sp meta" style={{"marginTop":"10px"} as any}>
                       <span>
-                        {"0 GDD"}
+                        {""}
                       </span>
                       <span>
-                        {"~ 900"}
+                        {""}
                       </span>
                       <span>
-                        {"~ 1,250"}
+                        {""}
                       </span>
                       <span>
-                        {"~ 1,900"}
+                        {""}
                       </span>
                       <span>
-                        {"~ 2,250 GDD"}
+                        {""}
                       </span>
                     </div>
                   </section>
@@ -493,80 +363,12 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>
-                                {"12 Nov"}
-                              </td>
-                              <td>
-                                {"Done"}
-                              </td>
-                              <td>
-                                {"420 m³"}
-                              </td>
-                              <td>
-                                {"Soil 0.22 → 0.34"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"22 Nov"}
-                              </td>
-                              <td>
-                                {"Done"}
-                              </td>
-                              <td>
-                                {"300 m³"}
-                              </td>
-                              <td>
-                                {"0.25 → 0.33"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"3 Dec"}
-                              </td>
-                              <td>
-                                {"Today"}
-                              </td>
-                              <td>
-                                {"300 m³"}
-                              </td>
-                              <td>
-                                {"0.24 → ~0.33"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"13 Dec"}
-                              </td>
-                              <td>
-                                {"Planned"}
-                              </td>
-                              <td>
-                                {"~280 m³"}
-                              </td>
-                              <td>
-                                {"Planned"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"Dec – Apr"}
-                              </td>
-                              <td>
-                                {"9 more"}
-                              </td>
-                              <td>
-                                {"~2,000 m³ in all"}
-                              </td>
-                              <td>
-                                {"Season ~3,300 m³"}
-                              </td>
-                            </tr>
+                            {((__v?.water) || []).map((w: any, iw: number) => (<tr key={iw}><td>{w.d}</td><td>{w.st}</td><td>{w.amt}</td><td className="meta">{w.note}</td></tr>))}
+                            <tr><td colSpan={4} className="meta">{__s(__v?.waterTotal)}</td></tr>
                           </tbody>
                         </table>
                         <span className="pq est">
-                          {"SMAP L4 + soil type + crop water use (POWER)"}
+                          {"FAO-56 water balance on NASA POWER + Open-Meteo, and your log"}
                         </span>
                       </div>
                       <div className="col" style={{"gap":"8px"} as any}>
@@ -591,80 +393,11 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>
-                                {"3 Nov"}
-                              </td>
-                              <td>
-                                {"Superphosphate"}
-                              </td>
-                              <td>
-                                {"120 kg/fed"}
-                              </td>
-                              <td>
-                                {"Done"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"16 Nov"}
-                              </td>
-                              <td>
-                                {"Urea 46%"}
-                              </td>
-                              <td>
-                                {"50 kg/fed · 23 kg N"}
-                              </td>
-                              <td>
-                                {"Done"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"7 Dec"}
-                              </td>
-                              <td>
-                                {"Urea 46%"}
-                              </td>
-                              <td>
-                                {"45–60 kg/fed"}
-                              </td>
-                              <td>
-                                {"Planned · 72%"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"Early Jan"}
-                              </td>
-                              <td>
-                                {"Urea 46%"}
-                              </td>
-                              <td>
-                                {"45–60 kg/fed"}
-                              </td>
-                              <td>
-                                {"Planned · 65%"}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                {"Season"}
-                              </td>
-                              <td>
-                                {"Nitrogen"}
-                              </td>
-                              <td>
-                                {"64–78 kg N/fed"}
-                              </td>
-                              <td>
-                                {"Typical for Giza 171"}
-                              </td>
-                            </tr>
+                            {((__v?.feed) || []).map((w: any, iw: number) => (<tr key={iw}><td>{w.d}</td><td>{w.what}</td><td>{w.amt}</td><td>{w.st}</td></tr>))}
                           </tbody>
                         </table>
                         <span className="pq est">
-                          {"Suggested ranges, engineer can change them"}
+                          {"Amounts: with your engineer. Bezra shows a usual range when you log what you used."}
                         </span>
                       </div>
                     </div>
@@ -674,61 +407,14 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
                         {"Hot days over 32 °C in March–April"}
                       </b>
-                      <div style={{"display":"flex","alignItems":"flex-end","gap":"3px","height":"110px"} as any} role="img" aria-label="Hot spring days per year from 1990 to 2026, rising.">
-                        <span className="grow" style={{"--i":"0","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"1","flex":"1","height":"18px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"2","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"3","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"4","flex":"1","height":"18px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"5","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"6","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"7","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"8","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"9","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"10","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"11","flex":"1","height":"28px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"12","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"13","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"14","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"15","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"16","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"17","flex":"1","height":"38px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"18","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"19","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"20","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"21","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"22","flex":"1","height":"48px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"23","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"24","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"25","flex":"1","height":"78px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"26","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"27","flex":"1","height":"58px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"28","flex":"1","height":"88px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"29","flex":"1","height":"78px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"30","flex":"1","height":"68px","borderRadius":"3px","background":"#E3D3B4"} as any} />
-                        <span className="grow" style={{"--i":"31","flex":"1","height":"88px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"32","flex":"1","height":"98px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"33","flex":"1","height":"78px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"34","flex":"1","height":"88px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"35","flex":"1","height":"98px","borderRadius":"3px","background":"#F29B1E"} as any} />
-                        <span className="grow" style={{"--i":"36","flex":"1","height":"98px","borderRadius":"3px","background":"#F29B1E"} as any} />
+                      <div style={{"display":"flex","alignItems":"flex-end","gap":"3px","height":"110px"} as any} role="img" aria-label={__s(__v?.hotSay)}>
+                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib} className="grow" title={b.l + ": " + b.v} style={__css(b.sty)} />)}
                       </div>
                       <div className="row sp meta">
-                        <span>
-                          {"1990"}
-                        </span>
-                        <span>
-                          {"2000"}
-                        </span>
-                        <span>
-                          {"2010"}
-                        </span>
-                        <span>
-                          {"2026"}
-                        </span>
+                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib}>{b.l}</span>)}
                       </div>
                       <span className="pq sat">
-                        {"NASA POWER 1990→2026"}
+                        {__s(__v?.hotSrc)}
                       </span>
                     </div>
                     <div className="col" style={{"gap":"10px"} as any}>
@@ -736,14 +422,14 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {"CLIMATE TWIN"}
                       </span>
                       <b style={{"fontSize":"20px","fontWeight":"600","lineHeight":"1.35"} as any}>
-                        {"Beni Suef fields in 2008–2012 had the spring heat Menoufia has now."}
+                        {__v?.twin ? __v.twin.name + " already has the spring heat your field is heading to." : ""}
                       </b>
                       <p className="txt">
-                        {"Matched on March–April max temperature and humidity (distance 0.12). Fields there moved sowing to early November and use heat-tolerant varieties. Their yield gap closed by about 6%."}
+                        {__v?.twin ? "Similarity " + __v.twin.sim + "%. What helps there: " + __v.twin.practice : ""}
                       </p>
                       <span className="row" style={{"gap":"10px"} as any}>
                         <span className="pq sat">
-                          {"POWER + MODIS, 214 twin fields"}
+                          {__s(__v?.twin?.src)}
                         </span>
                       </span>
                     </div>
