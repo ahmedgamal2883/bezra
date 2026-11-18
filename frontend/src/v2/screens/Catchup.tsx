@@ -69,7 +69,7 @@ export default function CatchupScreen(props: Record<string, unknown> = {}) {
                   {"Details"}
                 </button>
               </div>
-              <Link href={__r("V18-Crop") + ""} className="ibtn press" aria-label="Alerts, 2 new">
+              <Link href="/notifications" className="ibtn press" aria-label="Notifications">
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
                 </svg>

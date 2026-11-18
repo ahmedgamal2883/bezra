@@ -9,3 +9,6 @@ body:has(.v2) .demo-badge { display: none !important; }
 
 /* The old "waking up" banner is replaced by the /waking page on redesigned pages. */
 body:has(.v2) .wake { display: none !important; }
+
+/* The bell's dot is static in the design; it stays hidden until it can reflect unread alerts on every page. */
+.v2 .ibtn .dot { display: none; }

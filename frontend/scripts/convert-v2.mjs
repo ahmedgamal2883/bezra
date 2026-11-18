@@ -165,6 +165,8 @@ for (const n of names) {
   // top bar: the signed-in person and field (src/v2/data/who.ts), never the design's Hassan / North plot
   const WHO = { '{"HF"}': '{__s(__w.initials)}', '{"Hassan Farouk"}': '{__s(__w.userName)}', '{"North plot ▾"}': '{__s(__w.fieldLabel)}' };
   for (let i = 0; i < body.length; i++) { const t = body[i].trim(); if (WHO[t]) body[i] = body[i].replace(t, WHO[t]); }
+  // the bell opens the notifications panel (src/v2/Notifications.tsx)
+  for (let i = 0; i < body.length; i++) body[i] = body[i].replace('href={__r("V18-Crop") + ""} className="ibtn press" aria-label="Alerts, 2 new"', 'href="/notifications" className="ibtn press" aria-label="Notifications"');
   const usesLink = body.some((l) => /<Link /.test(l));
   fs.writeFileSync(tsxPath, `'use client';
 /* eslint-disable */

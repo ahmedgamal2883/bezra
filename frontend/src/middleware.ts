@@ -2,7 +2,7 @@
 // The backend checks the session itself on every request; this only avoids showing an empty screen.
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED = ['/field', '/fields', '/sim', '/ask', '/profile', '/engineer', '/messages', '/report', '/onboarding'];
+const PROTECTED = ['/field', '/fields', '/notifications', '/today', '/sim', '/ask', '/profile', '/engineer', '/messages', '/report', '/onboarding'];
 
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
