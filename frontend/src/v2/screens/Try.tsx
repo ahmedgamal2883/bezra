@@ -8,11 +8,13 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Try.logic';
+import { useTryData } from '@/v2/data/try';
 
 export default function TryScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const tr = useTryData();
+  const __v = { ...tr, ...useDC(Logic, { ...props, d: tr }) };
   return (
     <>
       <div className="v2 root">
@@ -178,7 +180,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                                     {"YOUR USUAL WAY"}
                                   </span>
                                   <span className="meta">
-                                    {"Sow 20 Nov · water every 16 days · 90 kg urea"}
+                                    {__s(__v?.usualTxt)}
                                   </span>
                                 </span>
                               </div>
@@ -221,7 +223,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                                     {"WITH BEZRA"}
                                   </span>
                                   <span className="meta">
-                                    {"Sown 5 Nov · water on time · 50–60 kg urea"}
+                                    {__s(__v?.bezraTxt)}
                                   </span>
                                 </span>
                                 <svg aria-hidden="true" width="40" height="40" viewBox="0 0 60 60">
@@ -267,32 +269,32 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                               {"More wheat this season"}
                             </span>
                             <b>
-                              {"+2.8"}
+                              {__s(__v?.gain?.d)}
                             </b>
                             <span className="meta">
-                              {"ardab per feddan · +18%"}
+                              {__s(__v?.gain?.pct)}
                             </span>
                           </div>
                           <div>
                             <span className="meta">
-                              {"On your 2.4 feddan"}
+                              {__s(__v?.gain?.area)}
                             </span>
                             <b>
-                              {"≈ 1 t"}
+                              {__s(__v?.gain?.t)}
                             </b>
                             <span className="meta">
-                              {"more wheat, about 1,000 kg"}
+                              {__s(__v?.gain?.kg)}
                             </span>
                           </div>
                           <div>
                             <span className="meta">
-                              {"Less urea"}
+                              {"More water, on time"}
                             </span>
                             <b className="sun">
-                              {"−45 kg"}
+                              {__s(__v?.waterTile?.v)}
                             </b>
                             <span className="meta">
-                              {"per feddan · less washed into the canal"}
+                              {__s(__v?.waterTile?.s)}
                             </span>
                           </div>
                           <div>
@@ -300,10 +302,10 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                               {"Soil strength in 5 years"}
                             </span>
                             <b>
-                              {"65"}
+                              {__s(__v?.soilTile?.v)}
                             </b>
                             <span className="meta">
-                              {"instead of 47"}
+                              {__s(__v?.soilTile?.s)}
                             </span>
                           </div>
                         </div>
@@ -313,73 +315,19 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                               {"WHERE THE EXTRA WHEAT COMES FROM"}
                             </h2>
                             <div className="col" style={{"gap":"2px"} as any}>
-                              <div className="wf">
-                                <span className="meta">
-                                  {"Your usual way"}
-                                </span>
-                                <span className="wfbar">
-                                  <i style={{"left":"0","width":"32.3%","background":"#C9CBC4"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600"} as any}>
-                                  {"15.6"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Sow on 5 Nov, not 20 Nov"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"32.3%","width":"13.8%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.9"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Water today, C1 first"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"46.2%","width":"9.2%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.6"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Water before the April heat"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"55.4%","width":"15.4%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+1.0"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Catch rust early"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"70.8%","width":"3.1%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.2"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Right amount of urea"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"73.8%","width":"1.5%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.1"}
-                                </b>
-                              </div>
-                              <div className="wf" style={{"borderTop":"1px solid var(--line)","marginTop":"4px","paddingTop":"14px"} as any}>
+                              {((__v?.wf) || []).map((w: any, iw: number) => (
+                                <div className="wf" key={iw}>
+                                  <span className={w.cls}>{w.l}</span>
+                                  <span className="wfbar"><i className={w.cls ? "" : "growx"} style={__css(w.sty)} /></span>
+                                  <b style={__css("font-weight:600;" + w.b)}>{w.v}</b>
+                                </div>
+                              ))}
+                              
+                              
+                              
+                              
+                              
+                              {false ? (<div className="wf" style={{"borderTop":"1px solid var(--line)","marginTop":"4px","paddingTop":"14px"} as any}>
                                 <b style={{"fontWeight":"600"} as any}>
                                   {"With Bezra"}
                                 </b>
@@ -389,7 +337,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                                 <b style={{"fontWeight":"600"} as any}>
                                   {"18.4"}
                                 </b>
-                              </div>
+                              </div>) : null}
                               <span className="meta" style={{"paddingTop":"8px"} as any}>
                                 {"Ardab of wheat per feddan. Each line is one thing Bezra told you to do."}
                               </span>
@@ -399,48 +347,18 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                             <h2 className="sec">
                               {"YOUR SOIL, NEXT 5 SEASONS"}
                             </h2>
-                            <svg viewBox="0 0 620 230" width="100%" role="img" aria-label="Soil strength for the next 5 seasons. Same as always falls to 47. With Bezra rotation it stays about 65.">
-                              <line x1="40" x2="480" y1="44.9" y2="44.9" stroke="#E8E8E3" />
-                              <text x="0" y="48.9" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"Strong"}
-                              </text>
-                              <line x1="40" x2="480" y1="84.6" y2="84.6" stroke="#E8E8E3" />
-                              <text x="0" y="88.6" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"OK"}
-                              </text>
-                              <line x1="40" x2="480" y1="144.3" y2="144.3" stroke="#E8E8E3" />
-                              <text x="0" y="148.3" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"Tired"}
-                              </text>
-                              <path className="draw" pathLength="1" style={{"--d":"1"} as any} d="M40.0 94.6 L128.0 109.5 L216.0 124.4 L304.0 139.3 L392.0 149.3 L480.0 159.2" stroke="#C9A06A" strokeWidth="2.6" fill="none" strokeDasharray="6 5" />
-                              <path className="draw" pathLength="1" style={{"--d":"2"} as any} d="M40.0 94.6 L128.0 64.7 L216.0 74.7 L304.0 84.6 L392.0 59.8 L480.0 69.7" stroke="#3E7F35" strokeWidth="3" fill="none" />
-                              <text x="488.0" y="73.7" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#3E7F35">
-                                {"65 With Bezra"}
-                              </text>
-                              <text x="488.0" y="163.2" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#B4660B">
-                                {"47 Same as always"}
-                              </text>
-                              <text x="40.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"now"}
-                              </text>
-                              <text x="128.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"27/28"}
-                              </text>
-                              <text x="216.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"28/29"}
-                              </text>
-                              <text x="304.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"29/30"}
-                              </text>
-                              <text x="392.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"30/31"}
-                              </text>
-                              <text x="480.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"31/32"}
-                              </text>
-                            </svg>
+                            {__v?.five ? (<svg viewBox="0 0 620 230" width="100%" role="img" aria-label={__s(__v?.fiveSay)}>
+                              <line x1="40" x2="480" y1="30" y2="30" stroke="#E8E8E3" />
+                              <line x1="40" x2="480" y1="115" y2="115" stroke="#E8E8E3" />
+                              <line x1="40" x2="480" y1="200" y2="200" stroke="#E8E8E3" />
+                              <path className="draw" pathLength="1" style={{"--d":"1"} as any} d={__v.five.cur} stroke="#B4660B" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
+                              {__v.five.same ? null : <path className="draw" pathLength="1" style={{"--d":"2"} as any} d={__v.five.best} stroke="#3E7F35" strokeWidth="2.6" fill="none" strokeLinejoin="round" />}
+                              {__v.five.same ? null : <text x={__v.five.endX} y={Number(__v.five.bestEnd.y) + 4} fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#3E7F35">{__v.five.bestEnd.t}</text>}
+                              <text x={__v.five.endX} y={Number(__v.five.curEnd.y) + 4} fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#B4660B">{__v.five.curEnd.t}</text>
+                              {__v.five.labs.map((l: string, il: number) => <text key={il} x={__v.five.xs[il]} y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">{l}</text>)}
+                            </svg>) : <div className="sk" style={{"height":"230px","borderRadius":"12px"} as any} aria-busy="true" />}
                             <span className="meta">
-                              {"With Bezra: clover next winter, faba beans in 2030. Same as always: wheat every winter."}
+                              {__s(__v?.fiveSay)}
                             </span>
                           </div>
                         </div>
@@ -559,10 +477,10 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                         <div className="row sp rise" style={{"--d":"1","alignItems":"flex-end"} as any}>
                           <div className="col" style={{"gap":"8px","maxWidth":"760px"} as any}>
                             <b style={{"fontSize":"26px","fontWeight":"600","letterSpacing":"-.5px","lineHeight":"1.3"} as any}>
-                              {"If Bezra had been here for the last 10 seasons, this field would have made about 44 more ardab of wheat."}
+                              {__s(__v?.replaySay)}
                             </b>
                             <span className="txt">
-                              {"That is about 6.6 tonnes on your 2.4 feddan. Tap a season to see what Bezra would have told you."}
+                              {__s(__v?.replaySub)}
                             </span>
                           </div>
                           <span className="leg">
@@ -628,7 +546,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                           </b>
                         </div>
                         <p className="meta">
-                          {"From satellite images of your field. Bezra can miss things: it would not have seen the 2020 heat wave coming."}
+                          {"From the seasons Bezra has on record for this field. Bezra can miss things: not every heat wave gives a clear warning."}
                         </p>
                       </div>
                     </>
@@ -651,7 +569,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                         {"Try a season"}
                       </h1>
                       <p style={{"fontSize":"18px","color":"var(--ink2)","maxWidth":"780px"} as any}>
-                        {"Counterfactual runs on your field: 30 weather years (NASA POWER 1996–2025), your soil, your journal and this season so far. Medians shown, P10–P90 in the tables."}
+                        {"Runs of the season model on your field: " + __s(__v?.yearsUsed) + " weather years (NASA POWER), your soil, your journal and this season so far. Medians shown, ranges in the tables."}
                       </p>
                     </div>
                   </div>
@@ -725,7 +643,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                                     {"YOUR USUAL WAY"}
                                   </span>
                                   <span className="meta">
-                                    {"Sow 20 Nov · water every 16 days · 90 kg urea"}
+                                    {__s(__v?.usualTxt)}
                                   </span>
                                 </span>
                               </div>
@@ -768,7 +686,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                                     {"WITH BEZRA"}
                                   </span>
                                   <span className="meta">
-                                    {"Sown 5 Nov · water on time · 50–60 kg urea"}
+                                    {__s(__v?.bezraTxt)}
                                   </span>
                                 </span>
                                 <svg aria-hidden="true" width="40" height="40" viewBox="0 0 60 60">
@@ -814,32 +732,32 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                               {"More wheat this season"}
                             </span>
                             <b>
-                              {"+2.8"}
+                              {__s(__v?.gain?.d)}
                             </b>
                             <span className="meta">
-                              {"ardab per feddan · +18%"}
+                              {__s(__v?.gain?.pct)}
                             </span>
                           </div>
                           <div>
                             <span className="meta">
-                              {"On your 2.4 feddan"}
+                              {__s(__v?.gain?.area)}
                             </span>
                             <b>
-                              {"≈ 1 t"}
+                              {__s(__v?.gain?.t)}
                             </b>
                             <span className="meta">
-                              {"more wheat, about 1,000 kg"}
+                              {__s(__v?.gain?.kg)}
                             </span>
                           </div>
                           <div>
                             <span className="meta">
-                              {"Less urea"}
+                              {"More water, on time"}
                             </span>
                             <b className="sun">
-                              {"−45 kg"}
+                              {__s(__v?.waterTile?.v)}
                             </b>
                             <span className="meta">
-                              {"per feddan · N leaching −10 kg/fed"}
+                              {__s(__v?.waterTile?.s)}
                             </span>
                           </div>
                           <div>
@@ -847,10 +765,10 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                               {"Soil strength in 5 years"}
                             </span>
                             <b>
-                              {"65"}
+                              {__s(__v?.soilTile?.v)}
                             </b>
                             <span className="meta">
-                              {"instead of 47"}
+                              {__s(__v?.soilTile?.s)}
                             </span>
                           </div>
                         </div>
@@ -860,73 +778,19 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                               {"WHERE THE EXTRA WHEAT COMES FROM"}
                             </h2>
                             <div className="col" style={{"gap":"2px"} as any}>
-                              <div className="wf">
-                                <span className="meta">
-                                  {"Your usual way"}
-                                </span>
-                                <span className="wfbar">
-                                  <i style={{"left":"0","width":"32.3%","background":"#C9CBC4"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600"} as any}>
-                                  {"15.6"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Sow on 5 Nov, not 20 Nov"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"32.3%","width":"13.8%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.9"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Water today, C1 first"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"46.2%","width":"9.2%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.6"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Water before the April heat"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"55.4%","width":"15.4%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+1.0"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Catch rust early"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"70.8%","width":"3.1%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.2"}
-                                </b>
-                              </div>
-                              <div className="wf">
-                                <span>
-                                  {"Right amount of urea"}
-                                </span>
-                                <span className="wfbar">
-                                  <i className="growx" style={{"left":"73.8%","width":"1.5%","background":"#6FAE52"} as any} />
-                                </span>
-                                <b style={{"fontWeight":"600","color":"var(--green)"} as any}>
-                                  {"+0.1"}
-                                </b>
-                              </div>
-                              <div className="wf" style={{"borderTop":"1px solid var(--line)","marginTop":"4px","paddingTop":"14px"} as any}>
+                              
+                              {((__v?.wf) || []).map((w: any, iw: number) => (
+                                <div className="wf" key={iw}>
+                                  <span className={w.cls}>{w.l}</span>
+                                  <span className="wfbar"><i className={w.cls ? "" : "growx"} style={__css(w.sty)} /></span>
+                                  <b style={__css("font-weight:600;" + w.b)}>{w.v}</b>
+                                </div>
+                              ))}
+                              
+                              
+                              
+                              
+                              {false ? (<div className="wf" style={{"borderTop":"1px solid var(--line)","marginTop":"4px","paddingTop":"14px"} as any}>
                                 <b style={{"fontWeight":"600"} as any}>
                                   {"With Bezra"}
                                 </b>
@@ -936,9 +800,9 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                                 <b style={{"fontWeight":"600"} as any}>
                                   {"18.4"}
                                 </b>
-                              </div>
+                              </div>) : null}
                               <span className="meta" style={{"paddingTop":"8px"} as any}>
-                                {"Ardab per feddan, median of 30 weather years. Each step is run on its own, then together; overlap removed."}
+                                {"Ardab per feddan, this season. Each step is a run of the season model with and without that advice."}
                               </span>
                             </div>
                           </div>
@@ -946,48 +810,18 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                             <h2 className="sec">
                               {"YOUR SOIL, NEXT 5 SEASONS"}
                             </h2>
-                            <svg viewBox="0 0 620 230" width="100%" role="img" aria-label="Soil strength for the next 5 seasons. Same as always falls to 47. With Bezra rotation it stays about 65.">
-                              <line x1="40" x2="480" y1="44.9" y2="44.9" stroke="#E8E8E3" />
-                              <text x="0" y="48.9" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"Strong"}
-                              </text>
-                              <line x1="40" x2="480" y1="84.6" y2="84.6" stroke="#E8E8E3" />
-                              <text x="0" y="88.6" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"OK"}
-                              </text>
-                              <line x1="40" x2="480" y1="144.3" y2="144.3" stroke="#E8E8E3" />
-                              <text x="0" y="148.3" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"Tired"}
-                              </text>
-                              <path className="draw" pathLength="1" style={{"--d":"1"} as any} d="M40.0 94.6 L128.0 109.5 L216.0 124.4 L304.0 139.3 L392.0 149.3 L480.0 159.2" stroke="#C9A06A" strokeWidth="2.6" fill="none" strokeDasharray="6 5" />
-                              <path className="draw" pathLength="1" style={{"--d":"2"} as any} d="M40.0 94.6 L128.0 64.7 L216.0 74.7 L304.0 84.6 L392.0 59.8 L480.0 69.7" stroke="#3E7F35" strokeWidth="3" fill="none" />
-                              <text x="488.0" y="73.7" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#3E7F35">
-                                {"65 With Bezra"}
-                              </text>
-                              <text x="488.0" y="163.2" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#B4660B">
-                                {"47 Same as always"}
-                              </text>
-                              <text x="40.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"now"}
-                              </text>
-                              <text x="128.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"27/28"}
-                              </text>
-                              <text x="216.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"28/29"}
-                              </text>
-                              <text x="304.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"29/30"}
-                              </text>
-                              <text x="392.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"30/31"}
-                              </text>
-                              <text x="480.0" y="220" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                                {"31/32"}
-                              </text>
-                            </svg>
+                            {__v?.five ? (<svg viewBox="0 0 620 230" width="100%" role="img" aria-label={__s(__v?.fiveSay)}>
+                              <line x1="40" x2="480" y1="30" y2="30" stroke="#E8E8E3" />
+                              <line x1="40" x2="480" y1="115" y2="115" stroke="#E8E8E3" />
+                              <line x1="40" x2="480" y1="200" y2="200" stroke="#E8E8E3" />
+                              <path className="draw" pathLength="1" style={{"--d":"1"} as any} d={__v.five.cur} stroke="#B4660B" strokeWidth="2.6" fill="none" strokeLinejoin="round" />
+                              {__v.five.same ? null : <path className="draw" pathLength="1" style={{"--d":"2"} as any} d={__v.five.best} stroke="#3E7F35" strokeWidth="2.6" fill="none" strokeLinejoin="round" />}
+                              {__v.five.same ? null : <text x={__v.five.endX} y={Number(__v.five.bestEnd.y) + 4} fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#3E7F35">{__v.five.bestEnd.t}</text>}
+                              <text x={__v.five.endX} y={Number(__v.five.curEnd.y) + 4} fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill="#B4660B">{__v.five.curEnd.t}</text>
+                              {__v.five.labs.map((l: string, il: number) => <text key={il} x={__v.five.xs[il]} y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">{l}</text>)}
+                            </svg>) : <div className="sk" style={{"height":"230px","borderRadius":"12px"} as any} aria-busy="true" />}
                             <span className="meta">
-                              {"Soil index model (greenness peak, salinity, rotation). Bezra plan: clover 27/28, faba 30/31."}
+                              {"Soil Ledger: RothC carbon, nitrogen balance, salinity and the crop sequence, on your weather."}
                             </span>
                           </div>
                         </div>
@@ -1097,7 +931,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                             {__s(__v?.say)}
                           </b>
                           <span className="meta" style={{"color":"var(--green)"} as any}>
-                            {"30 runs per option · calibrated on 10 of your seasons"}
+                            {"Each option: " + __s(__v?.yearsUsed) + " weather years on your field"}
                           </span>
                         </div>
                         <p className="meta">
@@ -1112,10 +946,10 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                         <div className="row sp rise" style={{"--d":"1","alignItems":"flex-end"} as any}>
                           <div className="col" style={{"gap":"8px","maxWidth":"760px"} as any}>
                             <b style={{"fontSize":"26px","fontWeight":"600","letterSpacing":"-.5px","lineHeight":"1.3"} as any}>
-                              {"If Bezra had been here for the last 10 seasons, this field would have made about 44 more ardab of wheat."}
+                              {__s(__v?.replaySay)}
                             </b>
                             <span className="txt">
-                              {"That is about 6.6 tonnes on your 2.4 feddan. Tap a season to see what Bezra would have told you."}
+                              {__s(__v?.replaySub)}
                             </span>
                           </div>
                           <span className="leg">
