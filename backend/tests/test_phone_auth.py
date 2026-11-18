@@ -50,9 +50,23 @@ def test_delete_field_only_by_its_owner(tmp_db):
 def test_guest_gets_an_own_copy_of_the_sample_field(tmp_db, monkeypatch):
     from app import db
     owner = db.create_user("sample@demo.bezra.app", "Sample", "x" * 8)
-    db.save_field({"id": "north-plot", "name": "North plot", "crop": "wheat"}, owner["id"])
+    db.save_field({"id": "north-plot", "name": "North plot", "crop": "wheat", "area_feddan": 3.0, "lat": 30.55, "lon": 30.99}, owner["id"])
     a, b = TestClient(main.app), TestClient(main.app)
     ra, rb = a.post("/auth/guest").json(), b.post("/auth/guest").json()
     assert ra["field_id"] != rb["field_id"] and ra["field_id"].startswith("g-")
     assert db.get_field(ra["field_id"])["name"] == "North plot"
     assert db.get_field("north-plot")["owner_id"] == owner["id"]          # the real sample field is untouched
+
+
+def test_guest_signing_up_keeps_the_guest_field(tmp_db):
+    from app import db
+    owner = db.create_user("sample@demo.bezra.app", "Sample", "x" * 8)
+    db.save_field({"id": "north-plot", "name": "North plot", "crop": "wheat", "area_feddan": 3.0, "lat": 30.55, "lon": 30.99}, owner["id"])
+    cl = TestClient(main.app)
+    g = cl.post("/auth/guest").json()
+    assert cl.get("/auth/me").json()["guest"] is True
+    r = cl.post("/auth/phone/signup", json={"phone": "01012340000", "password": "secret1", "name": "Now Real"})
+    assert r.status_code == 200 and r.json()["id"] == g["user"]["id"]
+    me = cl.get("/auth/me").json()
+    assert me["guest"] is False and me["name"] == "Now Real"
+    assert db.get_field(g["field_id"])["owner_id"] == g["user"]["id"]

@@ -142,7 +142,7 @@ def _phone_key(phone: str) -> str:
 
 
 @app.post("/auth/phone/signup")
-def phone_signup(req: PhoneSignUp, resp: Response):
+def phone_signup(req: PhoneSignUp, resp: Response, request: Request):
     try:
         key = _phone_key(req.phone)
     except ValueError as e:
@@ -155,6 +155,13 @@ def phone_signup(req: PhoneSignUp, resp: Response):
         raise HTTPException(422, "Unknown role")
     if db.find_user(key):
         raise HTTPException(409, "This number already has an account. Sign in instead.")
+    me_ = db.session_user(request.cookies.get(COOKIE))
+    if me_ and me_["email"].endswith(GUEST_DOMAIN):
+        # a guest signing up keeps the field and journal they made as a guest
+        db.claim_user(me_["id"], key, req.name, req.password, req.role)
+        r = db.find_user(key)
+        _start_session(resp, r["id"])
+        return db.user_public(r)
     u = db.create_user(key, req.name.strip(), req.password, req.role)
     _start_session(resp, u["id"])
     return u
@@ -267,7 +274,7 @@ def me(user: dict = Depends(current_user)):
     demo = user["email"] == os.environ.get("DEMO_FARMER_EMAIL", "hassan@demo.bezra.app")
     demo_account = user["email"].endswith("@demo.bezra.app") or (
         os.environ.get("DEMO_MODE") == "1" and user["email"] == os.environ.get("ENGINEER_EMAIL", "ahmed@bezra.app"))
-    return user | {"demo": demo, "demo_account": demo_account, "engineer_name": eng,
+    return user | {"demo": demo, "demo_account": demo_account, "engineer_name": eng, "guest": user["email"].endswith(GUEST_DOMAIN),
                    "fields": [_field_card(f) for f in db.fields_for(user) if f["owner_id"] == user["id"]]}
 
 

@@ -154,6 +154,13 @@ def find_user(email: str):
         return c.execute("SELECT * FROM users WHERE email=?", (email.lower().strip(),)).fetchone()
 
 
+def claim_user(uid: int, email: str, name: str, pw: str, role: str) -> None:
+    """Redesign: a guest becomes a real account (same id, so the guest's field and journal stay theirs)."""
+    with conn() as c:
+        c.execute("UPDATE users SET email=?, name=?, pw=?, role=?, created=? WHERE id=?",
+                  (email.lower().strip(), name.strip(), hash_pw(pw), role, time.time(), uid))
+
+
 def update_user(uid: int, **cols) -> None:
     ok = {k: v for k, v in cols.items() if k in ("name", "role", "pw", "engineer_id")}
     if ok:
