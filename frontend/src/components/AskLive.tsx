@@ -54,7 +54,7 @@ export function useAskChat(fieldId: string, ready: boolean) {
       setMsgs((m) => [...m, { role: 'user', text: t }]);
       if (!ready) {
         setMsgs((m) => [...m, { role: 'assistant', error: true, mood: 'thinking',
-          text: isAr(t) ? 'بذرة لسه مش متوصلة. محتاجين مفتاح Claude API في الـ backend.' : "Bezra isn't connected yet. The Claude API key is missing in the backend." }]);
+          text: isAr(t) ? 'بذرة مش قادرة ترد دلوقتي. جرّب تاني بعد شوية.' : "Bezra can't answer right now. Try again in a little while." }]);
         return;
       }
       setBusy(true);
@@ -63,8 +63,8 @@ export function useAskChat(fieldId: string, ready: boolean) {
         const js = await r.json();
         if (!r.ok) throw new Error(js.detail || r.statusText);
         setMsgs((m) => [...m, { role: 'assistant', text: js.text, mood: js.mood, cards: js.cards, sources: js.sources }]);
-      } catch (e: any) {
-        setMsgs((m) => [...m, { role: 'assistant', error: true, mood: 'concerned', text: isAr(t) ? 'حصلت مشكلة ومقدرتش أرد. جرّب تاني.' : `Sorry, I couldn't answer (${e.message}).` }]);
+      } catch {
+        setMsgs((m) => [...m, { role: 'assistant', error: true, mood: 'concerned', text: isAr(t) ? 'حصلت مشكلة ومقدرتش أرد. جرّب تاني.' : 'Bezra could not answer. Check your internet and try again.' }]);
       } finally {
         setBusy(false);
       }
