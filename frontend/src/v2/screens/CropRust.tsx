@@ -8,11 +8,13 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './CropRust.logic';
+import { useRustData } from '@/v2/data/rust';
 
 export default function CropRustScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const rust = useRustData();
+  const __v = { ...useDC(Logic, props), ...rust };
   return (
     <>
       <div className="v2 root">
@@ -103,17 +105,17 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                       <span className="row" style={{"gap":"10px"} as any}>
                         <span className="lvlpill med">
                           <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                          {"Medium risk"}
+                          {__s(__v?.lvl)}{" risk"}
                         </span>
                         <span className="meta">
                           {"This week · whole field"}
                         </span>
                       </span>
                       <h1 className="h1x">
-                        {"Rust could start this week."}
+                        {__s(__v?.title)}
                       </h1>
                       <p style={{"fontSize":"19px","lineHeight":"1.6","color":"var(--ink2)","maxWidth":"680px"} as any}>
-                        {"Four of the last seven nights were cool and damp. That is the weather rust likes. Nothing is wrong yet, so there is nothing to spray. Just look."}
+                        {__s(__v?.why)}
                       </p>
                       <section className="col hair" style={{"paddingTop":"8px"} as any} aria-labelledby="rd-h">
                         <h2 id="rd-h" className="sec" style={{"padding":"16px 0 6px"} as any}>
@@ -126,7 +128,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                             </span>
                             <span className="col" style={{"gap":"4px"} as any}>
                               <b style={{"fontSize":"18px","fontWeight":"600"} as any}>
-                                {"On Wed 9 Dec, walk the field"}
+                                {__s(__v?.step1)}
                               </b>
                               <span className="txt">
                                 {"Early morning is best, when leaves are still damp."}
@@ -162,7 +164,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                         </div>
                       </section>
                       <div className="row" style={{"gap":"10px"} as any}>
-                        {__v?.notAdded ? (
+                        {false ? (
                           <>
                             <button type="button" className="btn press" onClick={__v?.add} style={{"height":"52px","fontSize":"15px"} as any}>
                               <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -172,7 +174,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                             </button>
                           </>
                         ) : null}
-                        {__v?.added ? (
+                        {false ? (
                           <>
                             <span className="doneline">
                               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -218,10 +220,10 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                           {"On this field before"}
                         </span>
                         <b style={{"fontSize":"18px","fontWeight":"600"} as any}>
-                          {"3 of the last 10 seasons"}
+                          {__s(__v?.pastN)}
                         </b>
                         <span className="meta">
-                          {"Each time after damp weeks in December or January."}
+                          {__s(__v?.pastSub)}
                         </span>
                       </div>
                     </aside>
@@ -243,17 +245,17 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                       <span className="row" style={{"gap":"10px"} as any}>
                         <span className="lvlpill med">
                           <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                          {"Medium · 0.44"}
+                          {__s(__v?.lvlD)}
                         </span>
                         <span className="meta">
                           {"Leaf and stripe rust · whole field"}
                         </span>
                       </span>
                       <h1 className="h1x" style={{"fontSize":"40px"} as any}>
-                        {"Rust risk is rising, still under the decision line."}
+                        {__s(__v?.title)}
                       </h1>
                     </div>
-                    {__v?.notAdded ? (
+                    {false ? (
                       <>
                         <button type="button" className="btn press" onClick={__v?.add}>
                           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -263,7 +265,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                         </button>
                       </>
                     ) : null}
-                    {__v?.added ? (
+                    {false ? (
                       <>
                         <span className="doneline">
                           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -275,149 +277,35 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                     ) : null}
                   </div>
                   <div className="chart">
-                    <svg viewBox="0 0 980 230" width="100%" role="img" aria-label="Rust risk over 14 days, rising towards the warning line but staying under it.">
-                      <line x1="40" x2="970" y1="200.0" y2="200.0" stroke="#E8E8E3" />
-                      <text x="0" y="204.0" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"0.0"}
-                      </text>
-                      <line x1="40" x2="970" y1="108.0" y2="108.0" stroke="#E8E8E3" />
-                      <text x="0" y="112.0" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"0.5"}
-                      </text>
-                      <line x1="40" x2="970" y1="16.0" y2="16.0" stroke="#E8E8E3" />
-                      <text x="0" y="20.0" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"1.0"}
-                      </text>
-                      <rect x="540.8" y="16" width="429.2" height="184" fill="#ECECE6" fillOpacity=".6" />
-                      <line x1="40" x2="970" y1="89.6" y2="89.6" stroke="#C2412A" strokeDasharray="5 5" />
-                      <text x="970" y="83.6" textAnchor="end" fontFamily="Hanken Grotesk, sans-serif" fontSize="12" fontWeight="600" fill="#C2412A">
-                        {"Spray decision line 0.6"}
-                      </text>
-                      <path className="draw" pathLength="1" style={{"--d":"2"} as any} d="M40.0 159.5 L111.5 154.0 L183.1 144.8 L254.6 148.5 L326.2 139.3 L397.7 124.6 L469.2 115.4 L540.8 119.0" stroke="#D9762B" strokeWidth="2.6" fill="none" />
-                      <path d="M540.8 119.0 L612.3 109.8 L683.8 104.3 L755.4 98.8 L826.9 108.0 L898.5 113.5 L970.0 120.9" stroke="#D9762B" strokeWidth="2.2" strokeDasharray="4 5" fill="none" />
-                      <circle cx="540.8" cy="119.0" r="5" fill="#D9762B" />
-                      <text x="548.8" y="28" fontFamily="Hanken Grotesk, sans-serif" fontSize="12" fontWeight="600" fill="#141A16">
-                        {"Today 0.44"}
-                      </text>
-                      <text x="548.8" y="44" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"Forecast"}
-                      </text>
-                      <text x="40.0" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"26 Nov"}
-                      </text>
-                      <text x="111.5" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"27"}
-                      </text>
-                      <text x="183.1" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"28"}
-                      </text>
-                      <text x="254.6" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"29"}
-                      </text>
-                      <text x="326.2" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"30"}
-                      </text>
-                      <text x="397.7" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"1 Dec"}
-                      </text>
-                      <text x="469.2" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"2"}
-                      </text>
-                      <text x="540.8" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"3"}
-                      </text>
-                      <text x="612.3" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"4"}
-                      </text>
-                      <text x="683.8" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"5"}
-                      </text>
-                      <text x="755.4" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"6"}
-                      </text>
-                      <text x="826.9" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"7"}
-                      </text>
-                      <text x="898.5" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"8"}
-                      </text>
-                      <text x="970.0" y="222" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                        {"9"}
-                      </text>
-                    </svg>
-                    <div className="leg">
-                      <span>
-                        <i style={{"background":"#D9762B"} as any} />
-                        {"Risk index (0–1)"}
-                      </span>
-                      <span>
-                        <i style={{"background":"#C2412A"} as any} />
-                        {"Engineer decision line"}
-                      </span>
-                    </div>
-                    <span className="pq est">
-                      {"Infection model on NASA POWER hourly RH and temperature, calibrated on 2015–2025 rust years"}
-                    </span>
+                    {__v?.days ? (<svg viewBox="0 0 980 230" width="100%" role="img" aria-label={__s(__v.daysLabel)}>
+                      <line x1="40" x2="970" y1="200" y2="200" stroke="#E8E8E3" />
+                      <rect x={__v.fcX} y="16" width={970 - __v.fcX} height="184" fill="#ECECE6" fillOpacity=".6" />
+                      <line x1="40" x2="970" y1={__v.y85} y2={__v.y85} stroke="#C2412A" strokeDasharray="5 5" />
+                      <text x="970" y={__v.y85 - 6} textAnchor="end" fontFamily="Hanken Grotesk, sans-serif" fontSize="12" fontWeight="600" fill="#C2412A">{"85% humidity: rust likes it"}</text>
+                      {__v.days.map((d: any, j: number) => (<g key={j}>
+                        <rect className="grow" style={{"--i": String(j)} as any} x={d.x} y={d.y} width="40" height={d.h} rx="6" fill={d.fill} />
+                        <text x={d.cx} y={d.y - 6} textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">{d.rh}</text>
+                        <text x={d.cx} y="218" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">{d.lab}</text>
+                      </g>))}
+                      <text x={__v.fcX + 8} y="30" fontFamily="Hanken Grotesk, sans-serif" fontSize="12" fill="#6A716C">{"Forecast"}</text>
+                    </svg>) : <div className="sk" style={{"height":"230px","borderRadius":"12px"} as any} aria-busy="true" />}
+                    <span className="pq sat">{__s(__v?.src)}</span>
                   </div>
                   <div className="grid hair" style={{"gridTemplateColumns":"repeat(3, minmax(0, 1fr))","gap":"40px","paddingTop":"28px"} as any}>
                     <div className="chart">
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
                         {"Night humidity, last 7 nights"}
                       </b>
-                      <svg style={{"maxWidth":"380px"} as any} viewBox="0 0 420 150" width="100%" role="img" aria-label="Night humidity for the last 7 nights. 4 nights were over 85 percent.">
-                        <rect className="grow" style={{"--i":"0"} as any} x="10" y="62.8" width="40" height="57.2" rx="6" fill="#B7C9D8" />
-                        <text x="30" y="56.8" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"72%"}
-                        </text>
-                        <text x="30" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"27"}
-                        </text>
-                        <rect className="grow" style={{"--i":"1"} as any} x="68" y="47.2" width="40" height="72.8" rx="6" fill="#B7C9D8" />
-                        <text x="88" y="41.2" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"78%"}
-                        </text>
-                        <text x="88" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"28"}
-                        </text>
-                        <rect className="grow" style={{"--i":"2"} as any} x="126" y="21.2" width="40" height="98.8" rx="6" fill="#2F6FA8" />
-                        <text x="146" y="15.2" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"88%"}
-                        </text>
-                        <text x="146" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"29"}
-                        </text>
-                        <rect className="grow" style={{"--i":"3"} as any} x="184" y="13.4" width="40" height="106.6" rx="6" fill="#2F6FA8" />
-                        <text x="204" y="7.4" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"91%"}
-                        </text>
-                        <text x="204" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"30"}
-                        </text>
-                        <rect className="grow" style={{"--i":"4"} as any} x="242" y="26.4" width="40" height="93.6" rx="6" fill="#2F6FA8" />
-                        <text x="262" y="20.4" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"86%"}
-                        </text>
-                        <text x="262" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"1"}
-                        </text>
-                        <rect className="grow" style={{"--i":"5"} as any} x="300" y="44.6" width="40" height="75.4" rx="6" fill="#B7C9D8" />
-                        <text x="320" y="38.6" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"79%"}
-                        </text>
-                        <text x="320" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"2"}
-                        </text>
-                        <rect className="grow" style={{"--i":"6"} as any} x="358" y="18.6" width="40" height="101.4" rx="6" fill="#2F6FA8" />
-                        <text x="378" y="12.6" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">
-                          {"89%"}
-                        </text>
-                        <text x="378" y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">
-                          {"3"}
-                        </text>
-                        <line x1="0" x2="420" y1="29.0" y2="29.0" stroke="#141A16" strokeDasharray="3 4" strokeOpacity=".5" />
-                      </svg>
+                      {__v?.past7 ? (<svg style={{"maxWidth":"380px"} as any} viewBox="0 0 420 150" width="100%" role="img" aria-label={__s(__v.humNote)}>
+                        {__v.past7.map((d: any, j: number) => (<g key={j}>
+                          <rect className="grow" style={{"--i": String(j)} as any} x={10 + j * 58} y={120 - d.h7} width="40" height={d.h7} rx="6" fill={d.wet ? "#2F6FA8" : "#B7C9D8"} />
+                          <text x={30 + j * 58} y={114 - d.h7} textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fontWeight="600" fill="#141A16">{d.rh}</text>
+                          <text x={30 + j * 58} y="142" textAnchor="middle" fontFamily="Hanken Grotesk, sans-serif" fontSize="11" fill="#8B918C">{d.dd}</text>
+                        </g>))}
+                        <line x1="0" x2="420" y1={120 - 85 * 0.794} y2={120 - 85 * 0.794} stroke="#C2412A" strokeDasharray="5 5" />
+                      </svg>) : <div className="sk" style={{"height":"150px","borderRadius":"12px"} as any} aria-busy="true" />}
                       <span className="meta">
-                        {"Dashed line: 85%. 4 nights above it."}
+                        {__s(__v?.humNote)}
                       </span>
                     </div>
                     <div className="col" style={{"gap":"12px"} as any}>
@@ -431,7 +319,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                               {"Night temp"}
                             </td>
                             <td>
-                              {"11–17 °C"}
+                              {__s(__v?.nightT)}
                             </td>
                           </tr>
                           <tr>
@@ -439,15 +327,15 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                               {"Leaf wetness"}
                             </td>
                             <td>
-                              {"9 h last night"}
+                              {"Not measured"}
                             </td>
                           </tr>
                           <tr>
                             <td>
-                              {"Damp nights (7)"}
+                              {"Rust weather days (7)"}
                             </td>
                             <td>
-                              {"4"}
+                              {__s(__v?.n7)}
                             </td>
                           </tr>
                           <tr>
@@ -455,7 +343,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                               {"Crop stage"}
                             </td>
                             <td>
-                              {"Tillering, day 28"}
+                              {__s(__v?.stage)}
                             </td>
                           </tr>
                           <tr>
@@ -463,7 +351,7 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                               {"Variety"}
                             </td>
                             <td>
-                              {"Giza 171 (your journal)"}
+                              {__s(__v?.variety)}
                             </td>
                           </tr>
                           <tr>
@@ -481,32 +369,16 @@ export default function CropRustScreen(props: Record<string, unknown> = {}) {
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
                         {"Rust years on this field"}
                       </b>
-                      <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                        <span>
-                          {"2018/19"}
-                        </span>
-                        <span className="meta">
-                          {"Jan, after 6 damp nights"}
-                        </span>
-                      </div>
-                      <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                        <span>
-                          {"2021/22"}
-                        </span>
-                        <span className="meta">
-                          {"Dec, 5 damp nights"}
-                        </span>
-                      </div>
-                      <div className="row sp" style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
-                        <span>
-                          {"2024/25"}
-                        </span>
-                        <span className="meta">
-                          {"Jan, 7 damp nights"}
-                        </span>
-                      </div>
+                      {((__v?.years) || []).map((y: any, j: number) => (
+                        <div className="row sp" key={j} style={{"padding":"8px 0","borderTop":"1px solid var(--line)"} as any}>
+                          <b style={{"fontWeight":"600"} as any}>{y.winter}</b>
+                          <span className="meta">{y.txt}</span>
+                        </div>
+                      ))}
+                      
+                      
                       <span className="meta">
-                        {"Matched from greenness drops + weather. Engineer confirmed 2024/25."}
+                        {__s(__v?.yearsNote)}
                       </span>
                     </div>
                   </div>
