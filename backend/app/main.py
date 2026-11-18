@@ -445,6 +445,17 @@ def get_sample():
         out["impact"] = {k: im.get(k) for k in ("unit", "usual", "with_bezra", "without_bezra", "lost_so_far", "actions")}
     except Exception:
         out["impact"] = None
+    try:
+        from .services import scale as _scale
+        own = _scale.own_rotation(c)
+        r = rotation.build(c, **own)
+        allr = r["strategies"] + r.get("more", [])
+        cur = next((x for x in allr if x.get("current")), allr[0])
+        best = next((x for x in allr if x.get("pick")), cur)
+        f5 = lambda x: [1.0] + [y["soil_factor"]["median"] for y in x["years"][:5]]  # noqa: E731
+        out["soil5"] = {"current": f5(cur), "best": f5(best), "best_name": best["name"][0]}
+    except Exception:
+        out["soil5"] = None
     _sample_cache.update(t=_t.time(), data=out)
     return out
 
