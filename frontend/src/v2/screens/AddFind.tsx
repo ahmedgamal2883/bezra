@@ -12,7 +12,7 @@ import Logic from './AddFind.logic';
 export default function AddFindScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const __v = { ...useDC(Logic, props), mapEl: props.mapEl as any };
   return (
     <>
       <div className="v2 root">
@@ -61,7 +61,7 @@ export default function AddFindScreen(props: Record<string, unknown> = {}) {
                         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
                         </svg>
-                        <input type="text" value="Shibin El Kom, Menoufia" style={{"border":"0","outline":"none","font":"inherit","fontSize":"16px","flex":"1","background":"transparent"} as any} />
+                        <input type="text" placeholder="Village or town, governorate" value={__s(__v?.q)} onChange={__v?.setQ} onKeyDown={(e) => { if (e.key === "Enter") __v?.search?.(e); }} aria-label="Search for your village" style={{"border":"0","outline":"none","font":"inherit","fontSize":"16px","flex":"1","background":"transparent"} as any} />
                       </span>
                     </label>
                     <button type="button" className="btn soft press" onClick={__v?.useLoc} style={{"height":"52px","alignSelf":"flex-start"} as any}>
@@ -70,6 +70,8 @@ export default function AddFindScreen(props: Record<string, unknown> = {}) {
                       </svg>
                       {"Use my location"}
                     </button>
+                    <button type="button" className="btn soft press" onClick={__v?.search} disabled={!!__v?.busy || !__v?.q} style={{"height":"52px","alignSelf":"flex-start"} as any}>{"Search"}</button>
+                    {__v?.hasSearchErr ? <div className="warnbox" role="alert"><span>{__s(__v?.searchErr)}</span></div> : null}
                     {__v?.denied ? (
                       <>
                         <div className="warnbox" role="alert">
@@ -89,110 +91,7 @@ export default function AddFindScreen(props: Record<string, unknown> = {}) {
                   <div className="col" style={{"gap":"8px"} as any}>
                     <div className="hero" style={{"background":"#D9D6C8","borderRadius":"24px","flex":"1"} as any}>
                       {" "}
-                      <svg role="img" aria-label={__s(__v?.mapLabel) as any} width="100%" height="100%" viewBox="0 0 1360 520" preserveAspectRatio="xMidYMid slice" style={{"position":"absolute","inset":"0"} as any}>
-                        {" "}
-                        <defs>
-                          {" "}
-                          <pattern id="rows" width="5" height="5" patternUnits="userSpaceOnUse">
-                            <path d="M2.5 0V5" stroke="#000" strokeWidth="1" />
-                          </pattern>
-                          {" "}
-                          <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                            <rect width="7" height="7" fill="#F29B1E" />
-                            <path d="M0 0V7" stroke="#FFFFFF" strokeOpacity=".45" strokeWidth="2.5" />
-                          </pattern>
-                          {" "}
-                          <linearGradient id="fadeB" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset=".55" stopColor="#F4F4F1" stopOpacity="0" />
-                            <stop offset="1" stopColor="#F4F4F1" stopOpacity=".55" />
-                          </linearGradient>
-                          {" "}
-                          <filter id="grain" x="0" y="0" width="100%" height="100%">
-                            <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7" />
-                            <feColorMatrix type="saturate" values="0" />
-                            <feComponentTransfer>
-                              <feFuncA type="table" tableValues="0 .5" />
-                            </feComponentTransfer>
-                          </filter>
-                          {" "}
-                        </defs>
-                        {" "}
-                        <g transform="rotate(-9 680 260)">
-                          {" "}
-                          <g stroke="#D8D1BA" strokeWidth="1.1" strokeOpacity=".8">
-                            {((__v?.parcels) || []).map((p: any, i1: number) => (
-                              <Fragment key={i1}>
-                                <rect x={__s(p?.x) as any} y={__s(p?.y) as any} width={__s(p?.w) as any} height={__s(p?.h) as any} fill={__s(p?.fill) as any} />
-                              </Fragment>
-                            ))}
-                          </g>
-                          {" "}
-                          <g fill="url(#rows)">
-                            {((__v?.rowed) || []).map((p: any, i2: number) => (
-                              <Fragment key={i2}>
-                                <rect x={__s(p?.x) as any} y={__s(p?.y) as any} width={__s(p?.w) as any} height={__s(p?.h) as any} opacity={__s(p?.op) as any} />
-                              </Fragment>
-                            ))}
-                          </g>
-                          {" "}
-                          <rect x="1040" y="-80" width="300" height="190" rx="40" fill="#9A9485" />
-                          {" "}
-                          {((__v?.houses) || []).map((h: any, i3: number) => (
-                            <Fragment key={i3}>
-                              <rect x={__s(h?.x) as any} y={__s(h?.y) as any} width={__s(h?.w) as any} height={__s(h?.h) as any} fill={__s(h?.fill) as any} stroke="#5E594F" strokeWidth=".6" />
-                            </Fragment>
-                          ))}
-                          {" "}
-                          <rect x="596" y="-400" width="9" height="1400" fill="#DDD6C2" />
-                          {" "}
-                        </g>
-                        {" "}
-                        <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#4A6A35" strokeWidth="22" />
-                        {" "}
-                        <path d="M-20 470C200 440 420 500 680 462S1100 424 1380 450" fill="none" stroke="#3B6E8F" strokeWidth="10" />
-                        {" "}
-                        <rect width="1360" height="520" filter="url(#grain)" opacity=".14" style={{"mixBlendMode":"multiply"} as any} />
-                        {" "}
-                        {__v?.dim ? (
-                          <>
-                            <rect width="1360" height="520" fill="#141A16" opacity=".28" className="fade" />
-                          </>
-                        ) : null}
-                        {" "}
-                        <g transform="rotate(-9 680 260)">
-                          {" "}
-                          {((__v?.cells) || []).map((c: any, i4: number) => (
-                            <Fragment key={i4}>
-                              <rect className="pop" style={__css(c?.st)} x={__s(c?.x) as any} y={__s(c?.y) as any} width={__s(c?.w) as any} height={__s(c?.h) as any} fill={__s(c?.fill) as any} fillOpacity={__s(c?.op) as any} stroke="#FFFFFF" strokeOpacity=".55" strokeWidth="1" />
-                            </Fragment>
-                          ))}
-                          {" "}
-                          {__v?.showNum ? (
-                            <>
-                              {((__v?.cells) || []).map((c: any, i5: number) => (
-                                <Fragment key={i5}>
-                                  <text x={__s(c?.cx) as any} y={__s(c?.cy) as any} transform={__s(c?.tf) as any} textAnchor="middle" dominantBaseline="central" fontFamily="Hanken Grotesk, sans-serif" fontSize="13" fontWeight="700" fill={__s(c?.ink) as any}>
-                                    {__s(c?.label)}
-                                  </text>
-                                </Fragment>
-                              ))}
-                            </>
-                          ) : null}
-                          {" "}
-                          <rect x="605" y="120" width="160" height="220" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeOpacity=".95" />
-                          {" "}
-                          <rect x="605" y="120" width="160" height="220" fill="none" stroke="#141A16" strokeWidth="2" />
-                          {" "}
-                          <g transform="translate(738 147) rotate(9)">
-                            <circle r="9" fill="#F29B1E" className="pulse" />
-                            <circle r="9" fill="#F29B1E" stroke="#FFFFFF" strokeWidth="3" />
-                          </g>
-                          {" "}
-                        </g>
-                        {" "}
-                        <rect width="1360" height="520" fill="url(#fadeB)" />
-                        {" "}
-                      </svg>
+                      {__v?.mapEl}
                       {" "}
                     </div>
                     <span className="meta delta-note" style={{"fontSize":"12px","color":"#8A8F88"} as any}>
@@ -252,55 +151,7 @@ export default function AddFindScreen(props: Record<string, unknown> = {}) {
                   </div>
                   <div className="col" style={{"gap":"8px"} as any}>
                     <div className="hero" style={{"background":"#8C9A62","borderRadius":"24px","flex":"1"} as any}>
-                      <svg viewBox="0 0 480 520" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={{"position":"absolute","inset":"0"} as any} aria-label="Satellite map, zoomed in">
-                        <rect width="480" height="520" fill="#8C9A62" />
-                        <g transform="rotate(-4 240 260)">
-                          <rect x="-20" y="-20" width="120" height="580" fill="#7C8C50" />
-                          <rect x="100" y="-20" width="10" height="580" fill="#CFC6AC" />
-                          <rect x="380" y="-20" width="140" height="580" fill="#6E8A46" />
-                          <rect x="118" y="80" width="250" height="360" fill="#7E9450" />
-                        </g>
-                        {__v?.closed ? (
-                          <>
-                            <path d="M130 120L330 92 352 392 110 420Z" fill="#F29B1E" fillOpacity=".2" stroke="#fff" strokeWidth="3" className="fade" style={{"--d":"0"} as any} />
-                          </>
-                        ) : null}
-                        {__v?.p2 ? (
-                          <>
-                            <line x1="130" y1="120" x2="330" y2="92" stroke="#fff" strokeWidth="3" />
-                          </>
-                        ) : null}
-                        {__v?.p3 ? (
-                          <>
-                            <line x1="330" y1="92" x2="352" y2="392" stroke="#fff" strokeWidth="3" />
-                          </>
-                        ) : null}
-                        {__v?.p4 ? (
-                          <>
-                            <line x1="352" y1="392" x2="110" y2="420" stroke="#fff" strokeWidth="3" />
-                          </>
-                        ) : null}
-                        {__v?.p1 ? (
-                          <>
-                            <circle cx="130" cy="120" r="11" fill="#fff" stroke="#141A16" strokeWidth="3" className="pop" />
-                          </>
-                        ) : null}
-                        {__v?.p2 ? (
-                          <>
-                            <circle cx="330" cy="92" r="11" fill="#fff" stroke="#141A16" strokeWidth="3" className="pop" />
-                          </>
-                        ) : null}
-                        {__v?.p3 ? (
-                          <>
-                            <circle cx="352" cy="392" r="11" fill="#fff" stroke="#141A16" strokeWidth="3" className="pop" />
-                          </>
-                        ) : null}
-                        {__v?.p4 ? (
-                          <>
-                            <circle cx="110" cy="420" r="11" fill="#fff" stroke="#141A16" strokeWidth="3" className="pop" />
-                          </>
-                        ) : null}
-                      </svg>
+                      {__v?.mapEl}
                     </div>
                     <span className="meta delta-note" style={{"fontSize":"12px","color":"#8A8F88"} as any}>
                       {"Bezra works best in the Nile Delta, Egypt. That is where most of its field data comes from."}

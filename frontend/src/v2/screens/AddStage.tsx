@@ -138,12 +138,12 @@ export default function AddStageScreen(props: Record<string, unknown> = {}) {
                       </svg>
                       <span className="col" style={{"gap":"4px"} as any}>
                         <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                          {"From space, your field turned green around 12 November."}
+                          {__s(__v?.greenTxt)}
                         </b>
                         <span style={{"fontSize":"14px","color":"var(--ink2)"} as any}>
-                          {"So it was most likely sown around Thursday 5 November. "}
+                          {__s(__v?.sowTxt)}
                           <span className="jn-src">
-                            {"NASA HLS, 30 m"}
+                            {"NASA MODIS, 250 m"}
                           </span>
                         </span>
                       </span>
@@ -173,7 +173,7 @@ export default function AddStageScreen(props: Record<string, unknown> = {}) {
                             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" />
                             </svg>
-                            <input type="text" value="5 November 2026" style={{"border":"0","outline":"none","font":"inherit","fontSize":"16px","flex":"1","background":"transparent"} as any} />
+                            <input type="date" value={__s(__v?.date)} max={__s(__v?.maxDate)} onChange={__v?.setDate} aria-label="Sowing day" style={{"border":"0","outline":"none","font":"inherit","fontSize":"16px","flex":"1","background":"transparent"} as any} />
                           </span>
                         </label>
                         <button type="button" className="btn soft sm press" onClick={__v?.okDate} style={{"alignSelf":"flex-start"} as any}>
@@ -205,12 +205,12 @@ export default function AddStageScreen(props: Record<string, unknown> = {}) {
                     </svg>
                     <span className="col" style={{"gap":"4px"} as any}>
                       <b style={{"fontSize":"16px","fontWeight":"600"} as any}>
-                        {"From space, your field turned green around 28 November."}
+                        {__s(__v?.greenTxt)}
                       </b>
                       <span style={{"fontSize":"14px","color":"var(--ink2)"} as any}>
-                        {"So it was most likely sown around Friday 20 November. The grain starts to fill in a few weeks. "}
+                        {__s(__v?.sowTxt)}
                         <span className="jn-src">
-                          {"NASA HLS, 30 m"}
+                          {"NASA MODIS, 250 m"}
                         </span>
                       </span>
                     </span>
@@ -227,12 +227,13 @@ export default function AddStageScreen(props: Record<string, unknown> = {}) {
               <p className="meta">
                 {"Soil, water, heat and rust risk come from NASA satellites. You only tell Bezra what space can't see."}
               </p>
+                {__v?.hasErr ? <div className="warnbox" role="alert"><span>{__s(__v?.err)}</span></div> : null}
               <div className="row" style={{"gap":"10px"} as any}>
-                <Link href={__r("V18-Add-Draw") + ""} className="btn soft press">
+                <Link href="#" onClick={__v?.back} className="btn soft press">
                   {"Back"}
                 </Link>
-                <a href={__s(__v?.next) as any} className="btn cta press" style={{"height":"54px","fontSize":"15px","padding":"0 6px 0 22px"} as any}>
-                  {"Save and read my field"}
+                <a href="#" onClick={__v?.save} aria-disabled={!!__v?.busy} className="btn cta press" style={{"height":"54px","fontSize":"15px","padding":"0 6px 0 22px"} as any}>
+                  {__s(__v?.saveLabel)}
                   <span className="ar">
                     <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M7 17 17 7M9 7h8v8" />

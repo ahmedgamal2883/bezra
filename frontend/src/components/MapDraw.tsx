@@ -19,9 +19,11 @@ const LABELS = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/W
 const GEOCODE = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates';
 const DOT = '<span style="display:block;width:18px;height:18px;border-radius:9px;background:#fff;border:2.5px solid #141A16;box-sizing:border-box;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>';
 
-type Props = { start: LatLon; corners: LatLon[]; onCorners: (c: LatLon[]) => void; onDrawing: (on: boolean) => void };
+type Props = { start: LatLon; corners: LatLon[]; onCorners: (c: LatLon[]) => void; onDrawing: (on: boolean) => void;
+  /** optional (redesign): start zoom, report where the map is, start in drawing mode */
+  startZoom?: number; onView?: (center: LatLon, zoom: number) => void; startDrawing?: boolean };
 
-const MapDraw = forwardRef<MapDrawHandle, Props>(function MapDraw({ start, corners, onCorners, onDrawing }, ref) {
+const MapDraw = forwardRef<MapDrawHandle, Props>(function MapDraw({ start, corners, onCorners, onDrawing, startZoom, onView, startDrawing }, ref) {
   const box = useRef<HTMLDivElement>(null);
   const L = useRef<typeof Leaflet | null>(null);
   const map = useRef<Leaflet.Map | null>(null);
@@ -31,8 +33,8 @@ const MapDraw = forwardRef<MapDrawHandle, Props>(function MapDraw({ start, corne
   const marks = useRef<Leaflet.Marker[]>([]);
   const drawing = useRef(false);
   const pts = useRef<LatLon[]>(corners);
-  const cb = useRef({ onCorners, onDrawing });
-  cb.current = { onCorners, onDrawing };
+  const cb = useRef({ onCorners, onDrawing, onView });
+  cb.current = { onCorners, onDrawing, onView };
 
   const icon = () => L.current!.divIcon({ className: '', iconSize: [18, 18], iconAnchor: [9, 9], html: DOT });
 
@@ -79,7 +81,8 @@ const MapDraw = forwardRef<MapDrawHandle, Props>(function MapDraw({ start, corne
       const Lf = (mod.default || mod) as typeof Leaflet;
       L.current = Lf;
       const m = Lf.map(box.current, { zoomControl: false, attributionControl: true, zoomSnap: 0.25, wheelPxPerZoomLevel: 90, tap: true } as Leaflet.MapOptions)
-        .setView(start, corners.length ? 17 : 15);
+        .setView(start, startZoom ?? (corners.length ? 17 : 15));
+      m.on('moveend', () => { const c = m.getCenter(); cb.current.onView?.([c.lat, c.lng], m.getZoom()); });
       Lf.tileLayer(ESRI, { maxZoom: 19, keepBuffer: 4, updateWhenZooming: false, attribution: 'Imagery © Esri, Maxar, Earthstar Geographics' }).addTo(m);
       Lf.tileLayer(LABELS, { maxZoom: 19, opacity: 0.8, keepBuffer: 4, updateWhenZooming: false }).addTo(m);
       Lf.control.zoom({ position: 'bottomright' }).addTo(m);
@@ -100,6 +103,7 @@ const MapDraw = forwardRef<MapDrawHandle, Props>(function MapDraw({ start, corne
       map.current = m;
       if (corners.length >= 3) m.fitBounds(Lf.latLngBounds(corners), { padding: [80, 80] });
       corners_();
+      if (startDrawing && corners.length < 3) { drawing.current = true; cb.current.onDrawing(true); m.getContainer().style.cursor = 'crosshair'; }
     });
     return () => { alive = false; map.current?.remove(); map.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps

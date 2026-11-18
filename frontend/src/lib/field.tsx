@@ -47,8 +47,8 @@ export function FieldProvider({ children }: { children: ReactNode }) {
   // reload after signing in / out (the page changes)
   useEffect(() => { load(); }, [load, path === '/sign-in']); // eslint-disable-line react-hooks/exhaustive-deps
   // A farmer without a field yet goes to Onboarding from any field screen.
-  const needsField = loaded && user?.role === 'farmer' && fields.length === 0 && /^\/(field|sim|ask|plan|report)/.test(path || '');
-  useEffect(() => { if (needsField) window.location.replace('/onboarding'); }, [needsField]);
+  const needsField = loaded && user?.role === 'farmer' && fields.length === 0 && /^\/(field\/|sim|ask|plan|report)/.test(path || '');
+  useEffect(() => { if (needsField) window.location.replace('/fields/new'); }, [needsField]);
   // Nothing renders until we know who is signed in: no other person's name or field ever flashes on screen.
   const ready = loaded && !needsField;
   return <C.Provider value={{ user, fields, loaded, id, setId, reload: load }}>{ready ? children : <div className="root" aria-busy="true" />}</C.Provider>;
