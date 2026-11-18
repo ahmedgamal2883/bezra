@@ -5,7 +5,7 @@
 // The redesign's own strings (design-handoff/design/i18n/en-ar.json) come first: the designer's wording wins.
 import DESIGN_AR from './ar-design.json';
 const DESIGN = DESIGN_AR as Record<string, string>;
-import { V2_EXACT, v2Patterns } from './ar-v2';
+import { V2_EXACT, v2Patterns, v2Rotation } from './ar-v2';
 
 export const EXACT: Record<string, string> = {
   "Multi-cut berseem, about 30 t green fodder per feddan over the season's cuts (typical Delta, to verify with ARC)": 'برسيم متعدد الحشات، حوالي 30 طن علف أخضر للفدان على حشات الموسم (المعتاد في الدلتا، يتأكد مع مركز البحوث الزراعية)',
@@ -836,6 +836,8 @@ export function toArabic(s: string): string | null {
   if (!t || /[؀-ۿ]/.test(t)) return null;
   if (DESIGN[t]) return DESIGN[t];
   if (V2_EXACT[t]) return V2_EXACT[t];
+  const rot = v2Rotation(t);
+  if (rot) return rot;
   if (EXACT[t]) return EXACT[t];
   for (const [re, rep] of PATTERNS) {
     const m = t.match(re);

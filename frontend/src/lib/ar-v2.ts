@@ -168,6 +168,25 @@ export const V2_EXACT: Record<string, string> = {
   'Tired soil (what the last crops left behind)': 'تربة تعبانة (اللي سابته المحاصيل اللي فاتت)',
   'From the season so far': 'من الموسم لحد دلوقتي',
   'Since sowing': 'من الزراعة',
+  // ---- Details views ----
+  'Rust weather this week': 'جو الصدأ الأسبوع ده', 'Open-Meteo forecast': 'توقعات Open-Meteo',
+  'Crop calendar (weeks after sowing)': 'تقويم الزرع (أسابيع بعد الزراعة)',
+  'Yellow rust needs cool nights (7 to 18 °C) with dew or fog on the leaves.': 'الصدأ الأصفر محتاج ليالي باردة (من 7 لـ 18 درجة) مع ندى أو شبورة على الورق.',
+  'Rust weather index, NASA POWER and Open-Meteo humidity and dew point': 'مؤشر جو الصدأ، من رطوبة ونقطة ندى NASA POWER وOpen-Meteo',
+  'Missed': 'فات', 'With your engineer': 'مع المهندس', 'Not done': 'ما اتعملش',
+  'FAO-56 water balance on NASA POWER + Open-Meteo, and your log': 'ميزان المية FAO-56 على NASA POWER وOpen-Meteo، ومن سجلك',
+  'Amounts: with your engineer. Bezra shows a usual range when you log what you used.': 'الكميات: مع المهندس. بذرة بتوريك المدى المعتاد لما تسجل اللي استخدمته.',
+  "Field's spring around 2040 (trend) vs NASA POWER climatology of wheat regions": 'ربيع أرضك حوالي 2040 (الاتجاه) قصاد مناخ مناطق القمح من NASA POWER',
+  '· soil from SoilGrids, history from MODIS, 10-year runs on NASA POWER': '· التربة من SoilGrids، التاريخ من MODIS، وتجارب 10 سنين على NASA POWER',
+  'THE SOIL TODAY · 0–30 CM': 'التربة النهارده · 0–30 سم', 'Likely range': 'المدى المحتمل',
+  'Organic carbon stock 0-30 cm': 'مخزون الكربون العضوي 0-30 سم', 'Organic carbon': 'كربون عضوي', 'Clay': 'طين', 'Sand': 'رمل', 'Silt': 'سلت',
+  'pH (water)': 'pH (مية)', 'Total nitrogen': 'النيتروجين الكلي', 'Cation exchange capacity': 'السعة التبادلية الكاتيونية', 'Bulk density': 'الكثافة الظاهرية',
+  'Salinity (ECe)': 'الملوحة (ECe)',
+  'A lab soil test replaces these map values everywhere. Add one from your profile.': 'تحليل تربة من معمل بيحل محل أرقام الخريطة دي في كل مكان. ضيفه من حسابك.',
+  'ROTATIONS · 10 YEARS ON YOUR WEATHER': 'الدورات · 10 سنين على طقسك', 'Rotation': 'الدورة', 'Soil, year 10': 'التربة، سنة 10',
+  'Water m³/feddan/yr': 'المية م³/فدان/سنة', 'What you grow now': 'اللي بتزرعه دلوقتي', '· now': '· دلوقتي', '· best': '· الأحسن',
+  'Short berseem, then cotton': 'برسيم فحل، وبعدين قطن', 'Berseem one winter in two': 'برسيم شتا آه وشتا لأ', 'Sugar beet in winter': 'بنجر سكر في الشتا',
+  'PEAK WINTER GREENNESS AROUND YOUR FIELD (NDVI)': 'أعلى خضرة في الشتا حوالين أرضك (NDVI)',
   // ---- Add field ----
   "Search for the nearest village, or use your phone's location if you are standing in the field.": 'دوّر على أقرب قرية، أو استخدم مكان موبايلك لو إنت واقف في الأرض.',
   'Village or area': 'القرية أو المنطقة', 'Use my location': 'استخدم مكاني', 'Search': 'دوّر', 'This is the area, next': 'دي المنطقة، التالي',
@@ -276,5 +295,24 @@ export function v2Patterns(D: string): [string, string][] {
     [`^We filled in your first (\\d+) days from space\\.$`, 'ملينا أول $1 يوم من الفضاء.'],
     [`^Your usual way: ([\\d.]+) · season model on your weather$`, 'طريقتك المعتادة: $1 · نموذج الموسم على طقسك'],
     [`^(\\d+) hot days over 32 °C$`, '$1 أيام حر فوق 32 درجة'],
+    // Details views
+    [`^Day (\\d+) · (.+)$`, 'يوم $1 · $2'],
+    [`^(\\d+) m³ so far$`, '$1 م³ لحد دلوقتي'],
+    [`^(\\d+) bags \\(you\\)$`, '$1 شكاير (إنت)'],
+    [`^NASA POWER (\\d{4})-(\\d{4}), days over 32 °C in March and April; 2040 = linear trend$`, 'NASA POWER $1-$2، أيام فوق 32 درجة في مارس وأبريل؛ 2040 = اتجاه خطي'],
+    [`^(.+) already has the spring heat your field is heading to\\.$`, '$1 عندها دلوقتي حر الربيع اللي أرضك رايحاله.'],
+    [`^Similarity (\\d+)%\\. What helps there: (.+)$`, 'التشابه $1%. اللي بيساعد هناك: $2'],
+    [`^(.+), organic carbon (\\d+) t/ha in the top 30 cm$`, '$1، كربون عضوي $2 طن/هكتار في أول 30 سم'],
+    [`^(\\d+) of 180$`, '$1 من 180'],
   ];
+}
+
+// "Wheat → Rice / Berseem (full season) → Maize": a rotation, crop by crop
+const ROT: Record<string, string> = { Wheat: 'قمح', Maize: 'درة', Rice: 'رز', Berseem: 'برسيم', 'Berseem (full season)': 'برسيم (موسم كامل)', 'Faba bean': 'فول',
+  'Short berseem (fahl)': 'برسيم فحل', Cotton: 'قطن', 'Sugar beet': 'بنجر سكر', Fallow: 'بور', Bare: 'فاضية' };
+export function v2Rotation(t: string): string | null {
+  if (!t.includes(' → ')) return null;
+  const parts = t.split(/( → | \/ )/);
+  const out = parts.map((x, i) => (i % 2 ? x.replace('→', '←') : ROT[x] ?? null)); // read right to left
+  return out.every((x) => x !== null) ? out.join('') : null;
 }
