@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import ProfileScreen from '@/screens/Profile';
+import Profile from '@/v2/screens/Profile';
 
-export const metadata: Metadata = { title: "Bezra, Profile" };
+export const metadata: Metadata = { title: 'Bezra, Profile' };
 
+// Redesign (V18 Profile). The old V11 screen stays in src/screens/Profile.tsx until the redesign ships.
 export default function Page() {
-  return <ProfileScreen />;
+  return <Profile />;
 }
