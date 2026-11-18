@@ -393,6 +393,38 @@ def delete_log(field_id: str, entry_id: str, user: dict = Depends(current_user))
         raise HTTPException(404, str(e))
 
 
+@app.get("/fields/{field_id}/rust")
+def get_rust(field_id: str, user: dict = Depends(current_user)):
+    """Redesign (Crop > Rust): the rust weather behind the alert, night by night. Same rule as the alert
+    (engine.season.is_rust_day: mean 7-18 C and humid or near dew point): the last 7 days, the forecast days, and how
+    many of the last 10 winters had a rust spell (10 or more such days from December to February)."""
+    from datetime import timedelta as _td
+    from .engine.season import is_rust_day
+    c = _ctx(field_id, user)
+    w, today = c.w, c.today
+
+    def row(r, fc):
+        return {"date": r["date"], "rh": round(r["rh"]), "tmean": round(r["tmean"], 1), "tmin": round(r["tmin"], 1),
+                "dew_gap": round(r["tmean"] - r["dew"], 1), "rust_day": is_rust_day(r), "forecast": fc}
+    past = [row(r, False) for r in w.recent_days(7)]
+    ahead = [row(r, True) for r in w.forecast_days(16) if r["date"] > today.isoformat()][:7]
+    winters = []
+    for y in range(today.year - (1 if today.month >= 12 else 0) - 10, today.year - (1 if today.month >= 12 else 0)):
+        d, n, have = date(y, 12, 1), 0, 0
+        while d < date(y + 1, 3, 1):
+            r = w.historical(d)
+            if r:
+                have += 1
+                n += is_rust_day(r)
+            d += _td(days=1)
+        if have > 60:
+            winters.append({"winter": f"{y}/{str(y + 1)[2:]}", "rust_days": n, "spell": n >= 10})
+    return {"field_id": c.f["id"], "today": today.isoformat(), "rule": "Mean 7-18 °C and humidity 85%+ or within 2 °C of the dew point",
+            "past": past, "ahead": ahead, "rust_days_last7": sum(x["rust_day"] for x in past),
+            "winters": winters, "spell_winters": sum(x["spell"] for x in winters),
+            "variety_trait": c.variety.get("rust"), "source": "NASA POWER daily (MERRA-2) + Open-Meteo forecast"}
+
+
 @app.get("/fields/{field_id}/mapframe")
 def get_mapframe(field_id: str, user: dict = Depends(current_user)):
     """Today map: the field's 30 m grid in its UTM zone (+ the drawn outline), so the real satellite photo
