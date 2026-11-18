@@ -162,6 +162,9 @@ for (const n of names) {
   while (tplNodes.length && tplNodes.at(-1).nodeName === '#text' && !tplNodes.at(-1).value.trim()) tplNodes.pop();
   loopN = 0; rootDone = false;
   const body = tplNodes.flatMap((x) => conv(x, new Set(), 3));
+  // top bar: the signed-in person and field (src/v2/data/who.ts), never the design's Hassan / North plot
+  const WHO = { '{"HF"}': '{__s(__w.initials)}', '{"Hassan Farouk"}': '{__s(__w.userName)}', '{"North plot ▾"}': '{__s(__w.fieldLabel)}' };
+  for (let i = 0; i < body.length; i++) { const t = body[i].trim(); if (WHO[t]) body[i] = body[i].replace(t, WHO[t]); }
   const usesLink = body.some((l) => /<Link /.test(l));
   fs.writeFileSync(tsxPath, `'use client';
 /* eslint-disable */
@@ -170,10 +173,12 @@ for (const n of names) {
 import { Fragment } from 'react';
 ${usesLink ? "import Link from 'next/link';\n" : ''}import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
+import { useWho } from '@/v2/data/who';
 import Logic from './${comp}.logic';
 
 export default function ${comp}Screen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
+  const __w = useWho();
   const __v = useDC(Logic, props);
   return (
     <>

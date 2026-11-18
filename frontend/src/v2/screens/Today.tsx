@@ -2,7 +2,7 @@
 /* eslint-disable */
 // Generated from design-handoff/design/source/V18-Today.dc.html by scripts/convert-v2.mjs (layout and copy 1:1),
 // then wired to the API by hand. Logic: ./Today.logic.js
-import { Fragment } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
@@ -17,6 +17,12 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
   const d = useTodayData(id);
   const who = { userName: user?.name || '', initials: (user?.name || '').split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase(), fieldLabel: (field?.name || '') + ' ▾' };
   const __v = { ...useDC(Logic, { ...props, d: { ...d, dayMonth } }), ...who };
+  // /today?log=1 (Add to journal from other pages) opens the journal drawer once
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current || typeof window === 'undefined') return;
+    if (new URLSearchParams(window.location.search).get('log') === '1') { opened.current = true; __v.openLog?.(); }
+  });
   return (
     <>
       <div className="v2 root">

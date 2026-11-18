@@ -98,7 +98,7 @@ const save = async () => {
   : t === 'leaf' ? { kind: 'observe', date: when(), note: 'Leaves: ' + optName, tags: tags.concat(['leaf']) }
   : { kind: 'note', date: when(), note: LG.note || 'Note', tags };
  up({ busy: true, err: '' });
- try { await D.act.saveLog(body); set({ lg: Object.assign({}, S.lg, { st: 'done', err: '', saved: true, busy: false }) }); }
+ try { await D.act.saveLog(body); set({ lg: Object.assign({}, S.lg, { st: 'done', err: '', saved: true, busy: false, last: { kind: body.kind, date: body.date } }) }); }
  catch (e) { set({ lg: Object.assign({}, S.lg, { busy: false, err: 'Could not save. ' + (e && e.message && !/^\d+$/.test(e.message) ? e.message : 'Check your connection and try again.') }) }); }
 };
 const next = () => {
@@ -135,7 +135,11 @@ const isDone = (k) => (k.id in TD ? TD[k.id] : k.done);
 const flip = async (k) => {
  const now = !isDone(k);
  set({ td: Object.assign({}, TD, { [k.id]: now }) });
- if (!now) { set({ td: Object.assign({}, S.td, { [k.id]: true }) }); return toast('Saved tasks stay in your journal. Change it there if it was a mistake.'); }
+ if (!now) {
+  try { await D.act.undoTask(k.id); set({ toast: 'Unticked. It is back on your to-do.' }); }
+  catch (e) { set({ td: Object.assign({}, S.td, { [k.id]: true }), toast: 'Could not untick. Check your connection and try again.' }); }
+  return;
+ }
  try { await D.act.answerTask(k.id, 'done'); }
  catch (e) { set({ td: Object.assign({}, S.td, { [k.id]: false }), toast: 'Could not save. Check your connection and try again.' }); }
 };
@@ -184,7 +188,7 @@ return Object.assign(MAPV, { lg: LG.open, lgConf: !!LG.conf, stWhat: LG.st === '
  hasSug: !!sug && !LG.dk, sugTxt: sug ? sug[0] + '–' + sug[1] + ' kg ' + optName.toLowerCase() + ' per feddan' : '', tooMuch: tooMuch && !LG.dk, isSpray: LG.ty === 'spray',
  mini, allCls: 'opt' + (LG.all ? ' on' : ''), allTap: () => up({ all: !LG.all, wh: [], err: '' }), whens,
  phNone: true, phOk: false, phErr: false, addPh: () => {}, badPh: () => {}, rmPh: () => {}, photoOptional: true,
- rMsg: R[0], rHasChange: !!R[1], rWhat: R[1], rFrom: R[2], rTo: R[3], undoSave: () => set({ lg: Object.assign({}, LG, { open: false }) }),
+ rMsg: R[0], rHasChange: !!R[1], rWhat: R[1], rFrom: R[2], rTo: R[3], undoSave: async () => { const L0 = LG.last; set({ lg: Object.assign({}, LG, { open: false }) }); if (!L0) return; try { await D.act.undoLastLog(L0.kind, L0.date); toast('Note removed from your journal.'); } catch (e) { toast('Could not remove the note. Delete it from your journal.'); } },
  doneTap: () => set({ lg: Object.assign({}, LG, { open: false }), toast: 'Saved to your journal.' }), again: () => set({ lg: Object.assign({}, EMPTY_LOG, { open: true, saved: true }) }),
  recent, hasRecent: recent.length > 0, noRecent: !!D.recent && recent.length === 0,
  todo, hasTodo: nAll > 0, noTodo: !!D.todo && nAll === 0, nDone: nDone + ' of ' + nAll + ' done', progW: 'width: ' + (nAll ? Math.round(nDone / nAll * 100) : 0) + '%;', allDone: nAll > 0 && nDone === nAll, notAllDone: nDone < nAll,
