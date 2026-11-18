@@ -23,7 +23,8 @@ function start() {
   started = true;
   s = { phase: 'idle', t0: Date.now() };
   let done = false;
-  setTimeout(() => { if (!done) set('waking'); }, 2500);
+  // 8 s, not 2.5 s: a busy server answers slowly but is awake; only a sleeping one takes this long
+  setTimeout(() => { if (!done) set('waking'); }, 8000);
   const ping = () =>
     fetch(API + '/health', { cache: 'no-store' })
       .then((r) => {
@@ -63,6 +64,12 @@ export default function WakeUp() {
     if (st.phase !== 'waking' || typeof document === 'undefined' || !document.querySelector('.v2')) return;
     const path = window.location.pathname;
     if (path.startsWith('/waking') || path.startsWith('/sign')) return;
+    // at most once every 3 minutes: coming back from /waking must never loop back to it (the banner shows instead)
+    try {
+      const last = Number(sessionStorage.getItem('bezra.waking') || 0);
+      if (Date.now() - last < 180000) return;
+      sessionStorage.setItem('bezra.waking', String(Date.now()));
+    } catch { return; }
     window.location.replace('/waking?next=' + encodeURIComponent(path + window.location.search));
   }, [st.phase]);
 

@@ -48,10 +48,6 @@ def _daily_alerts_job():
 async def lifespan(_app):
     db.init()
     _daily_alerts_job()
-    from . import snapshot
-    hit = snapshot.get("rotation")
-    if not hit or snapshot.stale(hit):
-        snapshot.refresh_soon()  # the repo copy serves guests meanwhile
     yield
 
 
@@ -70,8 +66,6 @@ async def guest_snapshot(request: Request, call_next):
     key = m[2] + ("?" + request.url.query if request.url.query else "")
     hit = snapshot.get(key)
     if hit:
-        if snapshot.stale(hit):
-            snapshot.refresh_soon()
         return Response(snapshot.for_field(hit, m[1]), media_type=hit[1], headers={"x-bezra-snapshot": hit[2]})
     resp = await call_next(request)
     if resp.status_code != 200:
@@ -890,8 +884,6 @@ def jobs_refresh(request: Request):
     if not _has_job_token(request) and refresh.minutes_since_last() < refresh.MIN_GAP_MIN:
         return {"started": False, "reason": "refreshed recently", "last": (refresh.last_state() or {}).get("at")}
     started = refresh.start_background()
-    from . import snapshot
-    snapshot.refresh_soon()  # guests get today's answers too
     return {"started": started, "running": not started, "last": (refresh.last_state() or {}).get("at")}
 
 

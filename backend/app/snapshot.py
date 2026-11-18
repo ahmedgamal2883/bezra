@@ -3,7 +3,8 @@ every copy, so they are computed once and served to every guest from a snapshot.
 
 - backend/snapshot/ holds a ready copy in the repo, so even a server that just woke up answers at once.
 - Any other heavy answer a guest asks for (e.g. Try a season with other settings) is kept in memory after the first time.
-- When the snapshot is from an older day, the guest still gets it at once, and a background thread makes today's.
+- The server never rebuilds it by itself (a rebuild takes a minute of CPU and made the free server look asleep):
+  rebuild it on a computer with `python -c "from app import snapshot; snapshot.build()"` and commit backend/snapshot.
 Only shared, read-only answers are snapshotted; a guest's own journal, ticks, plan and alerts are never shared.
 """
 from __future__ import annotations
