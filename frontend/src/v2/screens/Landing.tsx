@@ -631,7 +631,7 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   
                   {""}
                 </p>
-                <Link href={__r("V19-Try") + ""} className="row" style={{"gap":"6px","fontWeight":"600"} as any}>
+                <Link href={__r("V19-Try") + ""} onClick={__r("V19-Try").startsWith("/today") ? __v?.guestTo?.("season/try") : undefined} className="row" style={{"gap":"6px","fontWeight":"600"} as any}>
                   {"Replay it yourself"}
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m9.5 6 6 6-6 6" />

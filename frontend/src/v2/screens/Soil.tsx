@@ -192,6 +192,18 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
                             ))}
                             {o.warn ? <li><span className="meta">{o.warn}</span></li> : null}
                           </ul>
+                          <details className="why">
+                            <summary className="meta" style={{"cursor":"pointer","fontWeight":"600"} as any}>{"Why this?"}</summary>
+                            <dl className="col" style={{"gap":"8px","marginTop":"8px","fontSize":"14px"} as any}>
+                              {o.why ? <><dt className="meta">{"Why"}</dt><dd>{o.why}</dd></> : null}
+                              <dt className="meta">{"Evidence"}</dt>
+                              <dd>{o.evidence?.length ? o.evidence.map((ev: any, k: number) => (
+                                <a key={k} href={ev.url} target="_blank" rel="noopener noreferrer" style={{"display":"block","textDecoration":"underline"} as any}>{ev.label}</a>
+                              )) : "No outside study yet: this is your field compared with itself."}</dd>
+                              {o.gaps ? <><dt className="meta">{"What we don't know"}</dt><dd>{o.gaps}</dd></> : null}
+                              <dd className="meta">{"Risks to check with your engineer"}</dd>
+                            </dl>
+                          </details>
                           {__v?.next?.crop === o.crop ? (
                             <span className="doneline" style={{"marginTop":"auto"} as any}>
                               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>

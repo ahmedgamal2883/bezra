@@ -8,6 +8,28 @@ const UP_MONTHS: Record<string, string> = { JAN: 'يناير', FEB: 'فبراي�
 
 export const V2_EXACT: Record<string, string> = {
   ...UP_DAYS, ...UP_MONTHS,
+  // ---- Soil: rotation reasons, evidence gaps and risks (same text as backend rotation.py) ----
+  'Your real past seasons are not yet read from the satellite.': 'مواسمك اللي فاتت لسه ماتقرتش من القمر الصناعي.',
+  'Allowed everywhere and needs far less water than rice.': 'مسموح في كل حتة ومحتاج مية أقل بكتير من الرز.',
+  'Maize is sensitive to salt; check EC on salty land.': 'الذرة حساسة للملوحة؛ اعمل تحليل EC لو الأرض مالحة.',
+  'Still cereal after cereal: no legume break.': 'لسه حبوب ورا حبوب من غير بقوليات.',
+  'Berseem leaves nitrogen for the next crop, gives fodder and covers the soil.': 'البرسيم بيسيب نيتروجين للمحصول اللي بعده، وبيدي علف، وبيغطي الأرض.',
+  'Berseem is salt-sensitive; benefit on sandy soil was not clear in Egyptian trials.': 'البرسيم حساس للملوحة؛ وفايدته في الأرض الرملية ماكانتش واضحة في التجارب المصرية.',
+  'One wheat season less every two years.': 'موسم قمح أقل كل سنتين.',
+  'Cotton prices and the cotton marketing rules change by year.': 'أسعار القطن وقواعد تسويقه بتتغير كل سنة.',
+  'Broomrape pressure on your land is not known.': 'ضغط الهالوك في أرضك مش معروف.',
+  'The two most salt-tolerant crops Delta farmers already grow, then wheat.': 'أكتر محصولين بيستحملوا الملوحة الفلاح في الدلتا بيزرعهم أصلاً، وبعدهم قمح.',
+  'Needs both a sugar factory and a cotton buyer nearby.': 'محتاج مصنع سكر وتاجر قطن قريبين.',
+  'Cotton after a late beet harvest is sown late.': 'القطن بعد بنجر متأخر بيتزرع متأخر.',
+  'A salt-tolerant winter crop for salty land in the north.': 'محصول شتوي بيستحمل الملوحة للأراضي المالحة في الشمال.',
+  'Needs a sugar factory contract nearby.': 'محتاج تعاقد مع مصنع سكر قريب.',
+  'Heavy machinery at harvest on wet clay.': 'معدات تقيلة وقت الحصاد على طين مبلول.',
+  'Why this?': 'ليه دي؟',
+  'Why': 'السبب',
+  'Evidence': 'الدليل',
+  "What we don't know": 'اللي لسه مش عارفينه',
+  'Risks to check with your engineer': 'مخاطر راجعها مع مهندسك',
+  'No outside study yet: this is your field compared with itself.': 'مفيش دراسة برّه لسه: دي أرضك متقارنة بنفسها.',
   // ---- Today ----
   'This is your own copy of a sample field. It is kept for 7 days.': 'دي نسخة ليك من أرض تجريبية. هتفضل موجودة 7 أيام.',
   'Create an account to keep it': 'اعمل حساب عشان تفضل معاك',

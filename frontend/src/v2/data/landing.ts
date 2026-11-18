@@ -57,15 +57,18 @@ export function useLanding() {
   out.todayLong = `${D[t.getDay()]} ${t.getDate()} ${M[t.getMonth()]}`;
   out.proof = hc?.waves ? `We gave Bezra only the forecasts that existed before each heat wave. On the sample field it warned ${hc.warned} of ${hc.waves} heat waves since 2021, and it missed ${hc.waves - hc.warned}. We show that too.` : '';
   out.toArabic = (e: any) => { e?.preventDefault?.(); setLang('ar'); };
-  out.guest = async (e: any) => {
+  // to: a field page to land on (e.g. 'season/try'), so links on the landing work without signing in
+  const guestTo = (to = 'today?tour=welcome') => async (e: any) => {
     e?.preventDefault?.();
     try {
       // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days
       const r = await fetch(API + '/auth/guest', { method: 'POST' });
       if (!r.ok) throw new Error('guest');
       const j = await r.json();
-      window.location.href = `/field/${j.field_id}/today?tour=welcome`;
+      window.location.href = `/field/${j.field_id}/${to}`;
     } catch { window.location.href = '/signup'; }
   };
+  out.guest = guestTo();
+  out.guestTo = guestTo;
   return out;
 }

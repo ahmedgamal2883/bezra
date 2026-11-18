@@ -59,7 +59,9 @@ export function useSoilData() {
       s.vs_current_pct ? `Soil: ${s.vs_current_pct > 0 ? '+' : ''}${s.vs_current_pct}% for the harvest in 10 years` : 'Soil stays where it is',
       s.water_vs_current_pct ? `Water: ${s.water_vs_current_pct > 0 ? '+' : ''}${s.water_vs_current_pct}% a year` : 'Water about the same',
       s.risks?.[0] || '',
-    ].filter(Boolean), warn: s.warning ? `Year ${s.warning.year}: about ${s.warning.pct}% less ${s.warning.crops?.[0] || ''}` : '' });
+    ].filter(Boolean),
+    // the full reasoning the challenge asks for: why, evidence, gaps, risks (backend rotation.py, English; Arabic via ar-v2)
+    why: s.why?.[0] || '', evidence: s.evidence || [], gaps: s.gaps?.[0] || '', risks: s.risks?.[0] || '', warn: s.warning ? `Year ${s.warning.year}: about ${s.warning.pct}% less ${s.warning.crops?.[0] || ''}` : '' });
   out.options = [
     card(clover, clover ? (clover.sequence.find((q: any) => q[0] === 'berseem' || q[0] === 'fahl')?.[0]) : 'berseem', 'Best for your soil', 'g'),
     card(faba, 'faba', 'Good', 'g'),
