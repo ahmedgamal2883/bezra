@@ -1,0 +1,438 @@
+{
+ "Ask-AR": {
+  "sec": "اسأل بذرة",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "كده الجولة خلصت. وانت جاهز.",
+  "nextLabel": "روح لأرضي",
+  "nextHref": "V21-Tour-Finish-AR",
+  "steps": [
+   {
+    "s": ".sugs",
+    "t": "ابدأ بسؤال",
+    "b": "دوس على واحد من دول، أو اكتب سؤالك."
+   },
+   {
+    "s": ".composer",
+    "t": "اسأل بكلامك",
+    "b": "ينفع أأجل الري؟ هتمطر؟ بذرة بترد من بيانات أرضك، مش تخمين."
+   },
+   {
+    "s": ".ctx",
+    "t": "اللي بذرة تعرفه دلوقتي",
+    "b": "زرعتك ورطوبة التربة والمخاطر وآخر ملاحظاتك. ومبتخمنش جرعة رش أبدًا."
+   }
+  ]
+ },
+ "Ask": {
+  "sec": "Ask Bezra",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's the tour. You're all set.",
+  "nextLabel": "Go to my field",
+  "nextHref": "V21-Tour-Finish",
+  "steps": [
+   {
+    "s": ".sugs",
+    "t": "Start with a question",
+    "b": "Tap one of these, or write your own."
+   },
+   {
+    "s": ".composer",
+    "t": "Ask in your own words",
+    "b": "Can I skip watering? Will it rain? Bezra answers from your field's data, not from guesses."
+   },
+   {
+    "s": ".ctx",
+    "t": "What Bezra knows right now",
+    "b": "Your crop, soil water, risks and last notes. It never guesses a spray dose."
+   }
+  ]
+ },
+ "Crop-AR": {
+  "sec": "المحصول",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "ده المحصول. المحطة الجاية: التربة.",
+  "nextLabel": "كمّل الجولة",
+  "nextHref": "V21-Tour-Soil-AR",
+  "steps": [
+   {
+    "s": "section:has(> article.rk)",
+    "t": "مخاطر الأسبوع ده",
+    "b": "الصدأ والري والآفات والحر والصقيع. كل واحد بيقول خطير قد إيه وتعمل إيه."
+   },
+   {
+    "s": ".bigcta",
+    "t": "في حاجة شكلها غلط؟",
+    "b": "اختار اللي شايفه من الصور. بذرة تقولك السبب الأقرب وتعمل إيه."
+   },
+   {
+    "s": "section:has(.hist), section:has(.wf)",
+    "t": "اللي أذاك قبل كده",
+    "b": "عشر مواسم من الفضاء بتوري إيه اللي بيكلّف الأرض دي أكتر. هنا، الميه اللي بتتأخر على ركن واحد."
+   }
+  ]
+ },
+ "Crop": {
+  "sec": "Crop",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's your crop. Next stop: your soil.",
+  "nextLabel": "Continue tour",
+  "nextHref": "V21-Tour-Soil",
+  "steps": [
+   {
+    "s": "section:has(> article.rk)",
+    "t": "This week's risks",
+    "b": "Rust, water, pests, heat and frost. Each one says how serious it is and what to do."
+   },
+   {
+    "s": ".bigcta",
+    "t": "Something looks wrong?",
+    "b": "Pick what you see from pictures. Bezra tells you the most likely cause and what to do."
+   },
+   {
+    "s": "section:has(.hist), section:has(.wf)",
+    "t": "What hurt you before",
+    "b": "Ten seasons seen from space show what costs this field the most. Here, it's late water in one corner."
+   }
+  ]
+ },
+ "Journal-AR": {
+  "sec": "السجل",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "ده سجلك. المحطة الجاية: المحصول.",
+  "nextLabel": "كمّل الجولة",
+  "nextHref": "V21-Tour-Crop-AR",
+  "steps": [
+   {
+    "s": "main a.btn",
+    "t": "سجّل اللي حصل",
+    "b": "سقيت؟ سمّدت؟ رشّيت؟ شفت حشرة؟ اختار من الصور ودوس على المكان. من غير كتابة."
+   },
+   {
+    "s": "article.ent",
+    "t": "بذرة بترد على كل ملاحظة",
+    "b": "بتقولك الملاحظة معناها إيه لأرضك، وبتغيّر خطتك لو محتاجة."
+   },
+   {
+    "s": ".fchips",
+    "t": "لاقي أي ملاحظة بسرعة",
+    "b": "اعرض الري بس، أو التسميد، أو الآفات، أو الصور."
+   }
+  ]
+ },
+ "Journal": {
+  "sec": "Journal",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's your journal. Next stop: your crop.",
+  "nextLabel": "Continue tour",
+  "nextHref": "V21-Tour-Crop",
+  "steps": [
+   {
+    "s": "main a.btn",
+    "t": "Write down what happened",
+    "b": "Watered, fed, sprayed or saw a bug? Pick from pictures and tap where. No typing needed."
+   },
+   {
+    "s": "article.ent",
+    "t": "Bezra answers every note",
+    "b": "It tells you what the note means for your field, and changes your plan if it needs to."
+   },
+   {
+    "s": ".fchips",
+    "t": "Find any note fast",
+    "b": "Show only watering, feeding, pests or photos."
+   }
+  ]
+ },
+ "Season-AR": {
+  "sec": "الموسم",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "دي خطة الموسم. المحطة الجاية: جرّب موسمك.",
+  "nextLabel": "كمّل الجولة",
+  "nextHref": "V21-Tour-Try-AR",
+  "steps": [
+   {
+    "s": "section:has(> .stages)",
+    "t": "موسمك كله",
+    "b": "قمحك فين دلوقتي، وكل مرحلة لحد الحصاد."
+   },
+   {
+    "s": "section:has(> .prow)",
+    "t": "كل المهام، بالترتيب",
+    "b": "نفس مهام \"النهارده\". اللي خلص متعلّم عليه، واللي جاي مستني."
+   },
+   {
+    "s": "aside",
+    "t": "مش متأكد من تغيير؟",
+    "b": "جرّبه الأول على أرضك، قبل ما تصرف أي حاجة."
+   }
+  ]
+ },
+ "Season": {
+  "sec": "Season",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's your season plan. Next stop: Try a season.",
+  "nextLabel": "Continue tour",
+  "nextHref": "V21-Tour-Try",
+  "steps": [
+   {
+    "s": "section:has(> .stages)",
+    "t": "Your whole season",
+    "b": "Where your wheat is now, and every stage until harvest."
+   },
+   {
+    "s": "section:has(> .prow)",
+    "t": "Every task, in order",
+    "b": "The same tasks as on Today. What's done is ticked, what's next is waiting."
+   },
+   {
+    "s": "aside",
+    "t": "Not sure about a change?",
+    "b": "Try it first on your own field, before you spend anything."
+   }
+  ]
+ },
+ "Soil-AR": {
+  "sec": "التربة",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "دي التربة. المحطة الجاية: الموسم.",
+  "nextLabel": "كمّل الجولة",
+  "nextHref": "V21-Tour-Season-AR",
+  "steps": [
+   {
+    "s": "[aria-labelledby=sh-h]",
+    "t": "تربتك قوية قد إيه",
+    "b": "موسم ورا موسم. بتقوى بعد البرسيم، وبتتعب من القمح ورا القمح."
+   },
+   {
+    "s": "[aria-labelledby=nx-h]",
+    "t": "تزرع إيه الشتا الجاي",
+    "b": "تلات اختيارات، وكل واحد بيعمل إيه في تربتك ومحصولك الجاي. اختار واحد يتحط في خطتك."
+   },
+   {
+    "s": "[aria-labelledby=ag-h]",
+    "t": "مشاكل بتتكرر",
+    "b": "نفس الركن ونفس الغلطة كل سنة. صلّحها مرة واكسب كل موسم."
+   }
+  ]
+ },
+ "Soil": {
+  "sec": "Soil",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's your soil. Next stop: your season.",
+  "nextLabel": "Continue tour",
+  "nextHref": "V21-Tour-Season",
+  "steps": [
+   {
+    "s": "[aria-labelledby=sh-h]",
+    "t": "How strong your soil is",
+    "b": "Season by season. It gets stronger after clover, and tired after wheat on wheat."
+   },
+   {
+    "s": "[aria-labelledby=nx-h]",
+    "t": "What to plant next winter",
+    "b": "Three choices, with what each one does to your soil and your next harvest. Pick one to plan it."
+   },
+   {
+    "s": "[aria-labelledby=ag-h]",
+    "t": "Problems that keep coming back",
+    "b": "Same corner, same mistake, every year. Fix it once and gain every season."
+   }
+  ]
+ },
+ "Today-AR": {
+  "sec": "النهارده",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "ده \"النهارده\". المحطة الجاية: سجلك.",
+  "nextLabel": "كمّل الجولة",
+  "nextHref": "V21-Tour-Journal-AR",
+  "steps": [
+   {
+    "s": ".mapbox",
+    "t": "أرضك، مربع مربع",
+    "b": "كل مربع 30 × 30 متر، متصوّر بأقمار ناسا. البرتقاني معناه محتاج نظرة. دوس على أي مربع عشان تعرف ليه."
+   },
+   {
+    "s": "section:has(> .tdh)",
+    "t": "مهامك النهارده",
+    "b": "كام مهمة قصيرة، كل واحدة بتقول بتحمي إيه. علّم عليها لما تخلصها، وتتسجل في سجلك على طول."
+   },
+   {
+    "s": ".chk",
+    "t": "وبذرة بتسألك كمان",
+    "b": "لما القمر الصناعي يشوف حاجة غريبة، بذرة بتتأكد منك. وإجابتك بتخلي النصيحة الجاية أحسن."
+   },
+   {
+    "s": ".seg",
+    "t": "بسيط ولا تفاصيل",
+    "b": "\"بسيط\" بيقولك تعمل إيه. و\"تفاصيل\" بيوريك الأرقام وبيانات ناسا اللي وراها، ليك أو للمهندس."
+   },
+   {
+    "s": ".fab",
+    "t": "اسأل بذرة في أي وقت",
+    "b": "الزرار ده موجود في كل صفحة. اسأل عن أرضك بكلامك."
+   }
+  ]
+ },
+ "Today": {
+  "sec": "Today",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's Today. Next stop: your journal.",
+  "nextLabel": "Continue tour",
+  "nextHref": "V21-Tour-Journal",
+  "steps": [
+   {
+    "s": ".mapbox",
+    "t": "Your field, square by square",
+    "b": "Each square is 30 × 30 m, seen by NASA satellites. Orange means it needs a look. Tap any square to see why."
+   },
+   {
+    "s": "section:has(> .tdh)",
+    "t": "Your to-do for today",
+    "b": "A few short tasks, each with what it protects. Tick one when it's done and it goes straight into your journal."
+   },
+   {
+    "s": ".chk",
+    "t": "Bezra asks you, too",
+    "b": "When a satellite sees something odd, Bezra checks with you. Your answer makes the next advice better."
+   },
+   {
+    "s": ".seg",
+    "t": "Simple or Details",
+    "b": "Simple tells you what to do. Details shows the numbers and the NASA data behind it, for you or your engineer."
+   },
+   {
+    "s": ".fab",
+    "t": "Ask Bezra, any time",
+    "b": "This button is on every page. Ask about your field in your own words."
+   }
+  ]
+ },
+ "Try-AR": {
+  "sec": "جرّب موسمك",
+  "of": "من",
+  "next": "التالي",
+  "back": "رجوع",
+  "done": "خلصت",
+  "skip": "تخطّي الجولة",
+  "close": "اقفل",
+  "endTxt": "ده \"جرّب موسمك\". آخر محطة: اسأل بذرة.",
+  "nextLabel": "كمّل الجولة",
+  "nextHref": "V21-Tour-Ask-AR",
+  "steps": [
+   {
+    "s": ".tabs3",
+    "t": "تلات طرق تشوف بيها اللي جاي",
+    "b": "قارن بذرة بطريقتك المعتادة، أو جرّب تغيير واحد، أو أعد مواسمك اللي فاتت."
+   },
+   {
+    "s": ".play",
+    "t": "دوس تشغيل",
+    "b": "اتفرج على الموسم شهر بشهر. نفس الأرض ونفس الجو. القرارات بس اللي بتتغير."
+   },
+   {
+    "s": ".race",
+    "t": "أرضك، بطريقتين",
+    "b": "اللي على اليمين طريقتك المعتادة. واللي على الشمال خطة بذرة. اتفرج كل واحدة حصلها إيه."
+   },
+   {
+    "s": ".impact",
+    "t": "بذرة بتضيف إيه",
+    "b": "قمح أكتر، وسماد أقل، وتربة أقوى، بالأرقام لأرضك."
+   }
+  ]
+ },
+ "Try": {
+  "sec": "Try a season",
+  "of": "of",
+  "next": "Next",
+  "back": "Back",
+  "done": "Done",
+  "skip": "Skip tour",
+  "close": "Close",
+  "endTxt": "That's Try a season. Last stop: Ask Bezra.",
+  "nextLabel": "Continue tour",
+  "nextHref": "V21-Tour-Ask",
+  "steps": [
+   {
+    "s": ".tabs3",
+    "t": "Three ways to look ahead",
+    "b": "Compare Bezra with your usual way, test one change, or replay your past seasons."
+   },
+   {
+    "s": ".play",
+    "t": "Press play",
+    "b": "Watch the season month by month. Same field, same weather. Only the decisions change."
+   },
+   {
+    "s": ".race",
+    "t": "Your field, two ways",
+    "b": "Left is what you usually do. Right is Bezra's plan. Watch what happens to each."
+   },
+   {
+    "s": ".impact",
+    "t": "What Bezra adds",
+    "b": "More wheat, less fertiliser and stronger soil, in numbers for your own field."
+   }
+  ]
+ }
+}

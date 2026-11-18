@@ -12,3 +12,6 @@ body:has(.v2) .wake { display: none !important; }
 
 /* The bell's dot is static in the design; it stays hidden until it can reflect unread alerts on every page. */
 .v2 .ibtn .dot { display: none; }
+
+/* The old V11 tour never runs on redesigned pages (the V21 tour, src/v2/tour, replaces it). */
+body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important; }

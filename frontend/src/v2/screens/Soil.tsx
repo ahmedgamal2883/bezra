@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Soil.logic';
@@ -348,6 +349,7 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
           </Link>
         </div>
       </div>
+      <Tour page="Soil" />
     </>
   );
 }

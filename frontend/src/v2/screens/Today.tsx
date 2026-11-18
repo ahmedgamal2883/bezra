@@ -5,6 +5,7 @@
 import { Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
+import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
 import Logic from './Today.logic';
 import { useTodayData, dayMonth } from '@/v2/data/today';
@@ -1644,6 +1645,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
           ) : null}
         </div>
       </div>
+      <Tour page="Today" />
     </>
   );
 }
