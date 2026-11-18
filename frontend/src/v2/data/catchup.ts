@@ -6,7 +6,7 @@
 import { useCallback, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
-import { dayMonth, longDate } from './today';
+import { dayMonth, longDate, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function useCatchup() {
@@ -21,7 +21,7 @@ export function useCatchup() {
   const out: any = { ready: !!(sm && ir) };
   if (!sm) return out;
   const f = sm.field;
-  out.head = `${f.name} · ${String(f.crop).toLowerCase()}, day ${sm.day_n} · you joined today · ${longDate(sm.today)}`;
+  out.head = `${f.name} · ${String(f.crop).toLowerCase()}, ${dayLabel(sm.day_n)} · you joined today · ${longDate(sm.today)}`;
   out.title = `We filled in your first ${sm.day_n} days from space.`;
   const ev: any[] = [{ d: dayMonth(f.sow_date), t: 'Sown', s: 'The day you told us.', src: 'You', id: null }];
   for (const e of ir?.events || []) {

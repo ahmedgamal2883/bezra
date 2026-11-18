@@ -58,7 +58,7 @@ export function useTodayData(id: string) {
 
   // ---- header ----
   const f = s?.field;
-  const head = f ? { name: f.name, sub: `${f.area?.value} feddan · ${String(f.crop).toLowerCase()}, day ${s.day_n}`, crop: f.crop, day: s.day_n } : null;
+  const head = f ? { name: f.name, sub: `${f.area?.value} feddan · ${String(f.crop).toLowerCase()}, ${dayLabel(s.day_n)}`, crop: f.crop, day: s.day_n } : null;
 
   // ---- to-do today and coming up ----
   let todo: Todo[] | null = null, coming: any[] | null = null;
@@ -118,12 +118,13 @@ export function useTodayData(id: string) {
   if (s && J?.season) {
     const imgs = (J.events || []).filter((e: any) => e.kind === 'image' && e.value != null).slice(0, 6).reverse();
     const ser = (J.series || []).slice(-21);
-    const sw = s.soil_water, near = sw && sw.value <= (sw.refill ?? 50) + 10;
-    const greenTag = /same|normal/i.test(J.season.greenness_vs_normal || '') ? 'Normal' : /less|lower|behind/i.test(J.season.greenness_vs_normal || '') ? 'Below normal' : 'Above normal';
+    const sw = s.soil_water, near = sw?.value != null && sw.value <= (sw.refill ?? 50) + 10;
+    const sown = (s.day_n ?? 0) >= 0;
+    const greenTag = !sown ? 'Before sowing' : /same|normal/i.test(J.season.greenness_vs_normal || '') ? 'Normal' : /less|lower|behind/i.test(J.season.greenness_vs_normal || '') ? 'Below normal' : 'Above normal';
     kpis = [
       { l: 'Greenness', v: squares ? squares.median.toFixed(2) : '—', u: 'NDVI', tag: greenTag, tagCls: 'tag ' + (greenTag === 'Below normal' ? 'watch' : 'ok'), pts: spark(imgs.map((e: any) => e.value)), stroke: '#3E7F35',
         src: squares ? `HLS · ${squares.daysAgo === 0 ? 'today' : squares.daysAgo + (squares.daysAgo === 1 ? ' day' : ' days')}` : 'HLS', srcCls: 'pq sat' },
-      { l: 'Soil water', v: sw ? String(sw.value) : '—', u: '% of the root zone', tag: near ? 'Near refill' : 'Enough', tagCls: 'tag ' + (near ? 'watch' : 'ok'), pts: spark(ser.map((x: any) => x.soil), 0, 100), stroke: '#2F6FA8', src: 'Water balance · today', srcCls: 'pq sat' },
+      { l: 'Soil water', v: sw?.value != null ? String(sw.value) : '—', u: '% of the root zone', tag: !sown ? 'Before sowing' : near ? 'Near refill' : 'Enough', tagCls: 'tag ' + (near ? 'watch' : 'ok'), pts: spark(ser.map((x: any) => x.soil), 0, 100), stroke: '#2F6FA8', src: 'Water balance · today', srcCls: 'pq sat' },
       { l: 'Rain since watering', v: s.rain_since_watering ? String(s.rain_since_watering.value) : '—', u: 'mm', tag: (s.rain_since_watering?.value || 0) < 5 ? 'Dry' : 'Some rain', tagCls: 'tag ok', pts: spark(ser.map((x: any) => x.rain)), stroke: '#2F6FA8', src: 'POWER + Open-Meteo', srcCls: 'pq sat' },
       { l: 'Water used', v: String(J.season.water_per_feddan_m3 ?? '—'), u: 'm³ per feddan', tag: 'This season', tagCls: 'tag ok', pts: '', stroke: '', src: 'Your journal', srcCls: 'pq farm' },
       { l: 'Hot days', v: String(J.season.hot_days ?? '—'), u: 'this season', tag: J.season.hot_days ? 'Over 32 °C' : 'None yet', tagCls: 'tag ' + (J.season.hot_days > 8 ? 'watch' : 'ok'), pts: spark(ser.map((x: any) => x.tmax)), stroke: '#C2412A', src: 'POWER · yesterday', srcCls: 'pq sat' },
@@ -190,4 +191,9 @@ export function useTodayData(id: string) {
     nextTurn: s?.action?.next_turn ? shortDate(s.action.next_turn) : null,
     act,
   };
+}
+
+/** "day 34", or for a field not sown yet "sowing in 7 days" */
+export function dayLabel(n: number): string {
+  return n < 0 ? `sowing in ${-n} ${n === -1 ? 'day' : 'days'}` : n === 0 ? 'sown today' : `day ${n}`;
 }

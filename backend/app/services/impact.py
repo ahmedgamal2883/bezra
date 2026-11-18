@@ -61,6 +61,9 @@ def build(c: Ctx) -> dict:
 
     turns = _plan_turns(c, _next_turn(c))
     base = run(turns)
+    # what is already decided = only the days up to today (the full-season run also holds the spring still to come)
+    so_far = season.run(c.w.day, c.sow, crop=crop, variety=c.variety, irrigate=turns, every=f["turn_days"], lat=f["lat"],
+                        soil=sf, stop=c.today) if c.today > c.sow else base
     w_idx = base.yield_index
 
     # waterings that happened because of a Bezra task
@@ -100,9 +103,8 @@ def build(c: Ctx) -> dict:
             missed.append({"date": d.isoformat(), "cost_pct": round(cost, 1)})
 
     # an open "Water as soon as you can" task: with Bezra = he waters today as it asks; without = the turn stays missed
-    open_missed = [date.fromisoformat(m["date"]) for m in missed if m["cost_pct"] > 0]
-    watered_after = [date.fromisoformat(x["date"]) for x in f.get("waterings", [])]
-    open_missed = [d for d in open_missed if not any(w > d for w in watered_after)]
+    from .summary import open_missed_turns
+    open_missed = open_missed_turns(c)   # same rule as the summary's one action
     if open_missed:
         catch_up = run(turns | {c.today})
         stays = run(turns, skipped=open_missed)
@@ -129,7 +131,7 @@ def build(c: Ctx) -> dict:
         "with_bezra": {"pct": round(w_idx * 100), "ardeb": ardeb(w_idx)},
         "without_bezra": {"pct": round(without_idx * 100), "ardeb": ardeb(without_idx),
                           "trial_range_pct": [round(trial_low, 1), round(trial_high, 1)] if trial_high else None},
-        "lost_so_far": losses(base.factors), "actions": actions, "missed": missed,
+        "lost_so_far": losses(so_far.factors) if c.today > c.sow else [], "actions": actions, "missed": missed,
         "provenance": "estimated",
         "source": "Season model (FAO-56 water balance + crop warmth) on NASA POWER and Open-Meteo weather",
     }

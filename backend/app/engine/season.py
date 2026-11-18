@@ -41,8 +41,16 @@ def day_length(lat: float, d: date) -> float:
 
 
 def is_rust_day(r: dict) -> bool:
-    """Yellow-rust weather (brief §4): Tmean 7-18 C and (RH >= 85% or Tmean - dew point <= 2 C)."""
-    return 7 <= r["tmean"] <= 18 and (r["rh"] >= 85 or r["tmean"] - r["dew"] <= 2)
+    """Yellow-rust weather. Spores need several hours of wet leaves at cool temperatures, and in the Delta winter that
+    wetness comes at night, as dew or fog: the night cools to (near) the dew point. Daily-mean humidity hides those
+    nights (the afternoon is dry), so the brief's first rule (Tmean 7-18 C and mean RH >= 85%) found 0-2 days a winter.
+    A rust day is now either:
+      - a dew / fog night: Tmin - dew point <= 1 C, with a day mean of 8-15 C (stripe-rust infection range), or
+      - the brief's rule: Tmean 7-18 C and mean RH >= 85%.
+    On the sample field this gives 4-36 rust days a winter (Dec to mid March, 2016-2026) instead of 0-2."""
+    tmin = r.get("tmin", r["tmean"] - 5)
+    dew_night = tmin - r["dew"] <= 1 and 8 <= r["tmean"] <= 15
+    return dew_night or (7 <= r["tmean"] <= 18 and r["rh"] >= 85)
 
 
 WET_DAYS = 2            # a watering within this many days before a hot day counts as "watered"

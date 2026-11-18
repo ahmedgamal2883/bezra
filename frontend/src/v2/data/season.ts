@@ -5,7 +5,7 @@
 import { useCallback, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
-import { dayMonth, shortDate } from './today';
+import { dayMonth, shortDate, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -28,10 +28,10 @@ export function useSeasonData() {
   const today = sm.today, f = sm.field, sow = f.sow_date, ripe = sm.year?.ripe || jn?.season?.harvest_from;
   const crop = String(f.crop).toLowerCase(), yr = d0(sow).getFullYear();
   out.head = `${f.name} · ${crop} ${yr}/${String(yr + 1).slice(2)} · sown ${dayMonth(sow)}`;
-  out.title = `Day ${sm.day_n} of about ${sm.season_days}.${ripe ? ' Harvest around ' + dayMonth(ripe) + '.' : ''}`;
+  out.title = `${sm.day_n < 0 ? `Sowing in ${-sm.day_n} ${sm.day_n === -1 ? 'day' : 'days'}, about ${sm.season_days} days to harvest` : `Day ${sm.day_n} of about ${sm.season_days}`}.${ripe ? ' Harvest around ' + dayMonth(ripe) + '.' : ''}`;
   out.sownLine = `Sown on ${dayMonth(sow)}`;
   out.headD = `${f.crop} ${yr}/${String(yr + 1).slice(2)} · ${f.variety} · sown ${dayMonth(sow)} · ${f.area.value} feddan`;
-  out.titleD = `Day ${sm.day_n} · ${sm.stage}`;
+  out.titleD = sm.day_n < 0 ? `Before sowing · ${dayLabel(sm.day_n)}` : `Day ${sm.day_n} · ${sm.stage}`;
 
   // stages: the plan's own stage dates (crop warmth model) when present, else the summary's grain-fill weeks
   const ms = (k: RegExp) => tk?.tasks?.find((t: any) => t.category === 'milestone' && k.test(t.title))?.date as string | undefined;
@@ -48,7 +48,7 @@ export function useSeasonData() {
     { t: 'Grain filling', s: gfStart && gfEnd ? monthSpan(gfStart, gfEnd) + (gf.some((w: any) => w.p_hot > 0.2) ? ' · heat risk' : '') : '', sty: 'background:#F6E1BD;color:#8A4B08;' },
     { t: 'Harvest', s: ripe ? 'about ' + dayMonth(ripe) : '', sty: 'background:#E9D38C;color:#5C4A0C;' },
   ];
-  out.here = { left: `left: ${pct(today).toFixed(1)}%;`, t: `Today · day ${sm.day_n}` };
+  out.here = { left: `left: ${pct(today).toFixed(1)}%;`, t: `Today · ${dayLabel(sm.day_n)}` };
 
   // the plan, week by week
   if (tk) {

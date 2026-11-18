@@ -4,7 +4,7 @@
 // + /rotation. Download CSV = the daily weather and the squares; Share = a message to the engineer.
 import { useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
-import { dayMonth, squareName } from './today';
+import { dayMonth, squareName, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function useDataSheet() {
@@ -34,7 +34,7 @@ export function useDataSheet() {
     ['Location', `${raw.lat.toFixed(2)}° N, ${raw.lon.toFixed(2)}° E`, 'Your map'],
     ['Height', t ? `${t.elevation_m} m` : '—', t?.source || ''],
     ['Slope', t ? `${t.slope_pct}%` : '—', t?.source || ''],
-    ['Crop now', `${sm.field.crop}, day ${sm.day_n}, ${sm.stage}`, 'Crop warmth model'],
+    ['Crop now', `${sm.field.crop}, ${dayLabel(sm.day_n)}, ${sm.stage}`, 'Crop warmth model'],
     ['Sown on', dayMonth(sm.field.sow_date), 'You'],
     ['Soil', soil ? `${soil.label} · clay ${soil.clay}%, sand ${soil.sand}%` : '—', soil?.source || ''],
     ['Last clear image', raw.satellite?.date ? dayMonth(raw.satellite.date) : '—', raw.satellite?.source || ''],

@@ -6,7 +6,7 @@
 import { useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
 import { farmerEntries } from './journal';
-import { longDate, shortDate } from './today';
+import { longDate, shortDate, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const LV: Record<string, [string, string]> = { low: ['Low', 'low'], medium: ['Medium', 'med'], high: ['High', 'high'] };
@@ -28,8 +28,8 @@ export function useCropData() {
   const td = useApi<any>(id ? `/fields/${id}/today` : null);
   const s = sm.data, today = s?.today;
 
-  const head = s ? `${s.field.name} · ${String(s.field.crop).toLowerCase()}, day ${s.day_n} · ${longDate(s.today)}` : '';
-  const headD = s ? `${s.field.name} · ${String(s.field.crop).toLowerCase()}, day ${s.day_n} · ${shortDate(s.today)}` : '';
+  const head = s ? `${s.field.name} · ${String(s.field.crop).toLowerCase()}, ${dayLabel(s.day_n)} · ${longDate(s.today)}` : '';
+  const headD = s ? `${s.field.name} · ${String(s.field.crop).toLowerCase()}, ${dayLabel(s.day_n)} · ${shortDate(s.today)}` : '';
   const crop = s ? String(s.field.crop).toLowerCase() : 'crop';
 
   let risks: any[] | null = null;

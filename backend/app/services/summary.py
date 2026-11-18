@@ -57,6 +57,21 @@ def _part(d: date) -> str:
     return ("Early " if d.day <= 10 else "Mid " if d.day <= 20 else "Late ") + d.strftime("%B")
 
 
+def open_missed_turns(c: Ctx) -> list[date]:
+    """Turns the farmer said were not done, with no watering since: Bezra asks to water as soon as possible.
+    Shared by the summary (the one action) and the impact (with vs without catching up), so they never disagree."""
+    st = c.f.get("task_answers") or {}
+    planned = _plan_turns(c, _next_turn(c))
+    watered = [date.fromisoformat(x["date"]) for x in c.f.get("waterings", [])]
+    out = []
+    for tid, a in st.items():
+        if tid.startswith("turn-") and a.get("answer") == "not_done":
+            d = date.fromisoformat(tid.split("-", 1)[1])
+            if d <= c.today and d not in planned and not any(w > d for w in watered):
+                out.append(d)
+    return sorted(out)
+
+
 def build(c: Ctx) -> dict:
     f, w, today = c.f, c.w, c.today
     wheat = f["crop"] == "wheat"
@@ -103,6 +118,9 @@ def build(c: Ctx) -> dict:
                   2: "The soil is dry. Water as soon as you can."}[water_lv]
     if not sown:
         water_lv, water_line = 0, "No crop yet. Water just after sowing."
+    missed_open = open_missed_turns(c) if sown else []
+    if missed_open:
+        water_lv, water_line = 2, f"Your turn of {_dm(missed_open[-1])} was missed. Water today if you can."
 
     recent = w.recent_days(7)
     rust_n = sum(season.is_rust_day(r) for r in recent)
@@ -122,6 +140,10 @@ def build(c: Ctx) -> dict:
         action = {"kind": "sow", "title": f"Sowing is planned for {c.sow.strftime('%A')} {_dm(c.sow)}.",
                   "body": "Bezra starts your water plan from sowing day. Water the field just after sowing.",
                   "done_label": "I sowed today"}
+    elif missed_open:
+        action = {"kind": "water", "title": "Water today, to catch up the missed turn.",
+                  "body": f"Your turn of {_dm(missed_open[-1])} was missed and the field has not been watered since.",
+                  "done_label": "I watered today"}
     elif water_lv or (wheat and turn_stage in season.SENSITIVE and days_to_turn <= 7):
         title = (f"Your water turn is {_wd(nt)}. Don't skip it." if days_to_turn <= 7 else "Water as soon as you can.")
         body = ("Your wheat is at the stage that is hurt most by thirst" if wheat and turn_stage in season.SENSITIVE else

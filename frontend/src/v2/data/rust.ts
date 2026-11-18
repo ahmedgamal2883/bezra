@@ -3,7 +3,7 @@
 // + /alerts (level, steps) + /summary (crop stage) + the field profile (variety).
 import { useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
-import { shortDate } from './today';
+import { shortDate, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function useRustData() {
@@ -20,7 +20,7 @@ export function useRustData() {
     why: a ? a.why + (a.level === 'low' ? ' Nothing to spray. Just keep an eye on the leaves.' : ' Nothing is wrong yet, so there is nothing to spray. Just look.') : '',
     step1: a ? (a.level === 'low' ? 'From January, walk the field once a week' : 'This week, walk the field') : '',
     n7: n7 == null ? '' : String(n7), src: ru?.source || '',
-    stage: sm ? `${sm.stage}, day ${sm.day_n}` : '',
+    stage: sm ? `${sm.stage}, ${dayLabel(sm.day_n)}` : '',
     variety: sm ? `${sm.field.variety}${ru?.variety_trait ? ', ' + ru.variety_trait + ' to rust' : ''}` : '',
   };
   if (ru) {
@@ -39,11 +39,11 @@ export function useRustData() {
     out.humNote = `Dashed line: 85%. ${wet} ${wet === 1 ? 'day' : 'days'} above it.`;
     const lo = Math.round(Math.min(...ru.past.map((d: any) => d.tmin))), hi = Math.round(Math.max(...ru.past.map((d: any) => d.tmin)));
     out.nightT = `${lo}–${hi} °C`;
-    const withRust = ru.winters.filter((w: any) => w.rust_days > 0);
-    out.pastN = `${withRust.length} of the last ${ru.winters.length} winters had rust weather`;
+    const withRust = ru.winters.filter((w: any) => w.spell);
+    out.pastN = `${withRust.length} of the last ${ru.winters.length} winters had a long rust spell`;
     out.pastSub = withRust.length ? `Most rust weather here comes in December and January.` : 'Daily weather here rarely reached rust conditions in winter.';
     out.years = (withRust.length ? withRust : ru.winters.slice(-3)).map((w: any) => ({ winter: w.winter, txt: `${w.rust_days} ${w.rust_days === 1 ? 'day' : 'days'} of rust weather, Dec–Feb` }));
-    out.yearsNote = 'From daily weather (NASA POWER). Foggy mornings inside a mild day can be missed: trust what you see on the leaves.';
+    out.yearsNote = 'From daily weather (NASA POWER): nights that cool down to the dew point leave the leaves wet with dew or fog. A long spell = 25 or more such days. Trust what you see on the leaves.';
   }
   return out;
 }

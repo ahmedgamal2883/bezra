@@ -5,7 +5,7 @@
 // page is skipped. The state is the server's (GET/PUT /me/tour), so it follows the person across devices.
 // ?tour=welcome opens the sheet, ?tour=1 starts this page's tour (the sheet and the end toast link the pages).
 import Link from 'next/link';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { API } from '@/lib/api';
 import { useField, useUser } from '@/lib/field';
 import { useLang } from '@/lib/i18n';
@@ -19,6 +19,8 @@ const PATH: Record<Page, (id: string) => string> = {
   Today: (id) => `/field/${id}/today`, Journal: (id) => `/field/${id}/journal`, Crop: (id) => `/field/${id}/crop`, Soil: (id) => `/field/${id}/soil`,
   Season: (id) => `/field/${id}/season`, Try: (id) => `/field/${id}/season/try`, Ask: () => '/ask',
 };
+// the tour's layers use .v2 for the design's styles but must stay see-through (.v2 is also the page root)
+const LAYER: React.CSSProperties = { background: 'transparent', padding: 0, minHeight: 0 };
 const put = (body: Record<string, unknown>) => fetch(`${API}/me/tour`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
 
 export default function Tour({ page }: { page: Page }) {
@@ -43,12 +45,15 @@ export default function Tour({ page }: { page: Page }) {
     }).catch(() => {});
   }, [user, page]);
 
-  // place the spotlight on the real element (and skip a step whose element is not on the page)
-  const place = useCallback(() => {
-    if (mode !== 'steps') return;
+  // place the spotlight on the real element. The page may still be loading its data: wait up to ~5 s for the element
+  // before skipping the step (forward, or backward after Back), and keep following it while the page fills in.
+  const [dir, setDir] = useState<1 | -1>(1);
+  const go = useCallback((n: number) => { setDir(n < i ? -1 : 1); setI(n); }, [i]);
+  const place = useCallback((scroll: boolean) => {
+    if (mode !== 'steps') return true;
     const st = steps[i];
     const el = st?.s ? (document.querySelector(`.v2 ${st.s}`) as HTMLElement | null) : null;
-    if (!el) { if (i < steps.length - 1) setI(i + 1); else setMode('end'); return; }
+    if (!el || el.getBoundingClientRect().height === 0) return false;
     const r = el.getBoundingClientRect(), fixed = getComputedStyle(el).position === 'fixed';
     const top = r.top + (fixed ? 0 : window.scrollY), h = Math.min(r.height, 420), pad = 8;
     const spot: React.CSSProperties = { left: Math.max(4, r.left - pad), top: top - pad, width: Math.min(window.innerWidth - 8, r.width + pad * 2), height: h + pad * 2, position: fixed ? 'fixed' : 'absolute' };
@@ -58,15 +63,35 @@ export default function Tour({ page }: { page: Page }) {
     else if (r.right + 24 + 380 < window.innerWidth) card = { left: r.right + 24, top: Math.max(top, window.scrollY + 90) };
     else if (r.left - 24 - 380 > 0) card = { left: r.left - 24 - 380, top: Math.max(top, window.scrollY + 90) };
     else card = { left: Math.min(Math.max(16, r.left), window.innerWidth - 396), top: top + h + pad + 14 };
-    setBox({ spot, card });
-    if (!fixed) window.scrollTo({ top: Math.max(0, top - 90), behavior: 'smooth' });
+    setBox((b) => (JSON.stringify(b) === JSON.stringify({ spot, card }) ? b : { spot, card }));
+    if (scroll && !fixed) window.scrollTo({ top: Math.max(0, top - 90), behavior: 'smooth' });
+    return true;
   }, [mode, i, steps]);
-  useLayoutEffect(() => { const t = setTimeout(place, 60); return () => clearTimeout(t); }, [place]);
+  useEffect(() => {
+    if (mode !== 'steps') return;
+    let tries = 0, found = false;
+    const tick = () => {
+      const ok = place(!found);
+      if (ok) { found = true; return; }
+      if (found) return;
+      setBox(null);
+      // skip after ~2 s once the page has finished loading (no skeletons left), or after ~6 s
+      const loading = !!document.querySelector('.v2 [aria-busy="true"]');
+      if (++tries > (loading ? 30 : 10)) { // ~5 s and still not on the page: skip this step in the direction the person was going
+        const n = i + dir;
+        if (n < 0) setI(0); else if (n >= steps.length) setMode('end'); else setI(n);
+      }
+    };
+    tick();
+    const t = setInterval(tick, 200); // also re-follows the element when content above it loads
+    return () => clearInterval(t);
+  }, [mode, i, dir, steps.length, place]);
   useEffect(() => {
     if (mode !== 'steps') return;
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { setMode('off'); put({ status: 'skipped', skippedAt: new Date().toISOString() }); } };
-    window.addEventListener('keydown', k); window.addEventListener('resize', place);
-    return () => { window.removeEventListener('keydown', k); window.removeEventListener('resize', place); };
+    const rs = () => place(false);
+    window.addEventListener('keydown', k); window.addEventListener('resize', rs);
+    return () => { window.removeEventListener('keydown', k); window.removeEventListener('resize', rs); };
   }, [mode, place]);
 
   if (mode === 'off' || !id) return null;
@@ -75,7 +100,7 @@ export default function Tour({ page }: { page: Page }) {
   if (mode === 'welcome') {
     const ar = lang === 'ar';
     return (
-      <div className="v2" style={{ position: 'fixed', inset: 0, zIndex: 75 }}>
+      <div className="v2" style={{ ...LAYER, position: 'fixed', inset: 0, zIndex: 75 }}>
         <div className="scrim" />
         <div className="welcome" role="dialog" aria-modal="true" aria-labelledby="wl-h">
           <div className="row" style={{ gap: '14px' }}>
@@ -87,7 +112,7 @@ export default function Tour({ page }: { page: Page }) {
           </div>
           <p className="txt">{ar ? 'بذرة بتقرا أرضك من الفضاء وبتقولك تعمل إيه يوم بيوم. تحب جولة سريعة؟ بتاخد حوالي دقيقتين.' : 'Bezra reads your field from space and tells you what to do, day by day. Want a quick tour? It takes about 2 minutes.'}</p>
           <div className="row" style={{ gap: '10px', marginTop: '4px' }}>
-            <button type="button" className="btn press" style={{ height: '54px', fontSize: '16px', flex: 1 }} autoFocus onClick={() => { setMode('steps'); setI(0); put({ status: 'in_progress', step: 1 }); }}>{ar ? 'فرّجني' : 'Show me around'}</button>
+            <button type="button" className="btn press" style={{ height: '54px', fontSize: '16px', flex: 1 }} autoFocus onClick={() => { setMode('steps'); setDir(1); setI(0); put({ status: 'in_progress', step: 1 }); }}>{ar ? 'فرّجني' : 'Show me around'}</button>
             <button type="button" className="btn soft press" style={{ height: '54px', fontSize: '16px', flex: 1 }} onClick={() => { setMode('off'); put({ status: 'skipped', skippedAt: new Date().toISOString() }); }}>{ar ? 'هتفرج لوحدي' : "I'll explore on my own"}</button>
           </div>
           <span className="meta" style={{ textAlign: 'center' }}>{ar ? 'تقدر تعيد الجولة في أي وقت من حسابك.' : 'You can replay the tour any time from your profile.'}</span>
@@ -98,7 +123,7 @@ export default function Tour({ page }: { page: Page }) {
   if (mode === 'end') {
     const last = !nextPage;
     return (
-      <div className="v2" style={{ position: 'fixed', inset: 'auto 0 0 0', zIndex: 72 }}>
+      <div className="v2" style={{ ...LAYER, position: 'fixed', inset: 'auto 0 0 0', zIndex: 72 }}>
         <div className="toast" role="status" style={{ zIndex: 72 }}>
           {last ? (lang === 'ar' ? 'خلصت الجولة. أرضك مستنياك.' : "That's the tour. Your field is waiting.") : T.endTxt}
           {last ? <Link href={PATH.Today(id)} className="btn sm press" style={{ background: 'var(--sun)', color: '#141A16' }}>{lang === 'ar' ? 'افتح النهارده' : 'Open Today'}</Link>
@@ -111,7 +136,7 @@ export default function Tour({ page }: { page: Page }) {
   const st = steps[i];
   const finish = () => { setMode('end'); put(nextPage ? { status: 'in_progress', step: ORDER.indexOf(page) + 2 } : { status: 'completed', completedAt: new Date().toISOString() }); };
   return (
-    <div className="v2" style={{ position: 'absolute', inset: 0, zIndex: 70, pointerEvents: 'none' }} aria-live="polite">
+    <div className="v2" style={{ ...LAYER, position: 'absolute', inset: 0, zIndex: 70, pointerEvents: 'none' }} aria-live="polite">
       {box ? <div className="tspot" style={box.spot} /> : null}
       <div className="tcard" role="dialog" aria-modal="true" aria-labelledby="tc-h" style={{ ...(box?.card || {}), pointerEvents: 'auto' }}>
         <div className="row sp">
@@ -123,8 +148,8 @@ export default function Tour({ page }: { page: Page }) {
         <div className="row sp" style={{ marginTop: '6px' }}>
           <button type="button" className="tskip" onClick={() => { setMode('off'); put({ status: 'skipped', skippedAt: new Date().toISOString() }); }}>{T.skip}</button>
           <span className="row" style={{ gap: '8px' }}>
-            {i > 0 ? <button type="button" className="btn soft sm press" onClick={() => setI(i - 1)}>{T.back}</button> : null}
-            <button type="button" className="btn sm press" autoFocus onClick={() => (i === steps.length - 1 ? finish() : setI(i + 1))}>{i === steps.length - 1 ? T.done : T.next}</button>
+            {i > 0 ? <button type="button" className="btn soft sm press" onClick={() => go(i - 1)}>{T.back}</button> : null}
+            <button type="button" className="btn sm press" autoFocus onClick={() => (i === steps.length - 1 ? finish() : go(i + 1))}>{i === steps.length - 1 ? T.done : T.next}</button>
           </span>
         </div>
       </div>

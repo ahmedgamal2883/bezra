@@ -30,15 +30,35 @@ def _compare_soon(c: Ctx):
     """Greenness vs a normal year needs 5 years of MODIS for this place: the first time that is slow. Wait up to
     3 s; if it is not ready, the journal shows without it and the download finishes in the background."""
     global _pool
+    import time
     from concurrent.futures import ThreadPoolExecutor, TimeoutError as Late
     _pool = _pool or ThreadPoolExecutor(2)
+    key = c.f["id"]
+    fut, started = _inflight.get(key, (None, 0.0))
+    if fut is not None and fut.done():
+        try:
+            out = fut.result()
+            _inflight.pop(key, None)
+            return out
+        except Exception:
+            if time.time() - started < 3600:      # failed lately: don't make every visit wait for it again
+                return None
+            fut = None
+    if fut is not None:                           # still downloading from an earlier visit: don't wait twice
+        return None
     fut = _pool.submit(lambda: satellite.health(c)["curve"]["compare"])
+    _inflight[key] = (fut, time.time())
     try:
-        return fut.result(timeout=3)
+        out = fut.result(timeout=3)
+        _inflight.pop(key, None)
+        return out
     except Late:
         return None
     except Exception:
         return None
+
+
+_inflight: dict = {}
 
 
 def build(c: Ctx) -> dict:

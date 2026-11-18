@@ -6,7 +6,7 @@ import { useApi } from '@/lib/api';
 import { useField, useUser } from '@/lib/field';
 import { useAskChat } from '@/components/AskLive';
 import { farmerEntries } from './journal';
-import { shortDate } from './today';
+import { shortDate, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function useAskData() {
@@ -29,7 +29,7 @@ export function useAskData() {
   const last = (farmerEntries(jn) || [])[0];
   const ctx = sm ? [
     ['Field', `${sm.field.name} · ${sm.field.area.value} feddan`],
-    ['Crop', `${sm.field.crop}, ${sm.field.variety}, day ${sm.day_n}`],
+    ['Crop', `${sm.field.crop}, ${sm.field.variety}, ${dayLabel(sm.day_n)}`],
     ['Soil water', sm.soil_water ? `${sm.soil_water.value}% · refill ${sm.soil_water.refill}%` : '—'],
     ['Next water turn', sm.action?.next_turn ? shortDate(sm.action.next_turn) : '—'],
     ['Rust risk', sm.risks?.rust?.level || '—'],

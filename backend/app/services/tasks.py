@@ -357,7 +357,7 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
         if not nxt or (nxt - today).days > 2:
             d = today + timedelta(days=1) if hour >= 17 else today
             add(f"catchup-{missed[-1]['date']}", "irrigation", "Water as soon as you can",
-                f"The water turn on {missed[-1]['date']} was not done. The crop has been short of water since.",
+                f"The water turn on {_nice(missed[-1]['date'])} was not done. The crop has been short of water since.",
                 d, d + timedelta(days=1), source="FAO-56 water balance", priority="high", extra={"replan": True})
 
     # a turn done on another day (e.g. watered yesterday, turn today) says which watering covered it
@@ -396,3 +396,10 @@ def water_missed_recently(c: Ctx, days: int = 14) -> str | None:
             if d >= since:
                 return d
     return None
+
+
+def _nice(iso: str) -> str:
+    """2026-11-09 -> 9 Nov (how every date reads on the screens)."""
+    from datetime import date as _d
+    d = _d.fromisoformat(iso)
+    return f"{d.day} {d.strftime('%b')}"

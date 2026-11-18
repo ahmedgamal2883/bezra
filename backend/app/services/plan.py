@@ -177,17 +177,35 @@ def build(c: Ctx) -> dict:
     # 2. watering turns: decision from the water balance on the day before the turn
     turns = _turn_dates(c, ripe - timedelta(days=10))
     first_turn = True
+    # Decide turn by turn: a turn Bezra lets you skip stays dry in the run used for the next decision (judging every
+    # turn on a run that waters them all made the soil always look full in winter: up to 5 skips in a row, 60 days
+    # without water). A skip is allowed only if the soil stays above the refill point until the following turn.
+    logged = [date.fromisoformat(x["date"]) for x in f["waterings"]]
+    given: list[date] = []
+
+    def dry_run(until: date):
+        return season.run(c.w.day, c.sow, crop=f["crop"], variety=c.variety, irrigate=sorted(set(given + logged)),
+                          stop=until, every=f["turn_days"], lat=f["lat"])
     for t in turns:
         if t <= c.sow + timedelta(days=7):  # the sowing-day watering covers the first week
             continue
-        before = base.at(t - timedelta(days=1))
+        if t <= today:
+            before = base.at(t - timedelta(days=1))       # past turns: what happened
+        else:
+            nxt = t + timedelta(days=f["turn_days"] - 1)
+            r = dry_run(nxt)
+            before, after_skip = r.at(t - timedelta(days=1)), r.at(nxt)
         if not before:
             continue
         st = before.stage
         sensitive = wheat and st in season.SENSITIVE
         pct = before.water_pct
         decision = "full" if (pct < 55 or sensitive or first_turn) else ("light" if pct < 75 else "skip")
+        if decision == "skip" and t > today and after_skip and after_skip.water_pct < 100 * (1 - season.P_RAW):
+            decision = "light"                            # skipping would leave it below refill before the next turn
         first_turn = False
+        if decision != "skip":
+            given.append(t)
         m3 = round(max(before.dr, 10) * MM_TO_M3_PER_FEDDAN * area, -1)
         if decision == "light":
             m3 = round(m3 * 0.6, -1)
