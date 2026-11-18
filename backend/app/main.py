@@ -460,6 +460,19 @@ def get_sample():
     return out
 
 
+@app.delete("/fields/{field_id}")
+def delete_field(field_id: str, user: dict = Depends(current_user)):
+    """Redesign (Profile > delete a field): the owner removes one field (its map, plan, alerts and stored series).
+    Not allowed for the shared sample account, so a guest never removes the sample field for everyone."""
+    f = fields.get(field_id)
+    if not f or f.get("owner_id") != user["id"]:
+        raise HTTPException(404, "Unknown field")
+    if user["email"].endswith("@demo.bezra.app"):
+        raise HTTPException(403, "The sample field cannot be deleted.")
+    db.delete_field(field_id)
+    return {"deleted": field_id}
+
+
 @app.get("/fields/{field_id}/summary")
 def get_summary(field_id: str, user: dict = Depends(current_user)):
     return summary.build(_ctx(field_id, user))
