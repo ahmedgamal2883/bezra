@@ -151,7 +151,7 @@ export default function ReadingScreen(props: Record<string, unknown> = {}) {
                 </div>
                 <div className="row rise" style={{"--d":"9","gap":"12px","marginTop":"8px"} as any}>
                   <Link href={__s(__v?.next)} aria-disabled={!__v?.ready} className="btn cta press" style={{"height":"52px","fontSize":"15px","padding":"0 6px 0 22px"} as any}>
-                    {__v?.ready ? "Open my field" : "Reading… " + __s(__v?.done) + " of " + __s(__v?.total)}
+                    {__v?.ready ? __s(__v?.nextLabel) : "Reading… " + __s(__v?.done) + " of " + __s(__v?.total)}
                     <span className="ar">
                       <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M7 17 17 7M9 7h8v8" />

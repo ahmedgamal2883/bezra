@@ -146,7 +146,7 @@ export const V2_EXACT: Record<string, string> = {
   'SETTINGS': 'الإعدادات', 'Show the first-time tour again': 'اعرض جولة أول مرة تاني', 'Start the tour': 'ابدأ الجولة',
   'Download all my data': 'نزّل كل بياناتي', 'Your fields and journal stay saved.': 'أراضيك وسجلك بيفضلوا محفوظين.',
   // ---- Reading your field ----
-  'Your field from space': 'أرضك من الفضاء',
+  'Your field from space': 'أرضك من الفضاء', 'See what we found': 'شوف لقينا إيه', 'Open my field': 'افتح أرضي',
   'Saved just now ·': 'اتحفظت دلوقتي ·',
   'Reading the history of your field.': 'بنقرا تاريخ أرضك.',
   'Before you log anything, NASA already has a long memory of this land. This takes about a minute.': 'قبل ما تسجل أي حاجة، ناسا عندها ذاكرة طويلة للأرض دي. ده بياخد حوالي دقيقة.',

@@ -39,5 +39,7 @@ export function useReading() {
     return () => { alive = false; };
   }, [id]);
   const done = rows.filter((r) => r.done).length;
-  return { rows, ready, done, total: rows.length, photo, outline, name: field?.name || '', area: field?.area_feddan, next: `/field/${id}/${typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('then') === 'catch-up' ? 'catch-up' : 'today'}` };
+  return { rows, ready, done, total: rows.length, photo, outline, name: field?.name || '', area: field?.area_feddan, ...(() => { const cu = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('then') === 'catch-up';
+    // the design: Reading -> your field's story (what space already knew); joining mid-season -> catch up first
+    return { next: `/field/${id}/${cu ? 'catch-up' : 'story'}`, nextLabel: cu ? 'Open my field' : 'See what we found' }; })() };
 }

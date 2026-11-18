@@ -34,7 +34,11 @@ export function pageKey(design: string): string {
 
 export function v2Href(design: string, fieldId: string): string {
   const to = PAGES[pageKey(design)];
-  return to ? to(fieldId) : '#';
+  if (!to) return '#';
+  const href = to(fieldId);
+  // no field yet (an engineer, or a farmer before adding one): /today sends each to the right place
+  if (!fieldId && href.startsWith('/field//')) return `/today?to=${href.slice(8).split('?')[0]}`;
+  return href;
 }
 
 /** Inside a screen: __r('V18-Crop') -> /field/<current field>/crop */
