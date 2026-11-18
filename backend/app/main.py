@@ -48,10 +48,39 @@ def _daily_alerts_job():
 async def lifespan(_app):
     db.init()
     _daily_alerts_job()
+    from . import snapshot
+    hit = snapshot.get("rotation")
+    if not hit or snapshot.stale(hit):
+        snapshot.refresh_soon()  # the repo copy serves guests meanwhile
     yield
 
 
 app = FastAPI(title="Bezra API", version="0.4", lifespan=lifespan)
+@app.middleware("http")
+async def guest_snapshot(request: Request, call_next):
+    """Guest copies of the sample field: heavy answers come from the shared snapshot (see snapshot.py)."""
+    from . import snapshot
+    m = snapshot.HEAVY.match(request.url.path)
+    if request.method != "GET" or not m or request.headers.get("x-snapshot-build"):
+        return await call_next(request)
+    u = db.session_user(request.cookies.get(COOKIE))
+    f = fields.get(m[1])
+    if not u or not f or not db.can_see(u, f) or not snapshot.is_plain_copy(f, fields.get(f.get("copy_of") or "")):
+        return await call_next(request)
+    key = m[2] + ("?" + request.url.query if request.url.query else "")
+    hit = snapshot.get(key)
+    if hit:
+        if snapshot.stale(hit):
+            snapshot.refresh_soon()
+        return Response(snapshot.for_field(hit, m[1]), media_type=hit[1], headers={"x-bezra-snapshot": hit[2]})
+    resp = await call_next(request)
+    if resp.status_code != 200:
+        return resp
+    body = b"".join([chunk async for chunk in resp.body_iterator])
+    snapshot.put(key, body, resp.headers.get("content-type", "application/json"), fid=m[1])
+    return Response(body, status_code=200, media_type=resp.headers.get("content-type"))
+
+
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("BEZRA_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(","),
                    allow_methods=["*"], allow_headers=["*"], allow_credentials=True)
 
@@ -209,6 +238,7 @@ def guest_start(resp: Response):
     u = db.create_user(f"guest-{tag}{GUEST_DOMAIN}", "Guest", _sec.token_urlsafe(24), "farmer")
     f = {k: v for k, v in src.items() if k not in ("owner_id", "farmer", "engineer_id")}
     f["id"] = f"g-{tag}"
+    f["copy_of"] = src["id"]  # unchanged copies share the sample's precomputed answers (snapshot.py)
     db.save_field(f, u["id"])
     _start_session(resp, u["id"])
     return {"user": u, "field_id": f["id"], "days": GUEST_DAYS}
@@ -292,7 +322,7 @@ def _field_card(f: dict) -> dict:
     return {"id": f["id"], "num": f.get("num"), "name": f["name"], "crop": fields.CROP_LABEL.get(f["crop"], f["crop"]),
             "area_feddan": f["area_feddan"], "farmer": f["farmer"], "village": f.get("village"),
             "governorate": f.get("governorate"), "lat": f["lat"], "lon": f["lon"],
-            "accuracy": fields.accuracy(f)["pct"]}
+            "accuracy": fields.accuracy(f)["pct"], "priority": f.get("priority") or "soil"}
 
 
 @app.get("/status/apis")
@@ -368,6 +398,26 @@ def post_soiltest(field_id: str, req: SoilTest, user: dict = Depends(current_use
     f["soil_test_date"] = (req.date or date.today().isoformat())[:10]
     db.save_field(f, owner)
     return {"soil_ec": f.get("soil_ec"), "soil_om": f.get("soil_om"), "soil_test_date": f["soil_test_date"]}
+
+
+class Priority(BaseModel):
+    priority: str
+
+
+@app.post("/fields/{field_id}/priority")
+def set_priority(field_id: str, req: Priority, user: dict = Depends(current_user)):
+    """What matters most to the farmer: it orders the rotation cards, the day's tasks and the field alerts."""
+    from .services.priority import PRIORITIES
+    _ctx(field_id, user)
+    if req.priority not in PRIORITIES:
+        raise HTTPException(422, "Unknown priority")
+    f = db.get_field(field_id)
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    f["priority"] = req.priority
+    db.save_field(f, owner)
+    return {"priority": f["priority"]}
 
 
 @app.put("/fields/{field_id}")
@@ -840,6 +890,8 @@ def jobs_refresh(request: Request):
     if not _has_job_token(request) and refresh.minutes_since_last() < refresh.MIN_GAP_MIN:
         return {"started": False, "reason": "refreshed recently", "last": (refresh.last_state() or {}).get("at")}
     started = refresh.start_background()
+    from . import snapshot
+    snapshot.refresh_soon()  # guests get today's answers too
     return {"started": started, "running": not started, "last": (refresh.last_state() or {}).get("at")}
 
 

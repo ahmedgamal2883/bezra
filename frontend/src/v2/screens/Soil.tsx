@@ -4,6 +4,7 @@
 // then wired to the API by hand. Logic: ./Soil.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import PriorityPicker from '@/v2/PriorityPicker';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
@@ -178,15 +179,8 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9.5 6 6 6-6 6" /></svg>
                       </Link>
                     </div>
-                    <div className="col" style={{"gap":"8px","margin":"4px 0 12px"} as any}>
-                      <span className="meta" style={{"fontWeight":"600"} as any}>{"What matters most to you?"}</span>
-                      <div className="row" role="radiogroup" style={{"gap":"8px","flexWrap":"wrap"} as any}>
-                        {[["soil", "Stronger soil"], ["water", "Less water"], ["money", "More harvest"], ["fodder", "Fodder"]].map(([k, t]) => (
-                          <button key={k} type="button" role="radio" aria-checked={__v?.prio === k} className={"btn press" + (__v?.prio === k ? "" : " soft")} style={{"height":"40px","borderRadius":"20px","padding":"0 16px","fontSize":"14px"} as any} onClick={() => __v?.setPrio?.(k)}>{t}</button>
-                        ))}
-                      </div>
-                      {__v?.moneyNote ? <span className="meta">{__v.moneyNote}</span> : null}
-                    </div>
+                    <PriorityPicker id={__v?.fieldId} onSaved={() => __v?.reload?.()} />
+                    {__v?.moneyNote ? <span className="meta">{__v.moneyNote}</span> : null}
                     <div className="opt3">
                       {__v.options.map((o: any, i: number) => (
                         <article key={i} className={"ocard" + (i === 0 ? " best" : "")}>

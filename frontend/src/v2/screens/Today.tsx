@@ -13,6 +13,7 @@ import WatchList from '@/v2/WatchList';
 import ImpactLine from '@/v2/ImpactLine';
 import { useTodayData, dayMonth } from '@/v2/data/today';
 import { useField, useUser } from '@/lib/field';
+import PriorityPicker from '@/v2/PriorityPicker';
 
 export default function TodayScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
@@ -331,6 +332,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           ))}
                         </div>
                         {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
+                        <PriorityPicker id={id} onSaved={() => d.reload?.()} />
                         {__v?.allDone ? (
                           <>
                             <div className="alldone">
@@ -791,6 +793,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           ))}
                         </div>
                         {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
+                        <PriorityPicker id={id} onSaved={() => d.reload?.()} />
                         {__v?.allDone ? (
                           <>
                             <div className="alldone">

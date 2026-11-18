@@ -299,7 +299,9 @@ def build(c: Ctx) -> dict:
                         "answer": "yes", "source": "Sentinel-2 / Sentinel-1", "provenance": "satellite", "season": sea["season"]})
 
     order = {"high": 0, "med": 1, "low": 2}
-    out.sort(key=lambda x: (x["state"] == "closed", order[x["level"]]))
+    from .priority import rank
+    prio = c.f.get("priority")
+    out.sort(key=lambda x: (x["state"] == "closed", x["level"] != "high", rank(x["kind"], prio), order[x["level"]]))
     return {"field_id": fid, "date": today.isoformat(), "open": sum(x["state"] == "open" for x in out), "alerts": out,
             "crop": fields.CROP_LABEL.get(f["crop"], f["crop"])}
 

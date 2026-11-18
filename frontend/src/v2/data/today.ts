@@ -185,6 +185,7 @@ export function useTodayData(id: string) {
   };
 
   return {
+    reload, fieldId: id,
     today, photo, outline, squares, fresh, head, headline, todo, coming, week, weekD, kpis, question, recent,
     images: J?.season?.images ?? null,
     dateLong: today ? longDate(today) : '', todoTitle: today ? 'TO DO TODAY · ' + shortDate(today).toUpperCase() : 'TO DO TODAY',

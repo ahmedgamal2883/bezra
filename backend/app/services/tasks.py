@@ -387,7 +387,9 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
     for t in out:
         if t["category"] == "irrigation" and t["status"] in ("done", "verified") and t.get("done_date") and t["done_date"] != t["date"]:
             t["covered_by"] = t["done_date"]
-    out.sort(key=lambda t: (t["date"], 0 if t["priority"] == "high" else 1))
+    from .priority import rank
+    prio = c.f.get("priority")
+    out.sort(key=lambda t: (t["date"], 0 if t["priority"] == "high" else 1, rank(t["category"], prio)))
     return {"field_id": c.f["id"], "today": today.isoformat(), "week_starts": "saturday", "tasks": out,
             "reminders": reminders(out, today, hour), "categories": list(dict.fromkeys(CATEGORY.values()))}
 

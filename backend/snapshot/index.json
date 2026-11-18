@@ -1,0 +1,92 @@
+{
+ "rotation": {
+  "file": "rotation",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "rotation?priorities=water,soil": {
+  "file": "rotation_priorities=water_soil",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "rotation?priorities=fodder,soil": {
+  "file": "rotation_priorities=fodder_soil",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "scale": {
+  "file": "scale",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "calendar": {
+  "file": "calendar",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "layers": {
+  "file": "layers",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "seasons": {
+  "file": "seasons",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "squares": {
+  "file": "squares",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "health": {
+  "file": "health",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "ndvi": {
+  "file": "ndvi",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "mapframe": {
+  "file": "mapframe",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "irrigation": {
+  "file": "irrigation",
+  "type": "application/json",
+  "day": "2026-11-19"
+ },
+ "photo.jpg": {
+  "file": "photo.jpg",
+  "type": "image/jpeg",
+  "day": "2026-11-19"
+ },
+ "layers/truecolor.png": {
+  "file": "layers_truecolor.png",
+  "type": "image/png",
+  "day": "2026-11-19"
+ },
+ "layers/ndvi.png": {
+  "file": "layers_ndvi.png",
+  "type": "image/png",
+  "day": "2026-11-19"
+ },
+ "layers/ndmi.png": {
+  "file": "layers_ndmi.png",
+  "type": "image/png",
+  "day": "2026-11-19"
+ },
+ "layers/landcover.png": {
+  "file": "layers_landcover.png",
+  "type": "image/png",
+  "day": "2026-11-19"
+ },
+ "layers/elevation.png": {
+  "file": "layers_elevation.png",
+  "type": "image/png",
+  "day": "2026-11-19"
+ }
+}

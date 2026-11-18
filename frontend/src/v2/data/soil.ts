@@ -1,7 +1,8 @@
 'use client';
 // Soil (V19): read from GET /fields/{id}/rotation (Soil Ledger: SoilGrids start, MODIS history 2000-now, 10-year runs
 // of each rotation on NASA POWER weather) + /seasons (weak spots of the last season) + the field's next-winter choice.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { usePriority } from '@/v2/PriorityPicker';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
 import { useLang } from '@/lib/i18n';
@@ -14,16 +15,14 @@ export function useSoilData() {
   const { id } = useField();
   const { lang } = useLang();
   const [ver, setVer] = useState(0);
-  // the farmer's priority ranks the rotation cards; kept per field in this browser (soil = Bezra's default order)
-  const [prio, setPrioS] = useState<string>(() => { try { return (id && localStorage.getItem('bezra.prio.' + id)) || 'soil'; } catch { return 'soil'; } });
-  const setPrio = (p: string) => { setPrioS(p); try { if (id) localStorage.setItem('bezra.prio.' + id, p); } catch { /* private mode */ } };
-  useEffect(() => { try { const v = id && localStorage.getItem('bezra.prio.' + id); if (v) setPrioS(v); } catch { /* private mode */ } }, [id]);
+  // the farmer's priority (saved on the field, set on Today or Soil) ranks the rotation cards
+  const prio = usePriority(id, ver);
   const bp = prio === 'water' || prio === 'fodder' ? `?priorities=${prio},soil` : ''; // backend picks its best rotation for this priority
   const ro = useApi<any>(id ? `/fields/${id}/rotation${bp}` : null).data;
   const se = useApi<any>(id ? `/fields/${id}/seasons` : null).data;
   const fd = useApi<any>(id ? `/fields/${id}${ver ? `?v=${ver}` : ''}` : null).data;
   const reload = useCallback(() => setVer((v) => v + 1), []);
-  const out: any = { prio, setPrio, ready: !!ro, field: fd?.name || '', next: fd?.next_winter || null };
+  const out: any = { prio, fieldId: id, reload: () => setVer((v) => v + 1), ready: !!ro, field: fd?.name || '', next: fd?.next_winter || null };
   if (!ro) return out;
 
   const all = [...ro.strategies, ...(ro.more || [])];
