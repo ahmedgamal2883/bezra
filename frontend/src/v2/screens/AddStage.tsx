@@ -61,6 +61,27 @@ export default function AddStageScreen(props: Record<string, unknown> = {}) {
                   {"Something else"}
                 </button>
               </div>
+              {__v?.isOther ? (
+                <div className="col" style={{"gap":"12px"} as any}>
+                  <span className="meta">{"Which crop?"}</span>
+                  <div className="row chipset" style={{"gap":"8px","flexWrap":"wrap"} as any}>
+                    {((__v?.others) || []).map((o: any) => (
+                      <button type="button" key={o.k} className={o.cls} onClick={o.pick} style={{"height":"42px"} as any}>{o.t}</button>
+                    ))}
+                  </div>
+                  <label className="col" style={{"gap":"6px"} as any}>
+                    <span className="meta">{"Or type its name"}</span>
+                    <input className="inp" value={__s(__v?.otherName) as any} onChange={__v?.setOtherName} placeholder="For example: onion, garlic, potato" maxLength={30} style={{"height":"48px","fontSize":"16px"} as any} />
+                  </label>
+                  {__v?.typed ? (
+                    <label className="col" style={{"gap":"6px"} as any}>
+                      <span className="meta">{"About how many days from sowing to harvest? (if you know)"}</span>
+                      <input className="inp" type="number" inputMode="numeric" min={30} max={400} value={__s(__v?.otherDays) as any} onChange={__v?.setOtherDays} placeholder="For example: 120" style={{"height":"48px","fontSize":"16px","maxWidth":"200px"} as any} />
+                      <span className="meta">{"Bezra learns the rest from your field's greenness from space and from your journal."}</span>
+                    </label>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="col hair" style={{"gap":"14px","paddingTop":"22px"} as any}>
                 <b style={{"fontSize":"18px","fontWeight":"600"} as any}>
                   {"Where is it in its season?"}

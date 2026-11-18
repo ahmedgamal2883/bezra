@@ -8,6 +8,8 @@ Tested with a real Earthdata login on 13 Nov 2026.
 """
 from __future__ import annotations
 
+import time
+
 import os
 from datetime import date
 
@@ -104,5 +106,15 @@ def squares(scene: dict, grid: Grid) -> dict:
                              {n: (round(float(a[r, c]), 3) if ok else None) for n, a in idx.items()})
         return {"date": scene["date"], "id": scene["id"], "scene_cloud": scene["cloud"],
                 "field_clear": round(float(clear.mean()), 2), "cells": cells, "source": SOURCE, "pixel_m": 30}
-    data, _ = fetch_cached(f"hls_cells_{scene['id']}_{grid.key}", 24 * 3650, fetch)
+    k = f"hls_cells_{scene['id']}_{grid.key}"
+    if time.time() - _failed.get(k, 0) < 6 * 3600:      # this tile failed lately: don't try it on every request
+        raise RuntimeError("HLS tile unavailable (retry later)")
+    try:
+        data, _ = fetch_cached(k, 24 * 3650, fetch)
+    except Exception:
+        _failed[k] = time.time()
+        raise
     return data
+
+
+_failed: dict[str, float] = {}

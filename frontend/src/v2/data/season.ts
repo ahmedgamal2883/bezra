@@ -48,6 +48,15 @@ export function useSeasonData() {
     { t: 'Grain filling', s: gfStart && gfEnd ? monthSpan(gfStart, gfEnd) + (gf.some((w: any) => w.p_hot > 0.2) ? ' · heat risk' : '') : '', sty: 'background:#F6E1BD;color:#8A4B08;' },
     { t: 'Harvest', s: ripe ? 'about ' + dayMonth(ripe) : '', sty: 'background:#E9D38C;color:#5C4A0C;' },
   ];
+  // every crop but wheat: its own stages from the season model (FAO-56 periods), coloured from early to late
+  if (crop !== 'wheat' && sm.stages?.length) {
+    const COL = ['background:#CFE3C6;color:#2D5B2A;', 'background:#B9D6A8;color:#24501F;', 'background:#F6E1BD;color:#8A4B08;', 'background:#EADBB0;color:#6B5410;'];
+    out.stages = [
+      { t: 'Sowing', s: dayMonth(sow), sty: 'background:#E7D9A8;color:#6B5410;' },
+      ...sm.stages.slice(0, 4).map((x: any, i: number) => ({ t: x.name, s: monthSpan(x.from, x.to), sty: COL[i] })),
+      { t: 'Harvest', s: ripe ? 'about ' + dayMonth(ripe) : '', sty: 'background:#E9D38C;color:#5C4A0C;' },
+    ];
+  }
   out.here = { left: `left: ${pct(today).toFixed(1)}%;`, t: `Today · ${dayLabel(sm.day_n)}` };
 
   // the plan, week by week
@@ -56,7 +65,7 @@ export function useSeasonData() {
     const weekEnd = addDays(today, 6), nextEnd = addDays(today, 13);
     const done = (t: any) => t.status === 'done' || t.answer?.answer === 'done';
     const row = (t: any, live: boolean) => ({ id: t.id, d: t.date === today ? 'Today' : shortDate(t.date), t: t.title,
-      s: [t.amount && !/engineer/i.test(t.amount) ? t.amount : '', /engineer/i.test(t.amount || '') ? 'Check the amount with your engineer' : '', t.answer?.note || ''].filter(Boolean).join(' · ') || t.why || '',
+      s: [/^About /.test(t.amount || '') ? String(t.amount).split('. ')[0] + '.' : t.amount && !/engineer/i.test(t.amount) ? t.amount : '', /engineer/i.test(t.amount || '') ? 'Check the amount with your engineer' : '', t.answer?.note || ''].filter(Boolean).join(' · ') || t.why || '',
       done: done(t), skipped: t.answer?.answer === 'not_done', live });
     const past = T.filter((t: any) => t.date < today && (done(t) || t.answer)).slice(-6).map((t: any) => row(t, false));
     const thisW = T.filter((t: any) => t.date >= addDays(today, -3) && t.date <= weekEnd && !(t.date < today && t.answer)).map((t: any) => row(t, t.date <= today));
@@ -77,14 +86,14 @@ export function useSeasonData() {
       { l: 'Crop vs normal', v: jn?.season?.greenness_vs_normal ? jn.season.greenness_vs_normal.replace(/ for .*$/, '').replace(/\.$/, '') : '—' },
     ];
     out.water = irr.map((t: any) => ({ d: dayMonth(t.date), st: done(t) ? 'Done' : t.answer?.answer === 'not_done' ? 'Missed' : t.date === today ? 'Today' : t.date < today ? 'Not answered' : 'Planned', amt: t.amount || '—', note: t.answer?.note || '' }));
-    out.feed = fert.map((t: any) => ({ d: dayMonth(t.date), what: t.title, amt: t.answer?.details?.bags ? `${t.answer.details.bags} bags (you)` : 'With your engineer', st: done(t) ? 'Done' : t.answer?.answer === 'not_done' ? 'Not done' : 'Planned' }));
+    out.feed = fert.map((t: any) => ({ d: dayMonth(t.date), what: t.title, amt: t.answer?.details?.bags ? `${t.answer.details.bags} bags (you)` : t.amount && /^About /.test(t.amount) ? String(t.amount).split('. ')[0] + '. Check with your engineer' : 'With your engineer', st: done(t) ? 'Done' : t.answer?.answer === 'not_done' ? 'Not done' : 'Planned' }));
     out.waterTotal = sm.water_used ? `${sm.water_used.value} m³ so far` : '';
   }
   if (im?.with_bezra && im?.without_bezra?.ardeb != null) {
     const d = Math.round((im.with_bezra.ardeb - im.without_bezra.ardeb) * 10) / 10;
     out.effect = { v: `${d >= 0 ? '+' : ''}${d} ardab per feddan`, s: 'expected, vs your usual way' };
   }
-  if (nx?.hot_days?.bars) {
+  if (crop === 'wheat' && nx?.hot_days?.bars) { // spring heat and climate twins are wheat research
     const bars = nx.hot_days.bars, max = Math.max(...bars.map((b: any) => b.value), 1);
     out.hot = bars.map((b: any, i: number) => ({ l: b.label, v: Math.round(b.value), sty: `--i:${i};flex:1;height:${Math.max(6, b.value / max * 100)}px;border-radius:3px;background:${b.label === '2040' ? '#F29B1E' : '#E3D3B4'};` }));
     const first = bars[0], now = bars.find((b: any) => /20(1|2)0s|now|today/i.test(b.label)) || bars[bars.length - 2] || bars[bars.length - 1];

@@ -34,15 +34,60 @@ def _plan_turns(c: Ctx, next_turn: date, skip: date | None = None) -> set[date]:
     return past | future
 
 
+def ndvi_kc(c: Ctx):
+    """For a crop without a table: its water use read from its own greenness. Every clear image since sowing gives
+    the field's median NDVI; between images it is interpolated, and Kc follows from the ground cover (crops.kc_from_ndvi,
+    FAO-56 ch. 9). After the last image (and for crops with a table) the engine uses its Kc curve."""
+    if not str(c.f["crop"]).startswith("x:") or c.today <= c.sow:
+        return None
+    try:
+        from . import satellite
+        from ..engine.crops import kc_from_ndvi
+        _, scenes = satellite._scenes(c)
+        pts = []
+        for sc in scenes:
+            v = [x["ndvi"] for x in sc["cells"] if x.get("ndvi") is not None]
+            d = date.fromisoformat(str(sc["date"])[:10])
+            if v and d >= c.sow:
+                pts.append((d, statistics.median(v)))
+        pts.sort()
+    except Exception:  # noqa: BLE001  no images: the generic curve
+        return None
+    if len(pts) < 2:
+        return None
+
+    def kc_fn(d: date):
+        if d < pts[0][0] or d > pts[-1][0]:
+            return None
+        for (d0, v0), (d1, v1) in zip(pts, pts[1:]):
+            if d0 <= d <= d1:
+                t = (d - d0).days / max(1, (d1 - d0).days)
+                return kc_from_ndvi(v0 + (v1 - v0) * t)
+        return kc_from_ndvi(pts[-1][1])
+    return kc_fn
+
+
 def season_runs(c: Ctx):
     from .rotation import soil_now
     nt = _next_turn(c)
     sf = soil_now(c)["total"]
+    kf = ndvi_kc(c)
     base = season.run(c.w.day, c.sow, crop=c.f["crop"], variety=c.variety, irrigate=_plan_turns(c, nt),
-                      every=c.f["turn_days"], lat=c.f["lat"], soil=sf)
+                      every=c.f["turn_days"], lat=c.f["lat"], soil=sf, kc_fn=kf)
     skip = season.run(c.w.day, c.sow, crop=c.f["crop"], variety=c.variety, irrigate=_plan_turns(c, nt, skip=nt),
-                      skipped=[nt], every=c.f["turn_days"], lat=c.f["lat"], soil=sf)
+                      skipped=[nt], every=c.f["turn_days"], lat=c.f["lat"], soil=sf, kc_fn=kf)
     return nt, base, skip
+
+
+def _stage_spans(res) -> list[dict]:
+    """The season's stages with their dates, from the season run (any crop): [{name, from, to}]."""
+    out: list[dict] = []
+    for x in res.days:
+        if out and out[-1]["name"] == x.stage:
+            out[-1]["to"] = x.date.isoformat()
+        else:
+            out.append({"name": x.stage, "from": x.date.isoformat(), "to": x.date.isoformat()})
+    return [s for s in out if s["name"] != "Ready to harvest"]
 
 
 def _wd(d: date) -> str:
@@ -118,7 +163,10 @@ def build(c: Ctx) -> dict:
                   2: "The soil is dry. Water as soon as you can."}[water_lv]
     if not sown:
         water_lv, water_line = 0, "No crop yet. Water just after sowing."
-    missed_open = open_missed_turns(c) if sown else []
+    ripe_now = bool(sown and base.ripe and today >= base.ripe)
+    if ripe_now:
+        water_lv, water_line = 0, "The crop is ready. No more water this season."
+    missed_open = open_missed_turns(c) if sown and not ripe_now else []
     if missed_open:
         water_lv, water_line = 2, f"Your turn of {_dm(missed_open[-1])} was missed. Water today if you can."
 
@@ -136,7 +184,11 @@ def build(c: Ctx) -> dict:
     # ---- the one action (brief §5 priority: watering > rust walk > heat prep) -----------------------
     stage_word = FIELD_WORD.get(stage, stage.lower())
     turn_stage = on_turn.stage if on_turn else stage
-    if not sown:
+    if ripe_now:
+        action = {"kind": "harvest", "title": f"Your {fields.CROP_LABEL[f['crop']].lower()} should be ready to harvest.",
+                  "body": f"By the season model it was ready around {_dm(base.ripe)}. Log the harvest when you have it, "
+                          "so Bezra learns your field.", "done_label": "I harvested"}
+    elif not sown:
         action = {"kind": "sow", "title": f"Sowing is planned for {c.sow.strftime('%A')} {_dm(c.sow)}.",
                   "body": "Bezra starts your water plan from sowing day. Water the field just after sowing.",
                   "done_label": "I sowed today"}
@@ -164,7 +216,10 @@ def build(c: Ctx) -> dict:
     kc_now = None
     if cur:
         from ..engine.crop import kc
-        kc_now = round(kc(f["crop"], cur.gdd, day_n), 2)
+        from ..engine.crops import profile
+        pr = profile(f["crop"], c.sow.month) if f["crop"] != "wheat" else None
+        kf = ndvi_kc(c) if pr else None
+        kc_now = round((kf(today) if kf and kf(today) is not None else pr.kc_at(day_n)) if pr else kc(f["crop"], cur.gdd, day_n), 2)
 
     # ---- this field's year: 52 weeks from 1 October ------------------------------------
     y0 = date(c.sow.year if c.sow.month >= 10 else c.sow.year - 1, 10, 1)
@@ -200,6 +255,7 @@ def build(c: Ctx) -> dict:
                   "turn": num(f"Every {f['turn_days']} days", None, "farmer", "You")},
         "today": today.isoformat(),
         "day_n": day_n, "season_days": season_len, "stage": stage,
+        "stages": _stage_spans(base),
         "action": action | {
             "protects": num(protect, "%", est, "Season model: with vs without this turn, FAO-56 water balance + yield index", as_of),
             "apply_m3": num(apply_m3, "m3", est, "Depletion at the turn x 4.2 m3/mm/feddan x area", as_of),

@@ -44,7 +44,19 @@ VARIETIES = {
     "giza171": {"label": "Giza 171", "gdd_offset": 0, "rust": "susceptible"},
 }
 
-CROP_LABEL = {"wheat": "Wheat", "berseem": "Berseem", "maize": "Maize", "rice": "Rice", "cotton": "Cotton", "sugar beet": "Sugar beet"}
+class _CropLabel(dict):
+    """Crop key -> its English name: the 8 crops Bezra has tables for, and any crop the farmer named (x:<name>)."""
+    def __missing__(self, key: str) -> str:
+        from .engine.crops import CROPS
+        if key in CROPS:
+            return {"berseem": "Berseem", "fahl": "Short berseem (fahl)"}.get(key, CROPS[key].en)
+        if str(key).startswith("x:"):
+            return str(key).split(":")[1].capitalize()
+        return str(key).capitalize()
+
+
+CROP_LABEL = _CropLabel({"wheat": "Wheat", "berseem": "Berseem", "maize": "Maize", "rice": "Rice", "cotton": "Cotton",
+                         "sugar beet": "Sugar beet"})
 SOIL_LABEL = {"clay": "Heavy clay"}
 
 
@@ -61,7 +73,7 @@ def all_ids() -> list[str]:
 
 # ---- a field drawn on the map (onboarding, checkpoint 3) -------------------------------------------
 FEDDAN_M2 = 4200.83
-PLANNED_CROPS = ("wheat", "maize")   # the water plan engine knows these two for now
+# Any crop: the 8 with tables (engine/crops.py) and any other crop the farmer names (x:<name>[:<days to harvest>]).
 
 
 def _local_m(poly: list[list[float]]) -> list[tuple[float, float]]:
@@ -85,9 +97,7 @@ def from_drawing(d: dict) -> dict:
     area = polygon_area_m2(poly)
     if not 400 <= area <= 2_000_000:
         raise ValueError("The field looks too small or too big. Check the corners.")
-    crop = d["crop"].lower()
-    if crop not in PLANNED_CROPS:
-        raise ValueError(f"Bezra plans wheat and maize for now. {crop.capitalize()} is coming soon.")
+    crop = _crop_key(d)
     date.fromisoformat(d["sow_date"])
     if d.get("next_turn"):
         date.fromisoformat(d["next_turn"])
@@ -114,6 +124,49 @@ def from_drawing(d: dict) -> dict:
     } | extras(d)
 
 
+def _crop_key(d: dict) -> str:
+    """The crop key from the form: a known crop, or the farmer's own crop name (with how many days it usually takes,
+    if they said, else what Bezra learned from other fields' harvests of that crop)."""
+    from .engine.crops import key_for
+    name = str(d.get("crop") or "").strip()
+    if name.lower() in ("other", "") and d.get("crop_name"):
+        name = str(d["crop_name"])
+    if not name or name.lower() == "other":
+        raise ValueError("Tell Bezra which crop it is")
+    days = d.get("crop_days")
+    if days is not None and not 30 <= int(days) <= 400:
+        raise ValueError("Days to harvest should be between 30 and 400")
+    key = key_for(name, days)
+    if key.startswith("x:") and not days:
+        learned = learned_days(key.split(":")[1])
+        if learned:
+            key = f"{key}:{learned}"
+    return key
+
+
+def learned_days(name: str) -> int | None:
+    """Season length learned from farmers' harvests of a crop Bezra has no table for (median of what was logged)."""
+    from . import db
+    xs = (db.kv_get("learned_crops") or {}).get(name, {}).get("days") or []
+    return int(sorted(xs)[len(xs) // 2]) if xs else None
+
+
+def learn_harvest(crop_key: str, sow: str, harvest: str) -> None:
+    """A harvest of a crop without a table: remember how long its season was, for the next field of that crop."""
+    from datetime import date
+    from . import db
+    if not crop_key.startswith("x:"):
+        return
+    n = (date.fromisoformat(harvest) - date.fromisoformat(sow)).days
+    if not 30 <= n <= 400:
+        return
+    name = crop_key.split(":")[1]
+    all_ = db.kv_get("learned_crops") or {}
+    rec = all_.setdefault(name, {"days": []})
+    rec["days"] = (rec["days"] + [n])[-50:]
+    db.kv_set("learned_crops", all_)
+
+
 # Optional answers (onboarding Level 2 / 3, editable any time). Empty answers are left out.
 EXTRA = ("water_kind", "irrigation", "pump_flow", "yields", "problems", "soil_ec", "water_ec", "sensors")
 
@@ -137,9 +190,7 @@ def edit(f: dict, d: dict) -> dict:
         new = from_drawing(d)
     else:
         new = {k: v for k, v in f.items() if k not in EXTRA}
-        crop = (d.get("crop") or f["crop"]).lower()
-        if crop not in PLANNED_CROPS:
-            raise ValueError(f"Bezra plans wheat and maize for now. {crop.capitalize()} is coming soon.")
+        crop = _crop_key(d) if d.get("crop") else f["crop"]
         new.update(name=(d.get("name") or f["name"]).strip()[:40], crop=crop, sow_date=d.get("sow_date") or f["sow_date"],
                    prev_crop=d.get("prev_crop") or f.get("prev_crop"), mesqa_position=d.get("mesqa") or f.get("mesqa_position"),
                    turn_days=int(d.get("turn_days") or f["turn_days"]), next_turn=d.get("next_turn") or f.get("next_turn"),

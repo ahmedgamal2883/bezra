@@ -60,6 +60,15 @@ def texture(lat: float, lon: float) -> dict:
             "source": SOURCE}
 
 
+def texture_cached(lat: float, lon: float) -> dict | None:
+    """The topsoil texture only if it was already fetched (never waits on the network)."""
+    from .cache import _path, _read
+    rec = _read(_path(f"soilgrids_{lat:.4f}_{lon:.4f}"))
+    v = rec and rec.get("data")
+    return {"label": usda_texture(v["clay"], v["sand"], v["silt"]), "clay": v["clay"], "sand": v["sand"], "silt": v["silt"],
+            "source": SOURCE} if v else None
+
+
 # ---- Field Shift plan §6.1: full topsoil profile 0-30 cm with uncertainty ------------------------------------
 PROFILE_PROPS = ("phh2o", "soc", "nitrogen", "cec", "bdod", "clay", "sand", "silt")
 DEPTHS = (("0-5cm", 5), ("5-15cm", 10), ("15-30cm", 15))

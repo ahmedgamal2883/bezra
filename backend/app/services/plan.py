@@ -109,6 +109,8 @@ def add_log(c: Ctx, kind: str, when: str, amount: float | None, unit: str | None
             entry["amount"], entry["unit"] = amount, unit
         f.setdefault("log", []).append(entry)
     db.save_field(f, owner)
+    if kind == "harvest":
+        fields.learn_harvest(f["crop"], f["sow_date"], entry["date"])   # crops without a table: learn the season length
     return entry
 
 

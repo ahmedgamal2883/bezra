@@ -285,7 +285,12 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
             amount=(t.get("amount") or {}).get("label"), done_date=t.get("done_date"), note=t.get("note"),
             priority="high" if typ == "heat" or "do not skip" in t["title"] else "normal")
 
-    # 2. fertilizer + pest control from the rules file (timing + type only)
+    # 2. fertilizer + pest control from the rules file (fertilizer: type, timing and an approximate amount)
+    try:
+        from ..connectors import soilgrids
+        sand = (c.f.get("soil_texture") or soilgrids.texture_cached(c.f["lat"], c.f["lon"]) or {}).get("sand")
+    except Exception:
+        sand = None
     for kind, rules, cat in (("fertilizer", R.FERTILIZER.get(crop, []), "fertilizer"), ("spray", R.PEST.get(crop, []), "spray")):
         for r in rules:
             span = rule_dates(r, c.sow, turns)
@@ -294,8 +299,16 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
             d0, d1 = span
             lk = ("fertilizer",) if kind == "fertilizer" else ("spray", "weeding")
             done = _match_log(log, lk, d0, d1, r["type"], used)
-            add(f"{kind}-{r['id']}", cat, r["type"], r["why"], d0, d1, source=R.SOURCES[r["source"]],
-                provenance="agronomist", amount="Your engineer sets the amount", done_date=done)
+            amount, why = "Your engineer sets the amount", r["why"]
+            if kind == "fertilizer":
+                fa = R.fert_amount(crop, r["id"], c.f["area_feddan"], c.f.get("prev_crop"), sand)
+                if fa:
+                    amount = f"{fa['label']} {fa['check']}".strip()
+                    if fa["notes"]:
+                        why = f"{why} {'; '.join(fa['notes']).capitalize()}."
+            add(f"{kind}-{r['id']}", cat, r["type"], why, d0, d1, source=R.SOURCES[r["source"]] + (
+                "; amount from the Ministry's recommended rates (MALR)" if kind == "fertilizer" else ""),
+                provenance="agronomist", amount=amount, done_date=done)
 
     # 3. crop-stage milestones (yellow)
     if crop == "wheat":

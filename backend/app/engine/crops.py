@@ -34,6 +34,7 @@ Sources (cite exact tables; values marked "verify" are still to be checked again
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 
@@ -108,3 +109,86 @@ CROPS: dict[str, CropP] = {c.key: c for c in (
 
 def get(key: str) -> CropP:
     return CROPS[key]
+
+
+# ---- in-season profiles: the 8 crops above, and any other crop the farmer names --------------------------------
+# Stage names per crop (FAO-56's four periods, in the words a farmer uses). The last one is "Ready to harvest".
+STAGE_NAMES: dict[str, tuple[str, str, str, str]] = {
+    "maize": ("Emerging", "Leaves growing", "Silking and grain fill", "Ripening"),
+    "rice": ("Establishing", "Tillering", "Flowering and grain fill", "Ripening"),
+    "cotton": ("Emerging", "Squaring", "Flowering and bolls", "Bolls opening"),
+    "faba": ("Emerging", "Growing", "Flowering and pods", "Ripening"),
+    "sugarbeet": ("Emerging", "Leaves growing", "Root filling", "Ripening"),
+    "berseem": ("Emerging", "Growing", "Cutting season", "Last cuts"),
+    "fahl": ("Emerging", "Growing", "Cutting season", "Last cut"),
+}
+GENERIC_STAGES = ("Emerging", "Growing", "Flowering", "Ripening")
+# The heat- and thirst-sensitive period of every crop: FAO-56's mid-season (flowering, grain / pod / boll / root fill).
+MID_STAGES = {names[2] for names in STAGE_NAMES.values()} | {GENERIC_STAGES[2]}
+# Maximum root depth, m: FAO-56 Table 22 (middle of the range given there).
+ROOT_MAX: dict[str, float] = {"maize": 1.2, "rice": 0.6, "cotton": 1.2, "faba": 0.6, "sugarbeet": 0.9,
+                              "berseem": 0.6, "fahl": 0.5}
+
+
+def unknown(name: str, sow_month: int, days: int | None = None) -> CropP:
+    """A crop Bezra has no table for. Start from what the farmer told us (its name, the sowing date, roughly how many
+    days to harvest) and general FAO-56 values for the season; the field's own satellite greenness then corrects its
+    water use day by day (summary.season_runs: Kc from NDVI). No heat window: we do not know when it is sensitive,
+    so we do not invent a heat loss."""
+    winter = sow_month in (9, 10, 11, 12, 1, 2)
+    n = days or (150 if winter else 120)
+    split = (0.15, 0.25, 0.40, 0.20)                     # FAO-56 Table 11: typical shares of a field crop's season
+    st = tuple(max(5, round(n * s)) for s in split)
+    return CropP(f"x:{name}", name.capitalize(), name, "unknown", "winter" if winter else "summer", (sow_month, 1),
+                 st, (0.4, 1.1, 0.6), (2.0, 7.0), None)   # Kc: FAO-56 typical field crop; salt: moderately sensitive
+
+
+def key_for(name: str, days: int | None = None) -> str:
+    """The crop key stored with a field: a known crop's key, or x:<name>[:<days>] for any other crop."""
+    n = name.strip().lower()
+    for k, c in CROPS.items():
+        if n in (k, c.en.lower(), c.ar) or (k == "berseem" and n in ("clover", "berseem", "برسيم")) or (k == "faba" and n in ("faba", "faba bean", "فول")):
+            return k
+    n = re.sub(r"[^\w\s-]", "", n)[:30].strip() or "crop"
+    return f"x:{n}" + (f":{int(days)}" if days else "")
+
+
+def profile(key: str, sow_month: int = 11) -> CropP | None:
+    """The crop's parameters for the in-season engine: the table above, or a profile built for an unnamed crop."""
+    if key in CROPS:
+        return CROPS[key]
+    if key.startswith("x:"):
+        parts = key.split(":")
+        days = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else None
+        return unknown(parts[1], sow_month, days)
+    return None
+
+
+def stage_on(p: CropP, i: int) -> str:
+    """The stage name on day i after sowing (FAO-56 periods)."""
+    names = STAGE_NAMES.get(p.key, GENERIC_STAGES)
+    a, b, c, d = p.stages
+    if i < a:
+        return names[0]
+    if i < a + b:
+        return names[1]
+    if i < a + b + c:
+        return names[2]
+    if i < a + b + c + d:
+        return names[3]
+    return "Ready to harvest"
+
+
+def root_on(p: CropP, i: int) -> float:
+    """Root depth grows from 0.3 m at sowing to its maximum at the end of the development period (FAO-56 ch. 8)."""
+    zmax = ROOT_MAX.get(p.key, 1.0)
+    full = p.stages[0] + p.stages[1]
+    return min(zmax, 0.3 + (zmax - 0.3) * i / max(1, full))
+
+
+def kc_from_ndvi(ndvi: float, height_m: float = 0.8) -> float:
+    """Crop coefficient from the field's greenness, for crops without a table (FAO-56 ch. 9, Eq. 97-98: Kc from the
+    ground cover; ground cover from scaled NDVI squared, Carlson & Ripley 1997). Kc_min 0.15, a full cover 1.15."""
+    fc = max(0.0, min(1.0, (ndvi - 0.15) / (0.85 - 0.15))) ** 2
+    kd = min(1.0, 2.0 * fc, fc ** (1 / (1 + height_m)))
+    return round(0.15 + (1.15 - 0.15) * kd, 3)

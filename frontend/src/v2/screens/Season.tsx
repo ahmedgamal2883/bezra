@@ -214,7 +214,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                       </Link>
                     </aside>
                   </div>
-                  <section className="grid hair" style={{"gridTemplateColumns":"minmax(0, 1fr) minmax(0, 1fr)","gap":"48px","paddingTop":"28px","alignItems":"center"} as any}>
+                  {__v?.hot ? (<section className="grid hair" style={{"gridTemplateColumns":"minmax(0, 1fr) minmax(0, 1fr)","gap":"48px","paddingTop":"28px","alignItems":"center"} as any}>
                     <div className="chart">
                       <span className="sec">
                         {"YOUR SPRINGS ARE GETTING HOTTER"}
@@ -240,7 +240,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {__s(__v?.sownLine)}
                       </span>
                     </div>
-                  </section>
+                  </section>) : null}
                 </div>
               </>
             ) : null}
@@ -398,12 +398,12 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                           </tbody>
                         </table>
                         <span className="pq est">
-                          {"Amounts: with your engineer. Bezra shows a usual range when you log what you used."}
+                          {"Amounts: about what the Ministry recommends for your crop and field. Check them with your engineer."}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <section className="grid hair" style={{"gridTemplateColumns":"minmax(0, 1fr) minmax(0, 1fr)","gap":"48px","paddingTop":"28px"} as any}>
+                  {__v?.hot ? (<section className="grid hair" style={{"gridTemplateColumns":"minmax(0, 1fr) minmax(0, 1fr)","gap":"48px","paddingTop":"28px"} as any}>
                     <div className="chart">
                       <b style={{"fontSize":"15px","fontWeight":"600"} as any}>
                         {"Hot days over 32 °C in March–April"}
@@ -434,7 +434,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         </span>
                       </span>
                     </div>
-                  </section>
+                  </section>) : null}
                 </div>
               </>
             ) : null}

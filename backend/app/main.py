@@ -317,6 +317,8 @@ class NewField(BaseModel):
     polygon: list[list[float]]          # [[lat, lon], ...] corners drawn on the map
     place: str = ""
     crop: str = "wheat"
+    crop_name: str | None = None        # "other": the farmer's own crop name
+    crop_days: int | None = None        # "other": about how many days from sowing to harvest
     variety: str | None = None
     sow_date: str
     prev_crop: str = "maize"

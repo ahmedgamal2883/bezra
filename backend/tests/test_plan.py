@@ -46,5 +46,9 @@ def test_drawn_field():
     assert f["grid_cols"] >= 2 and f["grid_rows"] >= 2
     with pytest.raises(ValueError):
         fields.from_drawing({"name": "x", "polygon": poly[:2], "crop": "wheat", "sow_date": "2026-11-08"})
-    with pytest.raises(ValueError, match="coming soon"):
-        fields.from_drawing({"name": "x", "polygon": poly, "crop": "rice", "sow_date": "2026-11-08"})
+    # every crop is accepted now (Nov 2026): the 8 with tables, and any crop the farmer names
+    assert fields.from_drawing({"name": "x", "polygon": poly, "crop": "rice", "sow_date": "2026-05-08"})["crop"] == "rice"
+    assert fields.from_drawing({"name": "x", "polygon": poly, "crop": "other", "crop_name": "Garlic", "crop_days": 160,
+                                "sow_date": "2026-10-08"})["crop"] == "x:garlic:160"
+    with pytest.raises(ValueError, match="which crop"):
+        fields.from_drawing({"name": "x", "polygon": poly, "crop": "other", "sow_date": "2026-11-08"})
