@@ -8,11 +8,13 @@ import { useDC, css as __css, s as __s } from '@/lib/dc';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Engineer.logic';
+import { useEngineer } from '@/v2/data/engineer';
 
 export default function EngineerScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
   const __w = useWho();
-  const __v = useDC(Logic, props);
+  const en = useEngineer();
+  const __v = { ...en, ...useDC(Logic, { ...props, d: en }) };
   return (
     <>
       <div className="v2 root">
@@ -92,86 +94,35 @@ export default function EngineerScreen(props: Record<string, unknown> = {}) {
             <div className="row sp" style={{"alignItems":"flex-end"} as any}>
               <div className="col" style={{"gap":"8px"} as any}>
                 <span className="meta">
-                  {"Engineer workspace · Eng. Mona Adel · Thu 3 Dec"}
+                  {__s(__v?.head)}
                 </span>
                 <h1 className="h1x" style={{"fontSize":"40px"} as any}>
-                  {"3 farmers need you today."}
+                  {__s(__v?.title)}
                 </h1>
               </div>
               <span className="row" style={{"gap":"8px"} as any}>
-                <a href="#" className="btn soft press">
+                <a href="#" onClick={__v?.exportCsv} className="btn soft press">
                   <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 4v11m-5-5 5 5 5-5M5 20h14" />
                   </svg>
                   {"Export"}
                 </a>
-                <a href="#" className="btn press">
-                  {"Plan my visits"}
+                <a href="#" onClick={__v?.planVisits} aria-pressed={!!__v?.visitsOn} className="btn press">
+                  {__v?.visitsOn ? "Show all fields" : "Plan my visits"}
                 </a>
               </span>
             </div>
             <div className="kpis" style={{"gridTemplateColumns":"repeat(4, minmax(0, 1fr))"} as any}>
-              <div className="kpi">
-                <span className="kl">
-                  {"Farmers"}
-                </span>
-                <span className="kv">
-                  {"214"}
-                </span>
-                <span className="meta">
-                  {"Shibin El Kom district"}
-                </span>
-              </div>
-              <div className="kpi">
-                <span className="kl">
-                  {"Need a visit"}
-                </span>
-                <span className="kv">
-                  {"3"}
-                </span>
-                <span className="meta">
-                  {"Ranked by risk and harvest at stake"}
-                </span>
-              </div>
-              <div className="kpi">
-                <span className="kl">
-                  {"Rust over the line"}
-                </span>
-                <span className="kv">
-                  {"11 fields"}
-                </span>
-                <span className="meta">
-                  {"Up from 4 last week"}
-                </span>
-              </div>
-              <div className="kpi">
-                <span className="kl">
-                  {"Journal notes this week"}
-                </span>
-                <span className="kv">
-                  {"386"}
-                </span>
-                <span className="meta">
-                  {"71% of farmers logged something"}
-                </span>
-              </div>
+              {((__v?.kpis) || []).map((k: any, ik: number) => (
+                <div className="kpi" key={ik}>
+                  <span className="kl">{k.l}</span>
+                  <span className="kv">{k.v}</span>
+                  <span className="meta">{k.s}</span>
+                </div>
+              ))}
             </div>
-            <div className="fchips">
-              <button type="button" className="opt on">
-                {"All"}
-              </button>
-              <button type="button" className="opt">
-                {"High risk"}
-              </button>
-              <button type="button" className="opt">
-                {"Rust"}
-              </button>
-              <button type="button" className="opt">
-                {"Water"}
-              </button>
-              <button type="button" className="opt">
-                {"No notes in a week"}
-              </button>
+            <div className="fchips" role="group" aria-label="Show">
+              {((__v?.filters) || []).map((f: any, jf: number) => <button key={jf} type="button" className={f.cls} aria-pressed={f.pressed} onClick={f.pick}>{f.label}</button>)}
             </div>
             <table className="tbl">
               <thead>
@@ -186,236 +137,26 @@ export default function EngineerScreen(props: Record<string, unknown> = {}) {
                     {"Why"}
                   </th>
                   <th>
-                    {"Last journal note"}
+                    {"Plan so far"}
                   </th>
                   <th />
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {__s(__w.userName)}
-                      </b>
-                      <span className="meta">
-                        {"North plot · wheat d28"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill med">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"Medium"}
-                    </span>
-                  </td>
-                  <td>
-                    {"Rust medium · C1 yellow"}
-                  </td>
-                  <td>
-                    {"Yellow leaves, C1 · 30 Nov"}
-                  </td>
-                  <td>
-                    <span className="pq sat">
-                      {"Reply sent"}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Samir Abdelaziz"}
-                      </b>
-                      <span className="meta">
-                        {"Wheat d34"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill high">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"High"}
-                    </span>
-                  </td>
-                  <td>
-                    {"Rust 0.63 · over the line"}
-                  </td>
-                  <td>
-                    {"Orange spots, B3 · today"}
-                  </td>
-                  <td>
-                    <a href="#" className="btn sm press">
-                      {"Needs a visit"}
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Fatma Ibrahim"}
-                      </b>
-                      <span className="meta">
-                        {"Wheat d22"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill high">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"High"}
-                    </span>
-                  </td>
-                  <td>
-                    {"Waterlogging, 5 squares"}
-                  </td>
-                  <td>
-                    {"Water standing · yesterday"}
-                  </td>
-                  <td>
-                    <a href="#" className="btn sm press">
-                      {"Needs a call"}
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Mahmoud Saleh"}
-                      </b>
-                      <span className="meta">
-                        {"Clover d40"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill low">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"Low"}
-                    </span>
-                  </td>
-                  <td>
-                    {"All normal"}
-                  </td>
-                  <td>
-                    {"Watered · 1 Dec"}
-                  </td>
-                  <td />
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Ahmed Kamal"}
-                      </b>
-                      <span className="meta">
-                        {"Wheat d30"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill med">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"Medium"}
-                    </span>
-                  </td>
-                  <td>
-                    {"Aphids rising"}
-                  </td>
-                  <td>
-                    {"Aphids, many · 2 Dec"}
-                  </td>
-                  <td>
-                    <a href="#" className="btn sm press">
-                      {"Needs a call"}
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Nadia Hassan"}
-                      </b>
-                      <span className="meta">
-                        {"Faba d26"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill low">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"Low"}
-                    </span>
-                  </td>
-                  <td>
-                    {"All normal"}
-                  </td>
-                  <td>
-                    {"Photo · 28 Nov"}
-                  </td>
-                  <td />
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Youssef Ali"}
-                      </b>
-                      <span className="meta">
-                        {"Wheat d29"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill med">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"Medium"}
-                    </span>
-                  </td>
-                  <td>
-                    {"Late water, 2 squares"}
-                  </td>
-                  <td>
-                    {"No notes in 9 days"}
-                  </td>
-                  <td>
-                    <a href="#" className="btn sm press">
-                      {"Check in"}
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <span className="col" style={{"gap":"2px"} as any}>
-                      <b style={{"fontWeight":"600","color":"var(--ink)"} as any}>
-                        {"Hoda Mostafa"}
-                      </b>
-                      <span className="meta">
-                        {"Wheat d27"}
-                      </span>
-                    </span>
-                  </td>
-                  <td>
-                    <span className="lvlpill low">
-                      <i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />
-                      {"Low"}
-                    </span>
-                  </td>
-                  <td>
-                    {"All normal"}
-                  </td>
-                  <td>
-                    {"Urea 55 kg · 25 Nov"}
-                  </td>
-                  <td />
-                </tr>
+                {((__v?.rows) || []).map((r: any, ir: number) => (
+                  <tr key={ir}>
+                    <td><span className="col" style={{"gap":"2px"} as any}><b style={{"fontWeight":"600","color":"var(--ink)"} as any}>{r.farmer}</b><span className="meta">{r.line}</span></span></td>
+                    <td><span className={"lvlpill " + r.cls}><i style={{"width":"8px","height":"8px","borderRadius":"4px","background":"currentColor"} as any} />{r.lvl}</span></td>
+                    <td>{r.why}</td>
+                    <td>{r.note}{r.cases ? " · " + r.cases + (r.cases === 1 ? " photo" : " photos") : ""}</td>
+                    <td><Link href={r.href} className={"btn sm press" + (r.visit ? "" : " soft")}>{r.visit ? "Needs a visit" : "Open"}</Link></td>
+                  </tr>
+                ))}
+                {__v?.empty ? <tr><td colSpan={5} className="meta">{__s(__v?.emptyTxt)}</td></tr> : null}
               </tbody>
             </table>
             <p className="meta">
-              {"Engineers set spray products and doses. Farmers see them as tasks on their to-do."}
+              {"Spray products and doses are your call as the engineer. Bezra never suggests them."}
             </p>
             <footer className="foot" style={{"paddingTop":"24px"} as any}>
               <span>
