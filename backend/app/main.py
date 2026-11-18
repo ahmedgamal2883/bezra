@@ -417,6 +417,38 @@ def get_greenup(lat: float, lon: float, user: dict = Depends(current_user)):
     return {"greenup": gd.isoformat(), "sow_guess": (gd - _td(days=10)).isoformat(), "points": pts, "source": modis.SOURCE}
 
 
+_sample_cache: dict = {}
+
+
+@app.get("/sample")
+def get_sample():
+    """Redesign (Landing): the public numbers of the sample field (the demo farmer's first field), so the landing page
+    shows real values, not design text. Read-only, no personal data (no name, no exact location), cached 30 minutes."""
+    import time as _t
+    if _sample_cache.get("t", 0) > _t.time() - 1800:
+        return _sample_cache["data"]
+    from .services import impact as _impact
+    fid = os.environ.get("SAMPLE_FIELD_ID", "north-plot")
+    c = ctx(fid)
+    if not c:
+        raise HTTPException(404, "No sample field")
+    out: dict = {"crop": c.f.get("crop"), "area_feddan": c.f.get("area_feddan"), "governorate": c.f.get("governorate")}
+    try:
+        n = satellite.ndvi(c)
+        cells = n.get("indices", {}).get("ndvi", {}).get("cells", []) if n.get("available") else []
+        out["squares"] = {"date": n.get("date"), "source": n.get("source"), "median": n.get("indices", {}).get("ndvi", {}).get("median"),
+                          "cells": [{"r": x["r"], "c": x["c"], "ndvi": x["value"], "class": x["class"]} for x in cells]}
+    except Exception:
+        out["squares"] = None
+    try:
+        im = _impact.build(c)
+        out["impact"] = {k: im.get(k) for k in ("unit", "usual", "with_bezra", "without_bezra", "lost_so_far", "actions")}
+    except Exception:
+        out["impact"] = None
+    _sample_cache.update(t=_t.time(), data=out)
+    return out
+
+
 @app.get("/fields/{field_id}/summary")
 def get_summary(field_id: str, user: dict = Depends(current_user)):
     return summary.build(_ctx(field_id, user))
