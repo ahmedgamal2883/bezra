@@ -44,11 +44,20 @@ export default function ServerNote() {
       timer = setTimeout(poll, 3000);
     } else {
       let first: { v?: string; d?: string } | null = null;
+      let refreshShown = false;
       const poll = async () => {
         if (!alive) return;
         try {
           const h = await health();
           if (h?.ready) {
+            // the periodic data update is running: say why pages may be a little slower (once per visit, can be closed)
+            if (h.refreshing && !refreshShown) {
+              refreshShown = true;
+              setNote({ text: 'Bezra is reading new satellite and weather data for every field. This is a regular update: pages may take a few extra seconds for about 15 minutes.' });
+              setHidden(false);
+            } else if (!h.refreshing && refreshShown) {
+              setNote((n) => (n && n.text.startsWith('Bezra is reading') ? null : n));
+            }
             if (!first) first = { v: h.version, d: h.data_at };
             else if (h.version !== first.v || (h.data_at && h.data_at !== first.d)) {
               setNote({ text: 'Bezra has newer data.', action: { label: 'Refresh', run: () => window.location.reload() } });

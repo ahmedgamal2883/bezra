@@ -131,6 +131,11 @@ def run(only: list[str] | None = None) -> dict:
         _lock.release()
 
 
+def running() -> bool:
+    """True while a refresh is reading new data (the screens say so, pages can be a few seconds slower)."""
+    return _lock.locked()
+
+
 def start_background(only: list[str] | None = None) -> bool:
     """Start a run in a thread (the HTTP call returns right away). False if one is already running."""
     if _lock.locked():

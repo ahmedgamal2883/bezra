@@ -89,6 +89,7 @@ export const V2_EXACT: Record<string, string> = {
   'rust': 'الصدأ',
   'new image': 'صورة جديدة',
   'rust and new image': 'الصدأ والصورة الجديدة',
+  'Bezra is reading new satellite and weather data for every field. This is a regular update: pages may take a few extra seconds for about 15 minutes.': 'بذرة بتقرا داتا الأقمار الصناعية والطقس الجديدة لكل الحقول. ده تحديث دوري: الصفحات ممكن تاخد ثواني زيادة لحوالي ربع ساعة.',
   'Why this?': 'ليه دي؟',
   'Why': 'السبب',
   'Evidence': 'الدليل',

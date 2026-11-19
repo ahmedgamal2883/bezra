@@ -28,24 +28,26 @@ COOKIE = "bezra_session"
 
 
 def _daily_alerts_job():
-    """Brief §5: alerts are generated daily by a job. Runs at start-up, then every day at 06:00."""
+    """Brief §5: the daily data refresh. Once a day at 14:00 Cairo (12:00 UTC), started by GitHub Actions
+    (.github/workflows/refresh.yml); this thread is only the fallback if that call did not come, so the refresh still
+    runs once a day and never twice."""
     import threading
     import time as _t
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     def loop():
-        first = True
+        from .services import refresh
+        # at start-up (every deploy restarts the server): only if a whole day passed without a refresh
+        if refresh.minutes_since_last() > 26 * 60:
+            refresh.run()
         while True:
-            # Fallback only: the server sleeps on Render's free plan, so GitHub Actions calls /jobs/refresh.
-            from .services import refresh
-            # at start-up (every deploy restarts the server) only when no refresh ran in the last 6 hours:
-            # GitHub Actions refreshes 4 times a day, so a restart need not keep the server busy for minutes
-            if not (first and refresh.minutes_since_last() < 360):
-                refresh.run()
-            first = False
-            now = datetime.now()
-            nxt = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
+            now = datetime.now(timezone.utc)
+            nxt = now.replace(hour=12, minute=20, second=0, microsecond=0)  # 20 min after GitHub's 12:00 UTC call
+            if nxt <= now:
+                nxt += timedelta(days=1)
             _t.sleep(max(60, (nxt - now).total_seconds()))
+            if refresh.minutes_since_last() > 6 * 60:  # GitHub's call did not come today: run it here
+                refresh.run()
     threading.Thread(target=loop, daemon=True, name="daily-alerts").start()
 
 
@@ -378,7 +380,8 @@ def health(resp: Response):
         resp.status_code = 503
     from .services import refresh as _refresh
     return {"ok": ready, "ready": ready, "today": date.today().isoformat(), "storage": db.engine(),
-            "version": _STATE["version"], "data_at": _refresh.LAST_AT}
+            "version": _STATE["version"], "data_at": _refresh.LAST_AT,
+            "refreshing": _refresh.running()}  # the periodic data update is running now (memory only, no database)
 
 
 @app.get("/fields")

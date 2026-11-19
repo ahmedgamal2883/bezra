@@ -3,8 +3,7 @@
 name: Data refresh
 on:
   schedule:
-    - cron: "0 3 * * *"     # 05:00 Cairo: full daily refresh
-    - cron: "0 9,15,21 * * *"  # every 6 hours after that: catch new satellite passes
+    - cron: "0 12 * * *"    # once a day, 14:00 Cairo (UTC+2): the screens show a short "regular update" note meanwhile
   workflow_dispatch: {}      # "Run workflow" button for a manual refresh
 
 jobs:
