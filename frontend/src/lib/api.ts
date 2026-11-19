@@ -108,12 +108,23 @@ const pendingSet = (tok: object, on: boolean) => {
   if (had !== on) pendingSubs.forEach((f) => f(pending.size));
 };
 
+// The same request asked by several parts of a screen at once goes to the server once; all of them get that answer
+// (the free server has one processor: copies of a request only queue behind each other).
+const inflight = new Map<string, Promise<any>>();
+function shared<T>(key: string, run: () => Promise<T>): Promise<T> {
+  const hit = inflight.get(key);
+  if (hit) return hit as Promise<T>;
+  const p = run().finally(() => { inflight.delete(key); });
+  inflight.set(key, p);
+  return p;
+}
+
 /** Fetch quietly into the same memory the screens read, so the next page opens without waiting. */
 const warming = new Set<string>();
 export function prefetch(path: string): Promise<void> {
   if (memo.has(path) || warming.has(path)) return Promise.resolve();
   warming.add(path);
-  return fetch(API + path).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d != null && !memo.has(path)) memo.set(path, d); })
+  return shared(path, () => fetch(API + path).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })).then((d) => { if (d != null && !memo.has(path)) memo.set(path, d); })
     .catch(() => {}).finally(() => { warming.delete(path); });
 }
 
@@ -134,12 +145,12 @@ export function useApi<T = any>(path: string | null, body?: unknown, fresh = fal
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Retry a failed request up to 3 times (backend starting up, weak connection).
     const attempt = (n: number) =>
-      fetch(API + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : undefined)
+      shared(key, () => fetch(API + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : undefined)
         .then(async (r) => {
           if (r.status === 401) { toSignIn(); throw new Error('401'); }
           if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
           return r.json();
-        })
+        }))
         .then((data) => {
           memo.set(key, data);
           pendingSet(tok, false);
