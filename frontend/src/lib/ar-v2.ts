@@ -66,6 +66,8 @@ export const V2_EXACT: Record<string, string> = {
   'About 60 kg of seed per feddan (about 45 kg on raised beds).': 'حوالي 60 كيلو تقاوي للفدان (وحوالي 45 كيلو في الزراعة على مصاطب).',
   'After harvest: plough the straw in, do not burn it': 'بعد الحصاد: اقلب القش في الأرض، ماتحرقوش',
   "Straw left in the soil feeds it; burnt or taken away, the soil tires. Bezra's soil model counts this.": 'القش اللي بيفضل في الأرض بيغذيها؛ لو اتحرق أو اتشال الأرض بتتعب. موديل التربة في بذرة بيحسب ده.',
+  'This is taking longer than usual.': 'ده واخد وقت أكتر من العادي.',
+  'Try again': 'حاول تاني',
   'Why this?': 'ليه دي؟',
   'Why': 'السبب',
   'Evidence': 'الدليل',

@@ -49,9 +49,37 @@ export function FieldProvider({ children }: { children: ReactNode }) {
   // A farmer without a field yet goes to Onboarding from any field screen.
   const needsField = loaded && user?.role === 'farmer' && fields.length === 0 && /^\/(field\/|sim|ask|plan|report)/.test(path || '');
   useEffect(() => { if (needsField) window.location.replace('/fields/new'); }, [needsField]);
-  // Nothing renders until we know who is signed in: no other person's name or field ever flashes on screen.
-  const ready = loaded && !needsField;
-  return <C.Provider value={{ user, fields, loaded, id, setId, reload: load }}>{ready ? children : <div className="root" aria-busy="true" />}</C.Provider>;
+  // Public pages (home, sign-in, sign-up, ...) show at once: they hold no one's data, and who is signed in fills in later.
+  // Every other page waits until we know who is signed in: no other person's name or field ever flashes on screen.
+  const isPublic = PUBLIC.test(path || '');
+  const ready = isPublic || (loaded && !needsField);
+  return <C.Provider value={{ user, fields, loaded, id, setId, reload: load }}>{ready ? children : <Waiting onRetry={load} />}</C.Provider>;
+}
+
+const PUBLIC = /^\/($|(signin|signup|sign-in|sign-up|about|waking|states)(\/|$))/;
+
+/** While a private page waits for "who is signed in": a turning seed, then a retry button if it takes long. */
+function Waiting({ onRetry }: { onRetry: () => void }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setSlow(true), 12000); return () => clearTimeout(t); }, []);
+  return (
+    <div className="v2 root" aria-busy="true" style={{ minHeight: '70vh', display: 'grid', placeItems: 'center' }}>
+      <div style={{ display: 'grid', justifyItems: 'center', gap: '14px', textAlign: 'center', padding: '0 16px' }}>
+        <svg width="56" height="56" viewBox="0 0 48 48" aria-hidden="true" style={{ animation: 'bz-spin 1.1s linear infinite' }}>
+          <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeOpacity=".12" strokeWidth="4" />
+          <path d="M24 4a20 20 0 0 1 20 20" fill="none" stroke="#7FA65A" strokeWidth="4" strokeLinecap="round" />
+          <path d="M24 31c0-6 2-9 7-11-1 5-3 8-7 11Zm0 0c0-5-2-8-6-9 1 4 2 7 6 9Z" fill="#7FA65A" />
+        </svg>
+        {slow ? (
+          <>
+            <span className="meta" style={{ fontSize: '14px' }}>{'This is taking longer than usual.'}</span>
+            <button type="button" className="btn soft press" onClick={() => { setSlow(false); onRetry(); }}>{'Try again'}</button>
+          </>
+        ) : <span className="meta" style={{ fontSize: '14px' }}>bezra</span>}
+      </div>
+      <style>{'@keyframes bz-spin{to{transform:rotate(360deg)}}'}</style>
+    </div>
+  );
 }
 
 export function SetField({ id }: { id: string }) {
