@@ -91,7 +91,9 @@ export function useSeasonData() {
   }
   if (im?.with_bezra && im?.without_bezra?.ardeb != null) {
     const d = Math.round((im.with_bezra.ardeb - im.without_bezra.ardeb) * 10) / 10;
-    out.effect = { v: `${d >= 0 ? '+' : ''}${d} ardab per feddan`, s: 'expected, vs your usual way' };
+    const egp = im?.price?.gain_egp_per_feddan;
+    out.effect = { v: `${d >= 0 ? '+' : ''}${d} ardab per feddan`,
+      s: 'expected, vs your usual way' + (egp ? `. About ${egp.toLocaleString('en-US')} EGP per feddan at the 2026 government price.` : '') };
   }
   if (crop === 'wheat' && nx?.hot_days?.bars) { // spring heat and climate twins are wheat research
     const bars = nx.hot_days.bars, max = Math.max(...bars.map((b: any) => b.value), 1);

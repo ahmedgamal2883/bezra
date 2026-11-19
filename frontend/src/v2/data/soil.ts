@@ -95,7 +95,7 @@ export function useSoilData() {
       ...top.map((s: any, i: number) => card(s, winterCrop(s), i === 0 ? label : 'Good', 'g')),
       card(cur, firstWinter(cur) || 'wheat', 'What you do now', 'o'),
     ].filter(Boolean);
-    if (prio === 'money') out.moneyNote = 'Crop prices are not in Bezra yet. Check them with your market before you choose.';
+    if (prio === 'money') out.moneyNote = 'Only wheat has an official price (2,500 EGP per ardeb, 2026). Check the other crops' prices with your market before you choose.';
   }
   const now = new Date(), thisYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
   out.nextYear = yy(thisYear + 1);

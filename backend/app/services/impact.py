@@ -23,6 +23,8 @@ REGIONAL = {"wheat": (18.0, "Menoufia wheat average, about 2.7 t per feddan (CAP
             "maize": (24.0, "Delta maize average, about 3.4 t per feddan (CAPMAS)"),
             "berseem": (30.0, "Multi-cut berseem, about 30 t green fodder per feddan over the season's cuts (typical Delta, to verify with ARC)")}
 UNIT = {"berseem": "t green fodder per feddan"}
+# The only official crop price Bezra uses: what the government pays for local wheat (no other crop has one).
+PRICE = {"wheat": (2500, "Government wheat procurement price 2026, grade 23.5 (Ministry of Supply)")}
 TRIAL = {"rust": (14, 26, "Catching rust early protects about 14 to 26% in bad years (field trials)")}
 
 
@@ -137,4 +139,13 @@ def build(c: Ctx) -> dict:
         "lost_so_far": losses(so_far.factors) if c.today > c.sow else [], "actions": actions, "missed": missed,
         "provenance": "estimated",
         "source": "Season model (FAO-56 water balance + crop warmth) on NASA POWER and Open-Meteo weather",
+        "price": _price(crop, ardeb(w_idx), ardeb(without_idx)),
     }
+
+
+def _price(crop: str, w: float | None, wo: float | None) -> dict | None:
+    """Pure: the extra harvest in money, only where an official price exists (wheat)."""
+    if crop not in PRICE or w is None or wo is None:
+        return None
+    egp, src = PRICE[crop]
+    return {"egp_per_ardeb": egp, "source": src, "gain_egp_per_feddan": round((w - wo) * egp, -1)}
