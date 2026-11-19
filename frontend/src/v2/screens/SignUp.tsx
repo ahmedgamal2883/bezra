@@ -116,6 +116,7 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                       {__s(__v?.upLabel)}
                     </button>
                     {__v?.hasFormErr ? <span className="ferr" role="alert">{__s(__v?.formErr)}</span> : null}
+                    {__v?.wait ? <span className="meta" role="status">{__s(__v?.wait)}</span> : null}
                     <div className="or">
                       {"or"}
                     </div>
@@ -208,6 +209,7 @@ export default function SignUpScreen(props: Record<string, unknown> = {}) {
                       {__s(__v?.inLabel)}
                     </button>
                     {__v?.hasFormErr ? <span className="ferr" role="alert">{__s(__v?.formErr)}</span> : null}
+                    {__v?.wait ? <span className="meta" role="status">{__s(__v?.wait)}</span> : null}
                     <div className="or">
                       {"or"}
                     </div>

@@ -71,6 +71,7 @@ export const V2_EXACT: Record<string, string> = {
   'Plan updated': 'الخطة اتحدّثت',
   'Loading…': 'بيحمّل…',
   'Loading more…': 'لسه بيحمّل…',
+  'The server is starting. Please wait, we keep trying…': 'السيرفر بيجهز. استنى شوية، إحنا بنحاول تاني…',
   'Why this?': 'ليه دي؟',
   'Why': 'السبب',
   'Evidence': 'الدليل',
