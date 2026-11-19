@@ -462,7 +462,8 @@ def get_field(field_id: str, user: dict = Depends(current_user)):
     f = _ctx(field_id, user).f
     return f | {"accuracy": fields.accuracy(f), "crop_label": fields.CROP_LABEL.get(f["crop"], f["crop"]),
                 "variety_label": (fields.VARIETIES.get(f.get("variety") or "") or {}).get("label"),
-                "demo": f.get("farmer") == "Hassan Farouk" and f["id"] in ("north-plot", "south-plot")}
+                "demo": f.get("farmer") == "Hassan Farouk" and f["id"] in ("north-plot", "south-plot"),
+                "region_water": _region_water(f)}
 
 
 class NextWinter(BaseModel):
