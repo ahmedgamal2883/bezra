@@ -425,6 +425,8 @@ export function v2Patterns(D: string): [string, string][] {
     [`^Ordered by your priority: (.+)$`, 'مرتّبة حسب أولويتك: $1'],
     [`^Strong wind is forecast that day \\(about (\\d+) km/h\\)\\. Water when the wind drops, or the wheat may lie flat on the wet soil\\.$`, 'متوقع رياح شديدة اليوم ده (حوالي $1 كم/ساعة). اروي لما الريح تهدى، وإلا القمح ممكن ينام على الأرض المبلولة.'],
     [`^Soil left bare about (\\d+) days a year$`, 'الأرض بتفضل مكشوفة حوالي $1 يوم في السنة'],
+    [`^Soil left bare about (\\d+) days a year, (\\d+) fewer than now: less soil blown away$`, 'الأرض بتفضل مكشوفة حوالي $1 يوم في السنة، أقل من دلوقتي بـ $2 يوم: تربة أقل بتطير مع الريح'],
+    [`^Soil left bare about (\\d+) days a year, (\\d+) more than now: more soil blown away$`, 'الأرض بتفضل مكشوفة حوالي $1 يوم في السنة، أكتر من دلوقتي بـ $2 يوم: تربة أكتر بتطير مع الريح'],
     [`^Weaker greenness in the (.+)$`, 'خضرة أضعف في $1'],
     [`^(\\d+) times last season$`, '$1 مرات الموسم اللي فات'],
     // Season

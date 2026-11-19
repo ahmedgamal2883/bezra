@@ -182,6 +182,7 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
                       </Link>
                     </div>
                     <PriorityPicker id={__v?.fieldId} onSaved={() => __v?.reload?.()} />
+                    {__v?.regionWater ? <p className="meta" style={{"fontSize":"13px","margin":"0 0 10px"} as any} title={__v?.regionWaterSrc}>{__v.regionWater}</p> : null}
                     {__v?.moneyNote ? <span className="meta">{__v.moneyNote}</span> : null}
                     <div className="opt3">
                       {__v.options.map((o: any, i: number) => (

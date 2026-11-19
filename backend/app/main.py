@@ -321,7 +321,13 @@ def _field_card(f: dict) -> dict:
     return {"id": f["id"], "num": f.get("num"), "name": f["name"], "crop": fields.CROP_LABEL.get(f["crop"], f["crop"]),
             "area_feddan": f["area_feddan"], "farmer": f["farmer"], "village": f.get("village"),
             "governorate": f.get("governorate"), "lat": f["lat"], "lon": f["lon"],
-            "accuracy": fields.accuracy(f)["pct"], "priority": f.get("priority") or "soil"}
+            "accuracy": fields.accuracy(f)["pct"], "priority": f.get("priority") or "soil",
+            "region_water": _region_water(f)}
+
+
+def _region_water(f: dict) -> dict | None:
+    from .services import grace
+    return grace.region_water(f["lat"], f["lon"])
 
 
 @app.get("/status/apis")

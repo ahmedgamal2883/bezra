@@ -72,7 +72,13 @@ export function useSoilData() {
       s.water_vs_current_pct ? `Water: ${s.water_vs_current_pct > 0 ? '+' : ''}${s.water_vs_current_pct}% a year` : 'Water about the same',
       s.risks?.[0] || '',
       s.fodder ? 'Gives fodder for animals' : '',
-      s.bare_days_year != null ? `Soil left bare about ${s.bare_days_year} days a year` : '',
+      s.bare_days_year != null ? (() => {
+        // bare soil is what wind (and the rare heavy rain) carries away: the same model's days, compared with now
+        const d = cur && cur !== s && cur.bare_days_year != null ? cur.bare_days_year - s.bare_days_year : 0;
+        return d >= 5 ? `Soil left bare about ${s.bare_days_year} days a year, ${d} fewer than now: less soil blown away`
+          : d <= -5 ? `Soil left bare about ${s.bare_days_year} days a year, ${-d} more than now: more soil blown away`
+          : `Soil left bare about ${s.bare_days_year} days a year`;
+      })() : '',
     ].filter(Boolean),
     // the full reasoning the challenge asks for: why, evidence, gaps, risks (backend rotation.py, English; Arabic via ar-v2)
     why: s.why?.[0] || '', evidence: s.evidence || [], gaps: s.gaps?.[0] || '', risks: s.risks?.[0] || '', warn: s.warning ? `Year ${s.warning.year}: about ${s.warning.pct}% less ${s.warning.crops?.[0] || ''}` : '' });
@@ -96,6 +102,15 @@ export function useSoilData() {
       card(cur, firstWinter(cur) || 'wheat', 'What you do now', 'o'),
     ].filter(Boolean);
     if (prio === 'money') out.moneyNote = "Only wheat has an official price (2,500 EGP per ardeb, 2026). Check the other crops' prices with your market before you choose.";
+  }
+  // NASA GRACE: water stored under the region (about 300 km), context for the "Less water" choice
+  const rw = fd?.region_water;
+  if (rw && rw.falling) {
+    const y = Math.abs(rw.trend_cm_per_year).toFixed(1), b = Math.abs(rw.last_vs_2004_2009_cm).toFixed(1);
+    out.regionWater = lang === 'ar'
+      ? `من NASA GRACE: المية المخزّنة تحت منطقة الدلتا بتقل حوالي ${y} سم في السنة من ${rw.from}، وفي ${rw.last_year} كانت أقل من متوسط 2004–2009 بحوالي ${b} سم. الدورات اللي بتاخد مية أقل بتساعد.`
+      : `From NASA GRACE: the water stored under the Delta region has gone down about ${y} cm a year since ${rw.from}; in ${rw.last_year} it was about ${b} cm below the 2004–2009 average. Rotations that use less water help.`;
+    out.regionWaterSrc = rw.source;
   }
   const now = new Date(), thisYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
   out.nextYear = yy(thisYear + 1);
