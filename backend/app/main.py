@@ -242,7 +242,14 @@ GUEST_DOMAIN = "@guest.bezra.app"
 GUEST_DAYS = 7
 
 
+_SWEPT = {"at": 0.0}
+
+
 def _sweep_guests() -> int:
+    # at most once an hour (it ran on every "See a sample field" click and slowed the first screen)
+    if time.time() - _SWEPT["at"] < 3600:
+        return 0
+    _SWEPT["at"] = time.time()
     cutoff = time.time() - GUEST_DAYS * 86400
     with db.conn() as k:
         old = [r["id"] for r in k.execute("SELECT id FROM users WHERE email LIKE ? AND created < ?", ("%" + GUEST_DOMAIN, cutoff)).fetchall()]
