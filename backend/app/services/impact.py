@@ -80,7 +80,27 @@ def build(c: Ctx) -> dict:
             gain = max(0.0, (w_idx - alone.yield_index) * 100)
             actions.append({"what": "Light watering before the heat" if tid.startswith("heat-") else "Watering after a missed turn",
                             "date": d.isoformat(), "gain_pct": round(gain, 1), "how": "Season model, with and without this watering"})
-    without_idx = run(turns - bezra_days).yield_index if bezra_days else w_idx
+    # a regular turn ticked "done" that was the first watering after a turn the farmer said was missed is the
+    # catch-up Bezra asked for ("Water today, to catch up the missed turn"): credited the same way, so following
+    # the advice never makes the Bezra effect smaller
+    caught_skips = []
+    missed_days = sorted(date.fromisoformat(t.split("-", 1)[1]) for t, a in st.items()
+                         if t.startswith("turn-") and a.get("answer") == "not_done")
+    watered = sorted(date.fromisoformat(x["date"]) for x in f.get("waterings", []))
+    for tid, a in st.items():
+        if not tid.startswith("turn-") or a.get("answer") != "done" or not a.get("log_date"):
+            continue
+        d = date.fromisoformat(a["log_date"])
+        m = [x for x in missed_days if x < d and not any(x < w < d for w in watered)]
+        if m and d not in bezra_days:
+            bezra_days.add(d)
+            caught_skips.append(m[-1])
+            stays_missed = run(turns - {d}, skipped=[m[-1]])
+            gain = max(0.0, (w_idx - stays_missed.yield_index) * 100)
+            actions.append({"what": "Watering after a missed turn", "date": d.isoformat(), "gain_pct": round(gain, 1),
+                            "how": "Season model, with this catch-up vs the missed turn left as it was"})
+    without_idx = (run(turns - bezra_days, skipped=caught_skips).yield_index if caught_skips else
+                   run(turns - bezra_days).yield_index if bezra_days else w_idx)
 
     # problems fixed after an alert: credited from field trials, scaled by how much of the field it covered
     trial_low = trial_high = 0.0

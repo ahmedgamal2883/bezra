@@ -187,7 +187,7 @@ def build(c: Ctx) -> dict:
                "susceptible": (c.variety.get("rust") == "susceptible"), "low_ground": low_ground, "rain_mm": rain10,
                "day_n": (today - c.sow).days, "answer": a.get("answer"), "looks": looks}
         causes = rank_causes(sig)
-        sure, sure_why = sureness(shown_spot.get("pct_less_green") or 0, nd.get("field_clear"), shown_spot.get("images", 1))
+        sure, sure_why = sureness(shown_spot.get("pct_mean", shown_spot.get("pct_less_green")) or 0, nd.get("field_clear"), shown_spot.get("images", 1))
         where = shown_spot["where"]
         if a.get("answer") and not a.get("closed") and causes:
             action = ACTION[causes[0]["key"]].format(where=f"the {where}")

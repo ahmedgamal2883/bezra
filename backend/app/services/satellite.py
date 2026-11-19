@@ -266,7 +266,10 @@ def ndvi(c: Ctx) -> dict:
         mean_weak = statistics.mean(x["value"] for x in weak_both)
         spot = {"squares": [[x["r"], x["c"]] for x in weak_both], "where": where_name(weak_both, g.rows, g.cols, road),
                 "feddan": round(len(weak_both) * g.square_feddan, 2),
-                "pct_less_green": round((med - mean_weak) / med * 100), "images": 2}
+                # shown: the weakest square (the same number the map gives that square); the corner's mean stays for
+                # how sure an alert is (fieldalerts.sureness), so confidence does not change
+                "pct_less_green": round((med - min(x["value"] for x in weak_both)) / med * 100),
+                "pct_mean": round((med - mean_weak) / med * 100), "images": 2}
     days_ago = (c.today - date.fromisoformat(last["date"])).days
     source = last.get("source", source)
     return {

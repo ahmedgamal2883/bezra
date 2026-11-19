@@ -66,6 +66,7 @@ def _warm_up() -> None:
                 from .services import tasks as _tasks
                 summary.build(c)
                 _tasks.build(c)
+                _warm_try(c)
         except Exception as e:  # noqa: BLE001  warm-up is a nicety: never block start-up on it
             print("warm-up:", str(e)[:160])
         finally:
@@ -1111,9 +1112,47 @@ def post_sim(req: SimReq, user: dict = Depends(current_user)):
     if req.variety not in fields.VARIETIES or req.watering not in ("every", "skip1_jan", "skip2") or req.year not in ("normal", "hot_spring"):
         raise HTTPException(422, "Unknown choice")
     try:
-        return sim.build(c, req.model_dump())
+        return _sim_cached(c, req.model_dump())
     except ValueError as e:
         raise HTTPException(422, str(e))
+
+
+def _sim_cached(c, body: dict) -> dict:
+    """Same field state + same choices + same day = same answer: kept in memory (guest copies of the sample share it)."""
+    import hashlib
+    import json as _json
+    state = {k: v for k, v in c.f.items() if k not in _SIM_IGNORE}
+    key = hashlib.sha1(_json.dumps([state, {k: v for k, v in body.items() if k != "field_id"}, c.today.isoformat()],
+                                   sort_keys=True, default=str).encode()).hexdigest()
+    hit = _SIM_CACHE.get(key)
+    if hit is not None:
+        return hit
+    out = sim.build(c, body)
+    if len(_SIM_CACHE) > 400:
+        _SIM_CACHE.clear()
+    _SIM_CACHE[key] = out
+    return out
+
+
+def _warm_try(c) -> None:
+    """The simulations "Try a season" asks for (frontend v2/data/try.ts), for the sample field, before the first visitor."""
+    sow = c.f["sow_date"]
+    y = int(sow[:4])
+    variety = "giza171" if "giza" in (c.f.get("variety") or "") else "sakha95"
+    base = {"field_id": c.f["id"], "sow": sow, "variety": variety, "watering": "every", "year": "normal"}
+    for b in (base, {**base, "watering": "skip1_jan"}, {**base, "watering": "skip2"}, {**base, "sow": f"{y}-10-25"},
+              {**base, "sow": f"{y}-11-05"}, {**base, "sow": f"{y}-11-20"}, {**base, "warming": 1}, {**base, "warming": 2},
+              {**base, "bezra": True}, {**base, "watering": "skip1_jan", "bezra": False}):
+        try:
+            _sim_cached(c, SimReq(**b).model_dump())
+        except Exception:  # noqa: BLE001  one choice failing never stops the warm-up
+            pass
+
+
+_SIM_CACHE: dict[str, dict] = {}
+# record keys that never change a simulation (who owns it, its name, choices for next winter, the priority)
+_SIM_IGNORE = {"id", "owner_id", "farmer", "engineer_id", "copy_of", "num", "priority", "next_winter",
+               "alert_state", "checkins"}
 
 
 # ---- Ask Bezra -----------------------------------------------------------------------------------

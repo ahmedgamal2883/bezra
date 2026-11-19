@@ -99,8 +99,10 @@ def add_log(c: Ctx, kind: str, when: str, amount: float | None, unit: str | None
             m3 = amount if unit == "m3" and amount else None
         if m3 is None:
             nt, base, _ = season_runs(c)
-            day = base.at(d)
-            m3 = round((day.dr if day else 40) * MM_TO_M3_PER_FEDDAN * f["area_feddan"], -1) or 100
+            # the soil's need the day BEFORE this watering (after it, the need is ~0), with the plan's own rule:
+            # need over surface-irrigation efficiency, never less than one flood (~25 mm net)
+            day = base.at(d - timedelta(days=1))
+            m3 = round(max(day.dr if day else 40, 25) / SURFACE_EFF * MM_TO_M3_PER_FEDDAN * f["area_feddan"], -1) or 100
             entry["m3_estimated"] = True
         entry["m3"] = m3
         f["waterings"] = sorted([w for w in f.get("waterings", []) if w["date"] != entry["date"]] +

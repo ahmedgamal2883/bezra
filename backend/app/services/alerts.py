@@ -85,6 +85,11 @@ def _build(c: Ctx) -> dict:
     lo, hi = (round(min(r["tmin"] for r in rec)), round(max(r["tmin"] for r in rec))) if rec else (0, 0)  # night lows
     if not wheat:
         title, why, steps = f"No rust risk for {crop}", s["risks"]["rust"]["line"], ["Nothing to do."]
+    elif s["risks"]["rust"]["line"].startswith("You saw orange spots"):  # the farmer's own report (journal)
+        title = "You saw orange spots: check for rust"
+        why = s["risks"]["rust"]["line"] + f" Weather: {n} of the last 7 nights were foggy and humid."
+        steps = ["Walk the field, check 20 plants in other squares.", "Look for yellow-orange stripes of powder on leaves.",
+                 "Take a photo for your engineer. Spray only what they say."]
     elif lv == "Low":
         title = "Little rust weather this week"
         why = f"{n} of the last 7 nights were foggy and humid. Nights {lo} to {hi} °C. " + (
@@ -140,12 +145,18 @@ def _build(c: Ctx) -> dict:
         title, lvl = f"Keep weeds out until {b.day} {b.strftime('%B')}", "Plan"
     else:
         title, lvl = "Weed-free period is over", "Low"
+    # weeding the farmer already did inside the window (journal or ticked task): say so instead of asking again
+    did = sorted(x["date"] for x in c.f.get("log", []) if x.get("kind") in ("weeding",) and a.isoformat() <= x.get("date", "") <= b.isoformat())
+    if did and lvl == "Plan":
+        title, lvl = f"Weeded on {_dm(date.fromisoformat(did[-1]))}. Keep an eye out until {b.day} {b.strftime('%B')}", "Done"
     out.append({"kind": "weed", "chip": "g", "level": "low", "level_label": lvl, "title": title,
                 "when": f"{_dm(a)} to {_dm(b)}",
                 "why": f"Weeks 3 to 6 after sowing are the critical weed-free period for {crop} sown {_dm(sow)}.",
-                "steps": ["Hoe or hand weed before fertilizing.", "Herbicide only with your engineer."] if lvl == "Plan" else ["Nothing to do."],
+                "steps": (["Hoe or hand weed before fertilizing.", "Herbicide only with your engineer."] if lvl == "Plan" else
+                          ["Weed again only if new weeds come up."] if lvl == "Done" else ["Nothing to do."]),
                 "provenance": "Estimated", "source": "Crop calendar (weeks after sowing)", "confidence": "High",
-                "voice": f"نضّف الأرض من الحشايش لحد يوم {b.day}." if lvl == "Plan" else "فترة الحشايش خلصت."})
+                "voice": (f"نضّف الأرض من الحشايش لحد يوم {b.day}." if lvl == "Plan" else
+                          f"إنت نضّفت الحشايش. خلّي عينك على الأرض لحد يوم {b.day}." if lvl == "Done" else "فترة الحشايش خلصت.")})
 
     # 5. heat -------------------------------------------------------------------------------------
     lv = s["risks"]["heat"]["level"]
@@ -155,7 +166,7 @@ def _build(c: Ctx) -> dict:
     out.append({"kind": "heat", "chip": "s", "level": LV_KEY[lv], "level_label": lv,
                 "title": "No heat risk this week" if not hot else f"{len(hot)} hot day{'s' if len(hot) > 1 else ''} coming",
                 "when": "Next 7 days",
-                "why": f"Highs of {hi_lo} to {hi_hi} °C. " + (
+                "why": (f"Highs of {hi_lo} °C. " if hi_lo == hi_hi else f"Highs of {hi_lo} to {hi_hi} °C. ") + (
                     "Your wheat is at a heat sensitive stage." if wheat and sensitive else
                     ("Wheat is not yet at a heat sensitive stage." if wheat else "")).strip(),
                 "steps": ["Water lightly 2 days before the hot days.", "Do not skip a turn this week."] if hot and sensitive else ["Nothing to do."],

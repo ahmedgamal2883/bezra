@@ -20,6 +20,9 @@ def _next_turn(c: Ctx) -> date:
     nt = date.fromisoformat(c.f.get("next_turn") or c.f["sow_date"])
     while nt < c.today:
         nt += timedelta(days=c.f["turn_days"])
+    # today's turn already given (logged or ticked): the next one is the turn after, not today
+    if nt == c.today and any(w.get("date") == c.today.isoformat() for w in c.f.get("waterings", [])):
+        nt += timedelta(days=c.f["turn_days"])
     return nt
 
 
@@ -188,6 +191,17 @@ def build(c: Ctx) -> dict:
                      ("1 foggy night this week. Rust is unlikely." if rust_n == 1 else "No foggy nights this week. Rust is unlikely."))
     else:
         rust_lv, rust_line = 0, f"Yellow rust does not attack {fields.CROP_LABEL[f['crop']].lower()}."
+    # what the farmer saw beats the weather: orange spots / rust written in the journal in the last 7 days
+    if wheat:
+        import re as _re
+        seen = [x for x in f.get("log", []) if x.get("kind") == "observe"
+                and x.get("date", "") >= (c.today - timedelta(days=7)).isoformat()
+                and _re.search(r"orange|rust|صدأ|صدا|برتقان", x.get("note", "") or "", _re.I)]
+        if seen:
+            last = max(seen, key=lambda x: x["date"])
+            rust_lv = max(rust_lv, 1)
+            rust_line = (f"You saw orange spots on {_dm(date.fromisoformat(last['date']))}. That can be rust: "
+                         "check the other squares and ask your engineer.")
 
     # ---- the one action (brief §5 priority: watering > rust walk > heat prep) -----------------------
     stage_word = FIELD_WORD.get(stage, stage.lower())
