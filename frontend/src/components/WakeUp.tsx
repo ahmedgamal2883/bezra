@@ -6,7 +6,7 @@
 // An external pinger (UptimeRobot / cron-job.org on /health every 10 min) keeps it awake most of the time;
 // this is the fallback for when it was asleep anyway.
 import { useEffect, useState } from 'react';
-import { API } from '@/lib/api';
+import { API, readyCopyOn } from '@/lib/api';
 import { useT } from '@/lib/i18n';
 
 type Phase = 'idle' | 'waking' | 'ready' | 'slow';
@@ -63,7 +63,8 @@ export default function WakeUp() {
   useEffect(() => {
     if (st.phase !== 'waking' || typeof document === 'undefined' || !document.querySelector('.v2')) return;
     const path = window.location.pathname;
-    if (path.startsWith('/waking') || path.startsWith('/sign')) return;
+    // never from public pages (they work without the server) or while the ready copy is showing
+    if (path === '/' || path.startsWith('/waking') || path.startsWith('/sign') || path.startsWith('/about') || readyCopyOn()) return;
     // at most once every 3 minutes: coming back from /waking must never loop back to it (the banner shows instead)
     try {
       const last = Number(sessionStorage.getItem('bezra.waking') || 0);

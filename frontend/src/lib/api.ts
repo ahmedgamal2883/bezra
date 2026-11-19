@@ -23,12 +23,54 @@ const SAVES = /\/(log|checkin|approve|cases|soiltest|priority|next-winter)(\?|$)
 export function forgetField(fieldId?: string) {
   for (const k of [...memo.keys()]) if (!fieldId || k.includes(`/fields/${fieldId}`) || k.startsWith('/engineer') || k === '/fields') memo.delete(k);
 }
+// ---- ready copy of the sample field (public/demo, made by backend/scripts/make_static_demo.py) ----
+// While the server restarts or wakes, the sample field is shown from that copy (same real data, made before the
+// deploy); the live server takes over as soon as it answers (components/ReadyCopy). Only the sample field: a
+// farmer's own account always reads the live server.
+const OFFLINE_KEY = 'bezra.readyCopy';
+export function readyCopyOn(): boolean {
+  try { return typeof window !== 'undefined' && (sessionStorage.getItem(OFFLINE_KEY) === '1' || window.location.pathname.startsWith('/field/demo')); } catch { return false; }
+}
+export function setReadyCopy(on: boolean) {
+  try { if (on) sessionStorage.setItem(OFFLINE_KEY, '1'); else sessionStorage.removeItem(OFFLINE_KEY); } catch { /* private mode */ }
+}
+function staticFile(apiPath: string): string {
+  const [p, q = ''] = apiPath.replace(/^\/api/, '').split('?');
+  const keep = q.split('&').filter((x) => x && !/^(v|p)=/.test(x)).join('&');  // ?v= / ?p= only force a reload
+  const name = (p + (keep ? '?' + decodeURIComponent(keep) : '')).replace(/^\//, '').replace(/\//g, '__').replace('?', '@');
+  return '/demo/' + name + (/\.(jpg|png)$/.test(p) ? '' : '.json');
+}
+let rawFetch: typeof fetch = (...a) => fetch(...a);
+/** fetch that always goes to the live server (used to see whether it answers again). */
+export const liveFetch: typeof fetch = (...a) => rawFetch(...a);
+
 if (typeof window !== 'undefined' && !(window as any).__bezraSaves) {
   (window as any).__bezraSaves = true;
   const orig = window.fetch.bind(window);
+  rawFetch = orig;
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url0 = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const path0 = url0.replace(/^https?:\/\/[^/]+/, '');
+    const method0 = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    if (readyCopyOn() && path0.startsWith('/api/') && !path0.startsWith('/api/health')) {
+      if (method0 === 'GET') {
+        const r = await orig(staticFile(path0));
+        return r.ok ? r : new Response('{"detail":"not in the ready copy"}', { status: 503, headers: { 'content-type': 'application/json' } });
+      }
+      if (path0.startsWith('/api/fields/')) window.dispatchEvent(new CustomEvent('bezra:ready-copy-write'));  // the farmer's own change, not e.g. the tour state
+      return new Response('{"detail":"The server is starting: try again in a minute."}', { status: 503, headers: { 'content-type': 'application/json' } });
+    }
+    // the homepage's numbers (public, the same for everyone): if the server does not answer, the ready copy's
+    if (method0 === 'GET' && /^\/api\/(sample|hindcast)(\?|$)/.test(path0)) {
+      try {
+        const live = await Promise.race([orig(input, init), new Promise<Response>((_, no) => setTimeout(() => no(new Error('slow')), 6000))]);
+        if (live.ok) return live;
+      } catch { /* server restarting or waking */ }
+      const r = await orig(staticFile(path0));
+      if (r.ok) return r;
+    }
     const res = await orig(input, init);
-    const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    const method = method0;
     if (method !== 'GET' && res.ok) {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
       const path = url.replace(/^https?:\/\/[^/]+/, '');

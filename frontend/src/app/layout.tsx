@@ -4,6 +4,7 @@ import { ModeProvider } from '@/lib/dc';
 import { FieldProvider } from '@/lib/field';
 import PlanToast from '@/components/PlanToast';
 import PendingSeed from '@/components/PendingSeed';
+import ServerNote from '@/components/ServerNote';
 import { LangProvider } from '@/lib/i18n';
 import DemoBadge from '@/components/DemoBadge';
 import KeyboardWatch from '@/components/KeyboardWatch';
@@ -46,7 +47,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <LangProvider initial={lang}>
           <ModeProvider>
-            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /><WakeUp /><PlanToast /><PendingSeed /><RouteMotion /><Offline /></FieldProvider>
+            <FieldProvider><TourProvider>{children}</TourProvider><DemoBadge /><KeyboardWatch /><WakeUp /><PlanToast /><PendingSeed /><ServerNote /><RouteMotion /><Offline /></FieldProvider>
           </ModeProvider>
         </LangProvider>
       </body>

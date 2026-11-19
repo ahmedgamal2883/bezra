@@ -98,6 +98,7 @@ def refresh_field(fid: str) -> dict:
 
 
 PAUSE_S = 2.0
+LAST_AT: str | None = None  # when this server last finished a refresh (shown by /health, no database trip)
 
 
 def run(only: list[str] | None = None) -> dict:
@@ -123,6 +124,8 @@ def run(only: list[str] | None = None) -> dict:
         state = {"at": datetime.now().isoformat(timespec="minutes"), "seconds": round(time.time() - t0),
                  "fields": len(res), "results": res}
         db.kv_set("refresh_state", state)
+        global LAST_AT
+        LAST_AT = state["at"]
         return state
     finally:
         _lock.release()

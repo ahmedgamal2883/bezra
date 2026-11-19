@@ -7,6 +7,8 @@ const PROTECTED = ['/field', '/fields', '/notifications', '/today', '/sim', '/as
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   if (!PROTECTED.some((p) => pathname === p || pathname.startsWith(p + '/'))) return NextResponse.next();
+  // the ready copy of the sample field (public/demo) holds no one's data: open without signing in
+  if (pathname === '/field/demo' || pathname.startsWith('/field/demo/')) return NextResponse.next();
   if (req.cookies.get('bezra_session')) return NextResponse.next();
   const url = req.nextUrl.clone();
   url.pathname = '/sign-in';

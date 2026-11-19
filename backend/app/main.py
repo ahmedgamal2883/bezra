@@ -49,10 +49,35 @@ def _daily_alerts_job():
     threading.Thread(target=loop, daemon=True, name="daily-alerts").start()
 
 
+# ---- readiness: Render keeps the old server until /health says 200, so a new one says "ready" only when warm ----
+_STATE = {"ready": False, "started": time.time(), "version": os.environ.get("RENDER_GIT_COMMIT", "")[:7] or str(int(time.time()))}
+WARM_MAX_S = 150  # never hold a deploy longer than this: after it, ready anyway
+
+
+def _warm_up() -> None:
+    """Load the sample field's day into memory (weather, plan, tasks) so the first visitors do not wait for it."""
+    import threading
+
+    def go():
+        try:
+            sid = os.environ.get("SAMPLE_FIELD_ID", "north-plot")
+            c = ctx(sid)
+            if c:
+                from .services import tasks as _tasks
+                summary.build(c)
+                _tasks.build(c)
+        except Exception as e:  # noqa: BLE001  warm-up is a nicety: never block start-up on it
+            print("warm-up:", str(e)[:160])
+        finally:
+            _STATE["ready"] = True
+    threading.Thread(target=go, daemon=True, name="warm-up").start()
+
+
 @asynccontextmanager
 async def lifespan(_app):
     db.init()
     _daily_alerts_job()
+    _warm_up()
     yield
 
 
@@ -337,9 +362,15 @@ def status_apis(fresh: bool = False):
 
 
 @app.api_route("/health", methods=["GET", "HEAD"])  # HEAD: uptime pingers (UptimeRobot) keep Render awake
-def health():
+def health(resp: Response):
     # "storage" = postgres (Supabase: farmers' data survives restarts) or sqlite (local, or lost on a Render restart)
-    return {"ok": True, "today": date.today().isoformat(), "storage": db.engine()}
+    # 503 while a fresh server warms up: Render keeps the previous one serving until this says 200.
+    ready = _STATE["ready"] or time.time() - _STATE["started"] > WARM_MAX_S
+    if not ready:
+        resp.status_code = 503
+    from .services import refresh as _refresh
+    return {"ok": ready, "ready": ready, "today": date.today().isoformat(), "storage": db.engine(),
+            "version": _STATE["version"], "data_at": _refresh.LAST_AT}
 
 
 @app.get("/fields")

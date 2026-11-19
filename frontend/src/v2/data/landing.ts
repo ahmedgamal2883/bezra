@@ -1,7 +1,7 @@
 'use client';
 // Landing (V20): the numbers are the sample field's real ones (GET /sample and GET /hindcast, both public and cached),
 // never the design's story. "See a sample field" opens it as a guest; the language switch keeps the choice.
-import { useApi, API } from '@/lib/api';
+import { useApi, API, setReadyCopy } from '@/lib/api';
 import { useLang } from '@/lib/i18n';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -62,11 +62,17 @@ export function useLanding() {
     e?.preventDefault?.();
     try {
       // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days
-      const r = await fetch(API + '/auth/guest', { method: 'POST' });
+      // the live server first; if it does not answer within 4 s (restarting or waking), the ready copy at once
+      const r = await Promise.race([fetch(API + '/auth/guest', { method: 'POST' }),
+        new Promise<Response>((_, no) => setTimeout(() => no(new Error('slow')), 4000))]);
       if (!r.ok) throw new Error('guest');
       const j = await r.json();
+      setReadyCopy(false);
       window.location.href = `/field/${j.field_id}/${to}`;
-    } catch { window.location.href = '/signup'; }
+    } catch {
+      setReadyCopy(true);
+      window.location.href = `/field/demo/${to}`;
+    }
   };
   out.guest = guestTo();
   out.guestTo = guestTo;
