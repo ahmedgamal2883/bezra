@@ -95,6 +95,12 @@ export function setDemoAccount(on: boolean) {
 /** How many parts of the screen are still waiting for data (components/PendingSeed shows a seed while > 0). */
 const pending = new Set<object>();
 const pendingSubs = new Set<(n: number) => void>();
+/** Count any other wait (e.g. the season runs of Try a season) in the corner loader. */
+export async function trackPending<T>(p: Promise<T>): Promise<T> {
+  const tok = {};
+  pendingSet(tok, true);
+  try { return await p; } finally { pendingSet(tok, false); }
+}
 export function onPending(f: (n: number) => void) { pendingSubs.add(f); f(pending.size); return () => { pendingSubs.delete(f); }; }
 const pendingSet = (tok: object, on: boolean) => {
   const had = pending.has(tok);

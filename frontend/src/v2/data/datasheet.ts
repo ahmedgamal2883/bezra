@@ -89,7 +89,7 @@ export function useDataSheet() {
   out.expected = [
     ['Harvest', sm.year?.ripe ? `around ${dayMonth(sm.year.ripe)}` : '—', 'Season model on your weather'],
     ['Harvest, following Bezra', fmtYield(im?.with_bezra), im?.source || ''],
-    ['Harvest, your usual way', fmtYield(im?.without_bezra), im?.usual?.source || ''],
+    ['Harvest, your usual way', fmtYield(im?.without_bezra), im?.source || ''],  // the model's this-season estimate, not your past harvests
     ...((im?.lost_so_far || []).map((x: any) => [`Lost so far: ${x.label.toLowerCase()}`, `${x.pct}%`, 'Season model, days up to today'])),
     ['Next water turn', sm.action?.next_turn ? dayMonth(sm.action.next_turn) : '—', 'Your turn, FAO-56 water balance'],
     ['Next fertilizer', nextFert ? `${dayMonth(nextFert.date)} · ${nextFert.title}${/^About /.test(nextFert.amount || '') ? ' · ' + String(nextFert.amount).split('. ')[0] : ''}` : '—', nextFert?.source || ''],

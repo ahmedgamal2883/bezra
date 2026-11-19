@@ -6,6 +6,7 @@ import { Fragment } from 'react';
 import Link from 'next/link';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
+import SeedLoader from '@/components/SeedLoader';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Try.logic';
@@ -111,6 +112,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                       </p>
                     </div>
                   </div>
+                  {__v?.ready || __v?.err ? null : <SeedLoader inline label="Running your season on your field…" />}
                   <div className="tabs3 rise" role="tablist" style={{"--d":"1"} as any}>
                     {((__v?.tabs) || []).map((t: any, i0: number) => (
                       <Fragment key={i0}>
@@ -574,6 +576,7 @@ export default function TryScreen(props: Record<string, unknown> = {}) {
                       </p>
                     </div>
                   </div>
+                  {__v?.ready || __v?.err ? null : <SeedLoader inline label="Running your season on your field…" />}
                   <div className="tabs3 rise" role="tablist" style={{"--d":"1"} as any}>
                     {((__v?.tabs) || []).map((t: any, i10: number) => (
                       <Fragment key={i10}>

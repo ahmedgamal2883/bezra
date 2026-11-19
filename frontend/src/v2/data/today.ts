@@ -76,7 +76,7 @@ export function useTodayData(id: string) {
       const g = isWater && Array.isArray(protects) && s?.action?.next_turn === t.date ? `Protects about ${protects[0]}–${protects[1]}% of your harvest` : '';
       return { id: t.id, category: t.category, done: doneToday(t), t: t.title, s: [t.amount && !/engineer/i.test(t.amount) ? t.amount[0].toUpperCase() + t.amount.slice(1) + '.' : '', t.why].filter(Boolean).join(' '),
         ds: [t.source, t.date !== today ? 'Planned for ' + shortDate(t.date) : ''].filter(Boolean).join(' · '), g, tag, tc,
-        ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t),
+        ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t, s),
         pl: priorityLine(t.id === 'straw' ? 'straw' : t.category, prio), wind: t.wind || '' };
     });
     // today's list: urgent first (as the server sends them), then what serves the farmer's priority; Coming up stays by date

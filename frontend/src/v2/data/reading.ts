@@ -29,7 +29,7 @@ export function useReading() {
     const get = (p: string) => fetch(`${API}/fields/${id}/${p}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const core = [
       get('journal').then((j) => mark('weather', j?.series ? `${(j.series.length).toLocaleString()} days this season` : 'ready')),
-      get('ndvi').then((n) => mark('images', n?.available ? `last clear image ${n.days_ago === 0 ? 'today' : n.days_ago + ' days ago'}` : 'no clear image yet')),
+      get('ndvi').then((n) => mark('images', n?.available ? `last clear image ${n.days_ago === 0 ? 'today' : n.days_ago + (n.days_ago === 1 ? ' day ago' : ' days ago')}` : 'no clear image yet')),
       get('layers').then((l) => { mark('land', l ? 'ready' : 'later'); mark('smap', l?.smap?.value != null ? `${Math.round(l.smap.value * 100)}% (9 km)` : 'later'); }),
       get('summary'),
     ];

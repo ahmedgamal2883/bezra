@@ -211,7 +211,7 @@ export default function ProfileScreen(props: Record<string, unknown> = {}) {
                   <div className="row sp" style={{"padding":"18px 0","borderTop":"1px solid var(--line)","gap":"24px"} as any}>
                     <span className="col" style={{"gap":"2px"} as any}>
                       <b style={{"fontSize":"16px","fontWeight":"600"} as any}>{"Sign out"}</b>
-                      <span className="meta">{"Your fields and journal stay saved."}</span>
+                      <span className="meta">{__v?.guest ? "As a guest you have no password: signing out ends this visit. Create an account to keep your field." : "Your fields and journal stay saved."}</span>
                     </span>
                     <button type="button" onClick={__v?.signOut} className="btn soft sm press">{"Sign out"}</button>
                   </div>

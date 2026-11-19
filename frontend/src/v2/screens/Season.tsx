@@ -101,6 +101,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                       <span className="meta" style={{"fontSize":"15px"} as any}>
                         {__s(__v?.head)}
                       </span>
+                      {__v?.nextWinter ? <span className="meta" style={{"fontSize":"14px","color":"var(--green)","fontWeight":"600"} as any}>{__v.nextWinter}</span> : null}
                       <h1 className="h1x">
                         {__s(__v?.title)}
                       </h1>
@@ -357,7 +358,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                                 {"Status"}
                               </th>
                               <th>
-                                {"Per feddan"}
+                                {"For your field"}
                               </th>
                               <th>
                                 {"Soil water"}

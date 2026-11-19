@@ -16,9 +16,11 @@ export default function PendingSeed() {
   }, [n]);
   if (!show) return null;
   return (
-    <div style={{ position: 'fixed', insetInlineStart: '16px', bottom: '16px', zIndex: 55, background: '#fff', borderRadius: '999px',
+    <div className="bz-pending" style={{ position: 'fixed', insetInlineStart: '16px', zIndex: 55, background: '#fff', borderRadius: '999px',
       padding: '8px 14px', boxShadow: '0 4px 16px rgba(0,0,0,.12)' }}>
       <SeedLoader size={20} label="Loading more…" />
+      {/* above the phone's bottom tab bar */}
+      <style>{'.bz-pending{bottom:16px}@media (max-width:820px){.bz-pending{bottom:84px}}'}</style>
     </div>
   );
 }

@@ -20,6 +20,7 @@ export default function SeasonChecklist() {
   const { id } = useField();
   const [ver, setVer] = useState(0);
   const tk = useApi<any>(id ? `/fields/${id}/tasks${ver ? `?v=${ver}` : ''}` : null).data;
+  const sm = useApi<any>(id ? `/fields/${id}/summary${ver ? `?v=${ver}` : ''}` : null).data;  // same data Today already has
   const [open, setOpen] = useState<string | null>(null);
   const [pick, setPick] = useState('');
   const [busy, setBusy] = useState(false);
@@ -79,7 +80,7 @@ export default function SeasonChecklist() {
                   <span className="col" style={{ gap: '3px', flex: 1, minWidth: 0 }}>
                     <b style={{ fontWeight: 600, fontSize: '16px', textDecoration: isDone ? 'line-through' : 'none', color: isDone ? 'var(--muted)' : 'inherit' }}>{t.title}</b>
                     <span className="meta">{[t.window ? `${dayMonth(t.window[0])} – ${dayMonth(t.window[1])}` : shortDate(t.date), amount].filter(Boolean).join(' · ')}</span>
-                    {!isDone && impactOf(t) ? <ImpactLine {...(impactOf(t) as any)} /> : null}
+                    {!isDone && impactOf(t, sm) ? <ImpactLine {...(impactOf(t, sm) as any)} /> : null}
                     {isDone && when ? <span className="meta" style={{ color: 'var(--green)' }}>{`Done ${shortDate(when)}`}</span> : null}
                   </span>
                   <span className="pq" style={{ color: col, flex: '0 0 150px', justifyContent: 'flex-end', textAlign: 'end' }}>{cl}</span>

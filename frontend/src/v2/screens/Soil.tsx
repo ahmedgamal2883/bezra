@@ -189,6 +189,7 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
                         <article key={i} className={"ocard" + (i === 0 ? " best" : "")}>
                           <span className={"rank " + o.cls}>{o.rank}</span>
                           <b style={{"fontSize":"24px","fontWeight":"600","letterSpacing":"-.4px"} as any}>{o.name}</b>
+                          {o.rot ? <span className="meta" style={{"fontSize":"13px"} as any}>{o.rot}</span> : null}
                           <span className="txt" style={{"fontSize":"16px"} as any}>{o.line}</span>
                           <ul>
                             {o.bullets.map((t: string, j: number) => (

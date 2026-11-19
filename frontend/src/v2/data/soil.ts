@@ -66,7 +66,9 @@ export function useSoilData() {
   const cloverAll = all.filter((s: any) => !s.current && s.sequence.some((q: any) => q[0] === 'berseem' || q[0] === 'fahl')).sort((x: any, y: any) => y.vs_current_pct - x.vs_current_pct);
   const clover = cloverAll.find((s: any) => s !== faba) || cloverAll[0];
   const card = (s: any, crop: string, rank: string, cls: string) => s && ({
-    crop, name: CROP_NAME[crop] || crop, mid: (CROP_NAME[crop] || crop).replace(/^(Faba|Short|Sugar|Wheat)/, (w: string) => w.toLowerCase()), rank, cls, strategy: s.id,
+    crop, name: CROP_NAME[crop] || crop,
+    // the whole rotation behind the card (the title is only next winter's crop): e.g. "Short clover → Cotton · Wheat → Maize"
+    rot: (lang === 'ar' ? 'الدورة: ' : 'Rotation: ') + ((lang === 'ar' ? s.sequence_names_ar : s.sequence_names) || []).map((q: any) => q.filter(Boolean).join(' → ')).join(' · '), mid: (CROP_NAME[crop] || crop).replace(/^(Faba|Short|Sugar|Wheat)/, (w: string) => w.toLowerCase()), rank, cls, strategy: s.id,
     line: s.why?.[0] || '', bullets: [
       s.vs_current_pct ? `Soil: ${s.vs_current_pct > 0 ? '+' : ''}${s.vs_current_pct}% for the harvest in 10 years` : 'Soil stays where it is',
       s.water_vs_current_pct ? `Water: ${s.water_vs_current_pct > 0 ? '+' : ''}${s.water_vs_current_pct}% a year` : 'Water about the same',
@@ -108,8 +110,8 @@ export function useSoilData() {
   if (rw && rw.falling) {
     const y = Math.abs(rw.trend_cm_per_year).toFixed(1), b = Math.abs(rw.last_vs_2004_2009_cm).toFixed(1);
     out.regionWater = lang === 'ar'
-      ? `من NASA GRACE: المية المخزّنة تحت منطقة الدلتا بتقل حوالي ${y} سم في السنة من ${rw.from}، وفي ${rw.last_year} كانت أقل من متوسط 2004–2009 بحوالي ${b} سم. الدورات اللي بتاخد مية أقل بتساعد.`
-      : `From NASA GRACE: the water stored under the Delta region has gone down about ${y} cm a year since ${rw.from}; in ${rw.last_year} it was about ${b} cm below the 2004–2009 average. Rotations that use less water help.`;
+      ? `من NASA GRACE: المية المخزّنة تحت منطقة الدلتا بتقل حوالي ${y} سم في السنة من ${rw.from}، وفي ${rw.last_year} كانت أقل من متوسط 2004–2009 بحوالي ${b} سم. اختار «مية أقل» فوق عشان تشوف الدورات اللي بتاخد أقل مية.`
+      : `From NASA GRACE: the water stored under the Delta region has gone down about ${y} cm a year since ${rw.from}; in ${rw.last_year} it was about ${b} cm below the 2004–2009 average. Pick “Less water” above to see the rotations that use the least.`;
     out.regionWaterSrc = rw.source;
   }
   const now = new Date(), thisYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;

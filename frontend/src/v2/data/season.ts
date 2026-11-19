@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
 import { dayMonth, shortDate, dayLabel } from './today';
+import { nextWinterName } from './soil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -22,12 +23,16 @@ export function useSeasonData() {
   const jn = useApi<any>(id ? `/fields/${id}/journal${q}` : null).data;
   const im = useApi<any>(id ? `/fields/${id}/impact` : null).data;
   const nx = useApi<any>(id ? `/fields/${id}/next` : null).data;
+  const fd = useApi<any>(id ? `/fields/${id}` : null).data;  // next winter's plan (chosen in Soil)
   const reload = useCallback(() => setVer((v) => v + 1), []);
   const out: any = { ready: !!(sm && tk) };
   if (!sm) return out;
   const today = sm.today, f = sm.field, sow = f.sow_date, ripe = sm.year?.ripe || jn?.season?.harvest_from;
   const crop = String(f.crop).toLowerCase(), yr = d0(sow).getFullYear();
   out.head = `${f.name} · ${crop} ${yr}/${String(yr + 1).slice(2)} · sown ${dayMonth(sow)}`;
+  const nw = fd?.next_winter;
+  const nwCrop = typeof nw === 'string' ? nw : nw?.crop;
+  if (nwCrop) out.nextWinter = `Next winter in your plan: ${nextWinterName(nwCrop)}. You can change it in Soil.`;
   out.title = `${sm.day_n < 0 ? `Sowing in ${-sm.day_n} ${sm.day_n === -1 ? 'day' : 'days'}, about ${sm.season_days} days to harvest` : `Day ${sm.day_n} of about ${sm.season_days}`}.${ripe ? ' Harvest around ' + dayMonth(ripe) + '.' : ''}`;
   out.sownLine = `Sown on ${dayMonth(sow)}`;
   out.headD = `${f.crop} ${yr}/${String(yr + 1).slice(2)} · ${f.variety} · sown ${dayMonth(sow)} · ${f.area.value} feddan`;

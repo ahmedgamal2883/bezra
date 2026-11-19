@@ -30,13 +30,16 @@ export function FieldProvider({ children }: { children: ReactNode }) {
   const path = usePathname();
   const load = useCallback(async () => {
     try {
-      const me = await fetch(API + '/auth/me');
+      // both at once (the field list answers 401 when nobody is signed in; then it is simply not used)
+      // only on private pages (signed in for sure): on public ones a signed-out visitor would get a 401 for nothing
+      const both = typeof window !== 'undefined' && !PUBLIC.test(window.location.pathname);
+      const [me, flr] = await Promise.all([fetch(API + '/auth/me'), both ? fetch(API + '/fields') : Promise.resolve(null)]);
       if (!me.ok) { setUser(null); setFields([]); return; }
       const u: User = await me.json();
       setDemoAccount(!!u.demo);
       document.documentElement.dataset.demo = u.demo ? '1' : '0';
       setUser(u);
-      const fl: FieldCard[] = await (await fetch(API + '/fields')).json();
+      const fl: FieldCard[] = flr && flr.ok ? await flr.json() : await (await fetch(API + '/fields')).json();
       fl.forEach((f) => { FIELD_NAMES[f.id] = f.name; });
       setFields(fl);
     } catch {

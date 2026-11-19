@@ -4,7 +4,7 @@
 // next winter comes from the Soil Ledger (/rotation); replay is the archived season (/seasons). Results are cached
 // for the visit (no repeat requests when switching tabs).
 import { useEffect, useState } from 'react';
-import { API, useApi } from '@/lib/api';
+import { API, useApi, trackPending } from '@/lib/api';
 import { useField } from '@/lib/field';
 import { dayMonth } from './today';
 import { soilFive } from './soil';
@@ -44,7 +44,7 @@ export function useTryData() {
       h_0: base, h_1: { ...base, warming: 1 }, h_2: { ...base, warming: 2 },
       bz: { ...base, bezra: true }, us: { ...base, watering: 'skip1_jan', bezra: false },
     };
-    Promise.all(Object.entries(jobs).map(async ([k, b]) => [k, await sim(b)] as const))
+    trackPending(Promise.all(Object.entries(jobs).map(async ([k, b]) => [k, await sim(b)] as const)))
       .then((r) => { if (alive) setRuns(Object.fromEntries(r)); })
       .catch(() => { if (alive) setErr(true); });
     return () => { alive = false; };
