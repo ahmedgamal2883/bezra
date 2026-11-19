@@ -10,14 +10,16 @@ const PATHS = ['', '/summary', '/tasks', '/checkin', '/irrigation', '/journal', 
 export default function Prefetch({ id }: { id: string }) {
   useEffect(() => {
     if (!id) return;
-    let i = 0, alive = true;
-    const next = () => {
-      if (!alive || i >= PATHS.length) return;
-      const p = PATHS[i++];
-      prefetch(`/fields/${id}${p}`);
-      setTimeout(next, 250); // gentle: never a burst on the free server
+    let alive = true;
+    // one request at a time, each after the previous one finished: never a queue on the server
+    const run = async () => {
+      for (const p of PATHS) {
+        if (!alive) return;
+        await prefetch(`/fields/${id}${p}`);
+        await new Promise((r) => setTimeout(r, 150));
+      }
     };
-    const t = setTimeout(next, 2500); // after the first screen has its own data
+    const t = setTimeout(run, 3000); // after the first screen has its own data
     return () => { alive = false; clearTimeout(t); };
   }, [id]);
   return null;

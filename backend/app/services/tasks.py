@@ -388,6 +388,7 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
         if t["category"] == "irrigation" and t["status"] in ("done", "verified") and t.get("done_date") and t["done_date"] != t["date"]:
             t["covered_by"] = t["done_date"]
     _season_extras(c, out, add)
+    _journal_followups(c, log, add)
     from .priority import rank
     prio = c.f.get("priority")
     out.sort(key=lambda t: (t["date"], 0 if t["priority"] == "high" else 1, rank(t["category"], prio)))
@@ -461,3 +462,18 @@ def _season_extras(c: Ctx, out: list[dict], add) -> None:
         add("straw", "milestone", "After harvest: plough the straw in, do not burn it",
             "Straw left in the soil feeds it; burnt or taken away, the soil tires. Bezra's soil model counts this.",
             end + timedelta(days=3), end + timedelta(days=14), source="Soil Ledger (Bezra soil model)")
+
+
+def _journal_followups(c: Ctx, log: list[dict], add) -> None:
+    """A problem the farmer wrote in the journal ("Saw a problem") comes back as a task 3 days later: look again,
+    and if it spread, ask the engineer. Only the last 3 weeks; one task per entry; nothing else changes."""
+    for e in log:
+        if e.get("kind") != "observe":
+            continue
+        d = date.fromisoformat(e["date"])
+        if d < c.today - timedelta(days=21):
+            continue
+        what = (e.get("note") or ", ".join(e.get("tags") or []) or "the problem").strip()
+        add(f"followup-{e['id']}", "inspection", f"Look again: {what[:60]}",
+            f"You wrote this in your journal on {d.day} {d.strftime('%b')}. If it has spread, send a photo to your engineer.",
+            d + timedelta(days=3), d + timedelta(days=7), source="Your journal", provenance="farmer")

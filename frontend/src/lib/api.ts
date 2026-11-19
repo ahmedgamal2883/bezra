@@ -19,7 +19,7 @@ const memo = new Map<string, any>();
 
 // After the farmer saves anything (a watering, a check-in, a task, an edit), forget what this visit cached for that
 // field, so every screen asks the server again and shows the new state (not the numbers from before the save).
-const SAVES = /\/(log|checkin|approve|cases|soiltest)(\?|$)|\/(tasks|irrigation|field-alerts)\/[^/?]+(\?|$)|\/fields\/[^/?]+(\?|$)|\/fields(\?|$)/;
+const SAVES = /\/(log|checkin|approve|cases|soiltest|priority|next-winter)(\?|$)|\/(tasks|irrigation|field-alerts)\/[^/?]+(\?|$)|\/fields\/[^/?]+(\?|$)|\/fields(\?|$)/;
 export function forgetField(fieldId?: string) {
   for (const k of [...memo.keys()]) if (!fieldId || k.includes(`/fields/${fieldId}`) || k.startsWith('/engineer') || k === '/fields') memo.delete(k);
 }
@@ -35,6 +35,8 @@ if (typeof window !== 'undefined' && !(window as any).__bezraSaves) {
       if (path.startsWith('/api/') && SAVES.test(path.split('?')[0] + '')) {
         const m = path.match(/\/fields\/([^/?]+)/);
         forgetField(m ? m[1] : undefined);
+        // a change the plan is built on: tell the screen (a small "Plan updated" note, components/PlanToast)
+        if (m) window.dispatchEvent(new CustomEvent('bezra:plan-updated'));
       }
     }
     return res;
@@ -50,11 +52,11 @@ export function setDemoAccount(on: boolean) {
 
 /** Fetch quietly into the same memory the screens read, so the next page opens without waiting. */
 const warming = new Set<string>();
-export function prefetch(path: string) {
-  if (memo.has(path) || warming.has(path)) return;
+export function prefetch(path: string): Promise<void> {
+  if (memo.has(path) || warming.has(path)) return Promise.resolve();
   warming.add(path);
-  fetch(API + path).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d != null && !memo.has(path)) memo.set(path, d); })
-    .catch(() => {}).finally(() => warming.delete(path));
+  return fetch(API + path).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d != null && !memo.has(path)) memo.set(path, d); })
+    .catch(() => {}).finally(() => { warming.delete(path); });
 }
 
 export function useApi<T = any>(path: string | null, body?: unknown, fresh = false): Loadable<T> {

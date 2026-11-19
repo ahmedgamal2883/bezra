@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import copy
 import json
 import os
 import secrets
@@ -62,7 +63,7 @@ def _pg_connect():
         if _pg_pool is None:
             try:
                 from psycopg_pool import ConnectionPool
-                _pg_pool = ConnectionPool(_url(), min_size=1, max_size=5, kwargs={"row_factory": dict_row,
+                _pg_pool = ConnectionPool(_url(), min_size=1, max_size=8, kwargs={"row_factory": dict_row,
                                                                                     "prepare_threshold": None,
                                                                                     "connect_timeout": 10},
                                           open=True, timeout=30)
@@ -138,12 +139,39 @@ def check_pw(pw: str, stored: str) -> bool:
         return False
 
 
+# ---- read cache ------------------------------------------------------------------------------------
+# Every request asks "who is signed in" and "this field's record" several times; on the hosted database each trip
+# costs ~0.5 s. Keep both for a few seconds in memory. ANY write to users, fields or sessions clears all of it, so
+# an edit is seen at once; the short TTL bounds the rest (one process: WEB_CONCURRENCY=1).
+_TTL = 20.0
+_rc: dict[str, tuple[float, object]] = {}
+
+
+def _rc_get(k: str):
+    hit = _rc.get(k)
+    if hit and time.time() - hit[0] < _TTL:
+        return copy.deepcopy(hit[1])
+    return _MISS
+
+
+def _rc_put(k: str, v) -> None:
+    _rc[k] = (time.time(), copy.deepcopy(v))
+
+
+def _rc_clear() -> None:
+    _rc.clear()
+
+
+_MISS = object()
+
+
 # ---- users / sessions ----------------------------------------------------------------------------
 def user_public(r) -> dict:
     return {"id": r["id"], "email": r["email"], "name": r["name"], "role": r["role"], "engineer_id": r["engineer_id"]}
 
 
 def create_user(email: str, name: str, pw: str, role: str = "farmer", engineer_id: int | None = None) -> dict:
+    _rc_clear()
     with conn() as c:
         r = c.execute("INSERT INTO users (email,name,role,pw,engineer_id,created) VALUES (?,?,?,?,?,?) RETURNING *",
                       (email.lower().strip(), name.strip(), role, hash_pw(pw), engineer_id, time.time())).fetchone()
@@ -156,6 +184,7 @@ def find_user(email: str):
 
 
 def claim_user(uid: int, email: str, name: str, pw: str, role: str) -> None:
+    _rc_clear()
     """Redesign: a guest becomes a real account (same id, so the guest's field and journal stay theirs)."""
     with conn() as c:
         c.execute("UPDATE users SET email=?, name=?, pw=?, role=?, created=? WHERE id=?",
@@ -163,6 +192,7 @@ def claim_user(uid: int, email: str, name: str, pw: str, role: str) -> None:
 
 
 def update_user(uid: int, **cols) -> None:
+    _rc_clear()
     ok = {k: v for k, v in cols.items() if k in ("name", "role", "pw", "engineer_id")}
     if ok:
         with conn() as c:
@@ -170,6 +200,7 @@ def update_user(uid: int, **cols) -> None:
 
 
 def delete_user(uid: int) -> None:
+    _rc_clear()
     with conn() as c:
         ids = [r["id"] for r in c.execute("SELECT id FROM fields WHERE owner_id=?", (uid,)).fetchall()]
         for fid in ids:
@@ -190,13 +221,20 @@ def new_session(user_id: int) -> str:
 def session_user(tok: str | None) -> dict | None:
     if not tok:
         return None
+    hit = _rc_get("s:" + tok)
+    if hit is not _MISS:
+        return hit
     with conn() as c:
         r = c.execute("SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=? AND s.expires>?",
                       (tok, time.time())).fetchone()
-        return user_public(r) if r else None
+        u = user_public(r) if r else None
+    if u:  # a signed-out token is never kept: signing in again is seen at once
+        _rc_put("s:" + tok, u)
+    return u
 
 
 def end_session(tok: str | None) -> None:
+    _rc_clear()
     if tok:
         with conn() as c:
             c.execute("DELETE FROM sessions WHERE token=?", (tok,))
@@ -204,6 +242,7 @@ def end_session(tok: str | None) -> None:
 
 # ---- fields --------------------------------------------------------------------------------------
 def save_field(f: dict, owner_id: int) -> None:
+    _rc_clear()
     with conn() as c:
         c.execute("INSERT INTO fields (id,owner_id,data,created) VALUES (?,?,?,?) "
                   "ON CONFLICT(id) DO UPDATE SET data=excluded.data, owner_id=excluded.owner_id",
@@ -211,18 +250,24 @@ def save_field(f: dict, owner_id: int) -> None:
 
 
 def delete_field(fid: str) -> None:
+    _rc_clear()
     with conn() as c:
         c.execute("DELETE FROM series WHERE field_id=?", (fid,))
         c.execute("DELETE FROM fields WHERE id=?", (fid,))
 
 
 def get_field(fid: str) -> dict | None:
+    hit = _rc_get("f:" + fid)
+    if hit is not _MISS:
+        return hit
     with conn() as c:
         r = c.execute("SELECT f.data, f.owner_id, u.name, u.engineer_id FROM fields f JOIN users u ON u.id=f.owner_id "
                       "WHERE f.id=?", (fid,)).fetchone()
     if not r:
         return None
-    return json.loads(r["data"]) | {"owner_id": r["owner_id"], "farmer": r["name"], "engineer_id": r["engineer_id"]}
+    f = json.loads(r["data"]) | {"owner_id": r["owner_id"], "farmer": r["name"], "engineer_id": r["engineer_id"]}
+    _rc_put("f:" + fid, f)
+    return copy.deepcopy(f)
 
 
 def all_field_ids() -> list[str]:

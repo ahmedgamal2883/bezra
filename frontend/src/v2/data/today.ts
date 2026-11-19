@@ -1,5 +1,5 @@
 'use client';
-import { usePriority, priorityLine, PRIORITY_LABEL } from '@/v2/PriorityPicker';
+import { usePriority, priorityLine, priorityRank, PRIORITY_LABEL } from '@/v2/PriorityPicker';
 // Today (V18): every number on the page comes from these API answers, in the load order of HANDOFF §9:
 // map frame + squares first (fast, cached on the server), then the summary, tasks, check-in, journal.
 // The slow /today endpoint (season runs) is not used here: /summary carries the same decisions.
@@ -79,6 +79,11 @@ export function useTodayData(id: string) {
         ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t),
         pl: priorityLine(t.id === 'straw' ? 'straw' : t.category, prio), wind: t.wind || '' };
     });
+    // today's list: urgent first (as the server sends them), then what serves the farmer's priority; Coming up stays by date
+    const urg = (x: any) => (tk.data.tasks.find((t: any) => t.id === x.id)?.priority === 'high' ? 0 : 1);
+    todo = (todo || []).map((x: any, i: number) => ({ x, i })).sort((a: any, b: any) =>
+      urg(a.x) - urg(b.x) || priorityRank(a.x.id === 'straw' ? 'straw' : a.x.category, prio) - priorityRank(b.x.id === 'straw' ? 'straw' : b.x.category, prio) || a.i - b.i)
+      .map((o: any) => o.x);
     coming = tk.data.tasks.filter((t: any) => open(t) && t.date > today).slice(0, 3)
       .map((t: any) => ({ d: shortDate(t.date), t: t.title, s: t.amount && /engineer/i.test(t.amount) ? 'Check the amount with your engineer.' : (t.why || '') }));
   }

@@ -77,3 +77,14 @@ const ALSO: Record<string, string> = {
 export function priorityLine(kind: string, prio: string): string {
   return FOR[kind]?.[prio] || ALSO[kind] || '';
 }
+
+// Same table as backend services/priority.py: which priorities a task serves, best first.
+const SERVES: Record<string, string[]> = {
+  irrigation: ['water'], water: ['water'], fertilizer: ['soil', 'fodder'], inspection: ['money'], spray: ['money'],
+  rust: ['money'], heat: ['money', 'water'], milestone: ['fodder', 'money'], straw: ['soil', 'fodder'],
+};
+export function priorityRank(kind: string, prio: string): number {
+  const s = SERVES[kind] || [];
+  const i = s.indexOf(prio);
+  return i < 0 ? 2 : i;
+}
