@@ -62,9 +62,9 @@ export function useLanding() {
     e?.preventDefault?.();
     try {
       // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days
-      // the live server first; if it does not answer within 4 s (restarting or waking), the ready copy at once
+      // the live server always first; only if it does not answer within 8 s (restarting or waking): the ready copy
       const r = await Promise.race([fetch(API + '/auth/guest', { method: 'POST' }),
-        new Promise<Response>((_, no) => setTimeout(() => no(new Error('slow')), 4000))]);
+        new Promise<Response>((_, no) => setTimeout(() => no(new Error('slow')), 8000))]);
       if (!r.ok) throw new Error('guest');
       const j = await r.json();
       setReadyCopy(false);
