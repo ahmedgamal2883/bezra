@@ -34,10 +34,15 @@ def _daily_alerts_job():
     from datetime import datetime, timedelta
 
     def loop():
+        first = True
         while True:
             # Fallback only: the server sleeps on Render's free plan, so GitHub Actions calls /jobs/refresh.
             from .services import refresh
-            refresh.run()
+            # at start-up (every deploy restarts the server) only when no refresh ran in the last 6 hours:
+            # GitHub Actions refreshes 4 times a day, so a restart need not keep the server busy for minutes
+            if not (first and refresh.minutes_since_last() < 360):
+                refresh.run()
+            first = False
             now = datetime.now()
             nxt = (now + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0)
             _t.sleep(max(60, (nxt - now).total_seconds()))

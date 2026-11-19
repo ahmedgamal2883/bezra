@@ -437,9 +437,15 @@ def _last_run() -> dict | None:
         return None
 
 
+PAUSE_S = 1.0
+
+
 def daily(ctx_of) -> None:
+    import time as _time
     seen = {}
-    for fid in fields.all_ids():
+    # guest copies (g-...) are rebuilt when opened; a short pause between fields leaves the server to visitors
+    for fid in [f for f in fields.all_ids() if not f.startswith("g-")]:
+        _time.sleep(PAUSE_S)
         try:
             c = ctx_of(fid)
             if c:

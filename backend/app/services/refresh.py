@@ -97,6 +97,9 @@ def refresh_field(fid: str) -> dict:
     return out
 
 
+PAUSE_S = 2.0
+
+
 def run(only: list[str] | None = None) -> dict:
     """Refresh every field (or `only`). Returns at once if a run is already going."""
     if not _lock.acquire(blocking=False):
@@ -108,6 +111,7 @@ def run(only: list[str] | None = None) -> dict:
         res = {}
         # guest copies (g-...) share the sample field's data: refreshing each one only slows the server
         for fid in only or [f for f in fields.all_ids() if not f.startswith("g-")]:
+            time.sleep(PAUSE_S)  # between fields: visitors' requests go first
             try:
                 res[fid] = refresh_field(fid)
             except Exception as e:  # one field must not stop the job
