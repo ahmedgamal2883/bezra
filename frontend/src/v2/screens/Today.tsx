@@ -14,6 +14,7 @@ import ImpactLine from '@/v2/ImpactLine';
 import { useTodayData, dayMonth } from '@/v2/data/today';
 import { useField, useUser } from '@/lib/field';
 import PriorityPicker from '@/v2/PriorityPicker';
+import SeedLoader from '@/components/SeedLoader';
 
 export default function TodayScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
@@ -333,6 +334,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </Fragment>
                           ))}
                         </div>
+                        {__v?.todoLoading ? <SeedLoader inline /> : null}
                         {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
                         {__v?.sortedBy && __v?.hasTodo ? <p className="meta" style={{"fontSize":"13px","marginTop":"6px"} as any}>{__v.sortedBy}</p> : null}
                         <PriorityPicker id={id} onSaved={() => d.reload?.()} />
@@ -445,6 +447,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                           {"THIS WEEK"}
                         </h2>
                         <div className="wk">
+                          {__v?.weekLoading ? <SeedLoader inline /> : null}
                           {((__v?.wk) || []).map((w: any, iw: number) => (
                             <Link key={iw} href={__r("V18-Crop") + ""} className="press" style={{"display":"flex","flexDirection":"column","gap":"6px","padding":"16px","borderRadius":"16px","background":"#fff"} as any}>
                               <span className="meta" style={{"fontSize":"14px"} as any}>{__s(w?.label)}</span>
@@ -797,6 +800,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                             </Fragment>
                           ))}
                         </div>
+                        {__v?.todoLoading ? <SeedLoader inline /> : null}
                         {__v?.noTodo ? <p className="meta" style={{"padding":"14px 0 4px","fontSize":"15px"} as any}>{"Nothing to do today."}{__v?.hasComing ? " Your next tasks are under Coming up." : ""}</p> : null}
                         {__v?.sortedBy && __v?.hasTodo ? <p className="meta" style={{"fontSize":"13px","marginTop":"6px"} as any}>{__v.sortedBy}</p> : null}
                         <PriorityPicker id={id} onSaved={() => d.reload?.()} />
@@ -908,6 +912,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <h2 id="dr-h" className="sec" style={{"padding":"16px 0 4px"} as any}>
                           {"THIS WEEK"}
                         </h2>
+                        {__v?.weekLoading ? <SeedLoader inline /> : null}
                         {((__v?.wkD) || []).map((w: any, iw: number) => (
                           <div className="risk" key={iw}>
                             <b style={{"fontWeight":"600"} as any}>{__s(w?.label)}</b>

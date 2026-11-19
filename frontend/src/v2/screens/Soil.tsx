@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
 import PriorityPicker from '@/v2/PriorityPicker';
+import SeedLoader from '@/components/SeedLoader';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
@@ -170,6 +171,7 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
                     </div>
                   </section>
                   ) : null}
+                  {!__v?.ready ? <SeedLoader inline /> : null}
                   {__v?.options?.length ? (
                   <section className="col hair rise" style={{"--d":"2","gap":"18px","paddingTop":"32px"} as any} aria-labelledby="nx-h">
                     <div className="row sp">

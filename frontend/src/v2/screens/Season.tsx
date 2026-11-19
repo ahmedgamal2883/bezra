@@ -92,6 +92,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"28px","paddingTop":"8px"} as any}>
+            {__v?.ready ? null : <div className="sk" style={{"height":"260px","borderRadius":"24px"} as any} aria-busy="true" />}
             {__v?.simple ? (
               <>
                 <div className="col" style={{"gap":"32px"} as any}>

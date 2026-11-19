@@ -92,6 +92,7 @@ export default function JournalScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"24px","paddingTop":"24px","maxWidth":"1100px","width":"100%","margin":"0 auto"} as any}>
+            {d.ready ? null : <div className="sk" style={{"height":"260px","borderRadius":"24px"} as any} aria-busy="true" />}
             <div className="row sp" style={{"alignItems":"flex-end"} as any}>
               <div className="col" style={{"gap":"8px"} as any}>
                 <span className="meta">

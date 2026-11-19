@@ -191,7 +191,7 @@ return Object.assign(MAPV, { lg: LG.open, lgConf: !!LG.conf, stWhat: LG.st === '
  rMsg: R[0], rHasChange: !!R[1], rWhat: R[1], rFrom: R[2], rTo: R[3], undoSave: async () => { const L0 = LG.last; set({ lg: Object.assign({}, LG, { open: false }) }); if (!L0) return; try { await D.act.undoLastLog(L0.kind, L0.date); toast('Note removed from your journal.'); } catch (e) { toast('Could not remove the note. Delete it from your journal.'); } },
  doneTap: () => set({ lg: Object.assign({}, LG, { open: false }), toast: 'Saved to your journal.' }), again: () => set({ lg: Object.assign({}, EMPTY_LOG, { open: true, saved: true }) }),
  recent, hasRecent: recent.length > 0, noRecent: !!D.recent && recent.length === 0,
- todo, hasTodo: nAll > 0, noTodo: !!D.todo && nAll === 0, nDone: nDone + ' of ' + nAll + ' done', progW: 'width: ' + (nAll ? Math.round(nDone / nAll * 100) : 0) + '%;', allDone: nAll > 0 && nDone === nAll, notAllDone: nDone < nAll,
+ todo, todoLoading: !D.todo, weekLoading: !D.week, hasTodo: nAll > 0, noTodo: !!D.todo && nAll === 0, nDone: nDone + ' of ' + nAll + ' done', progW: 'width: ' + (nAll ? Math.round(nDone / nAll * 100) : 0) + '%;', allDone: nAll > 0 && nDone === nAll, notAllDone: nDone < nAll,
  allDoneTxt: 'All done for today.' + (coming[0] ? ' Next: ' + coming[0].t.toLowerCase() + ' on ' + coming[0].d + '.' : ''),
  waterDone: waterDoneNow, waterTodo: !waterDoneNow,
  coming, comingTxt: 'Coming up · ' + coming.length + (coming.length === 1 ? ' task' : ' tasks'), hasComing: coming.length > 0,

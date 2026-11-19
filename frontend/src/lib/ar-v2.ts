@@ -69,6 +69,8 @@ export const V2_EXACT: Record<string, string> = {
   'This is taking longer than usual.': 'ده واخد وقت أكتر من العادي.',
   'Try again': 'حاول تاني',
   'Plan updated': 'الخطة اتحدّثت',
+  'Loading…': 'بيحمّل…',
+  'Loading more…': 'لسه بيحمّل…',
   'Why this?': 'ليه دي؟',
   'Why': 'السبب',
   'Evidence': 'الدليل',

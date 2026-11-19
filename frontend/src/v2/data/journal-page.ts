@@ -24,5 +24,5 @@ export function useJournalData() {
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     },
   };
-  return { entries, act };
+  return { entries, act, ready: !!jn.data };
 }

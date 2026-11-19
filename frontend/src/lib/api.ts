@@ -50,6 +50,16 @@ export function setDemoAccount(on: boolean) {
   demoAccount = on;
 }
 
+/** How many parts of the screen are still waiting for data (components/PendingSeed shows a seed while > 0). */
+const pending = new Set<object>();
+const pendingSubs = new Set<(n: number) => void>();
+export function onPending(f: (n: number) => void) { pendingSubs.add(f); f(pending.size); return () => { pendingSubs.delete(f); }; }
+const pendingSet = (tok: object, on: boolean) => {
+  const had = pending.has(tok);
+  if (on) pending.add(tok); else pending.delete(tok);
+  if (had !== on) pendingSubs.forEach((f) => f(pending.size));
+};
+
 /** Fetch quietly into the same memory the screens read, so the next page opens without waiting. */
 const warming = new Set<string>();
 export function prefetch(path: string): Promise<void> {
@@ -71,6 +81,8 @@ export function useApi<T = any>(path: string | null, body?: unknown, fresh = fal
       return;
     }
     setState((s) => ({ ...s, loading: true, error: null }));
+    const tok = {};
+    pendingSet(tok, true);
     let timer: ReturnType<typeof setTimeout> | undefined;
     // Retry a failed request up to 3 times (backend starting up, weak connection).
     const attempt = (n: number) =>
@@ -82,6 +94,7 @@ export function useApi<T = any>(path: string | null, body?: unknown, fresh = fal
         })
         .then((data) => {
           memo.set(key, data);
+          pendingSet(tok, false);
           if (alive) setState({ data, loading: false, error: null });
         })
         .catch((e) => {
@@ -90,11 +103,12 @@ export function useApi<T = any>(path: string | null, body?: unknown, fresh = fal
           else if (!demoAccount && !String(e.message).startsWith('4')) {
             setState({ data: null, loading: true, error: String(e.message || e) });
             timer = setTimeout(() => attempt(0), 15000);
-          } else setState({ data: null, loading: false, error: String(e.message || e) });
+          } else { pendingSet(tok, false); setState({ data: null, loading: false, error: String(e.message || e) }); }
         });
     attempt(0);
     return () => {
       alive = false;
+      pendingSet(tok, false);
       if (timer) clearTimeout(timer);
     };
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
