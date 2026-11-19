@@ -9,7 +9,8 @@ import { farmerEntries } from './journal';
 import { longDate, shortDate, dayLabel } from './today';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const LV: Record<string, [string, string]> = { low: ['Low', 'low'], medium: ['Medium', 'med'], high: ['High', 'high'] };
+// the alerts API says 'med' (fieldalerts/alerts LV_KEY); 'medium' kept for the summary's words
+const LV: Record<string, [string, string]> = { low: ['Low', 'low'], med: ['Medium', 'med'], medium: ['Medium', 'med'], high: ['High', 'high'] };
 const ICON: Record<string, { path: string; bg: string; col: string; name: string }> = {
   rust: { name: 'Rust', path: 'M5 19c0-8 5-14 15-14 0 9-6 14-13 14M5 19c3-4 6-6.5 9-8M10 12h.01M14 9h.01M13 14h.01', bg: '#F6E8D6', col: '#9A4F08' },
   water: { name: 'Water', path: 'M12 3.5s6 6.4 6 10.7A6 6 0 0 1 6 14.2C6 9.9 12 3.5 12 3.5z', bg: '#E8F1F9', col: '#2F6FA8' },
@@ -37,8 +38,8 @@ export function useCropData() {
     const order = { high: 0, medium: 1, low: 2 } as Record<string, number>;
     const rows = al.data.alerts.map((a: any) => {
       const ic = ICON[a.kind] || ICON.data, [lvl, cls] = LV[a.level] || ['Low', 'low'];
-      return { k: a.kind, name: a.kind === 'data' ? 'New image' : ic.name, why: a.why, line: a.title, go: (a.steps || [])[0] || a.title, lvl: a.level_label === 'Plan' ? 'Plan' : lvl, cls,
-        rank: order[a.level] ?? 2, src: a.source, path: ic.path, sty: `background: ${ic.bg}; color: ${ic.col};`, href: a.kind === 'rust' ? 'rust' : a.kind === 'water' ? 'today' : '' };
+      return { k: a.kind, name: a.kind === 'data' ? 'New image' : ic.name, why: a.why, line: a.title, go: (a.steps || [])[0] || a.title, lvl: a.level_label === 'Plan' || a.level_label === 'Done' ? a.level_label : lvl, cls,
+        rank: order[a.level] ?? order[({ med: 'medium' } as any)[a.level]] ?? 2, src: a.source, path: ic.path, sty: `background: ${ic.bg}; color: ${ic.col};`, href: a.kind === 'rust' ? 'rust' : a.kind === 'water' ? 'today' : '' };
     });
     if (s.risks?.heat && !rows.some((r: any) => r.k === 'heat')) {
       const [lvl, cls] = LV[String(s.risks.heat.level).toLowerCase()] || ['Low', 'low'];
