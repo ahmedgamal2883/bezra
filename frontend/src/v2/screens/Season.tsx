@@ -4,6 +4,7 @@
 // then wired to the API by hand. Logic: ./Season.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
@@ -98,6 +99,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"28px","paddingTop":"8px"} as any}>
+            <EffectStrip />
             {__v?.ready ? null : <div className="sk" style={{"height":"260px","borderRadius":"24px"} as any} aria-busy="true" />}
             {__v?.simple ? (
               <>

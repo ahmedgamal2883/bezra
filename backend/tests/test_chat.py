@@ -6,14 +6,14 @@ def _reply(text, cards=None):
     return {"text": text, "mood": "happy", "cards": cards or [], "sources": []}
 
 
-def test_guard_removes_fertilizer_amounts():
+def test_guard_keeps_fertilizer_amounts_with_engineer_note():
     out = bezra._guard(_reply("Add 50 kg of urea per feddan before the turn."))
-    assert "50" not in out["text"] and out["cards"][0]["type"] == "engineer"
+    assert "50 kg" in out["text"] and "engineer" in out["text"] and out["cards"][-1]["type"] == "engineer"
 
 
-def test_guard_removes_arabic_pesticide_amounts():
+def test_guard_keeps_arabic_pesticide_amounts_with_engineer_note():
     out = bezra._guard(_reply("ارش 2 لتر مبيد على الفدان"))
-    assert "2 لتر" not in out["text"] and "مهندسك" in out["text"]
+    assert "2 لتر" in out["text"] and "مهندسك" in out["text"]
 
 
 def test_guard_keeps_normal_numbers():

@@ -445,7 +445,8 @@ def _custom_plan(c: Ctx, add) -> None:
             d = c.sow + timedelta(days=int(st["day"]))
             add(f"cp-{i}-{st['day']}", st.get("category") or "inspection", st["title"], st.get("why") or "",
                 d, d + timedelta(days=2), source=f"Bezra's chat plan for {cp.get('crop') or 'your crop'} (check with your engineer)",
-                provenance="estimated", extra={"chat_plan": True})
+                provenance="estimated", amount=st.get("amount") or None,
+                note="Check with your engineer" if st.get("amount") else None, extra={"chat_plan": True})
         except (KeyError, TypeError, ValueError):
             continue
 

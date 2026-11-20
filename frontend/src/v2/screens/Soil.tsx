@@ -4,6 +4,7 @@
 // then wired to the API by hand. Logic: ./Soil.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
 import PriorityPicker from '@/v2/PriorityPicker';
 import SeedLoader from '@/components/SeedLoader';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -100,6 +101,7 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"28px","paddingTop":"8px"} as any}>
+            <EffectStrip />
             {__v?.simple ? (
               <>
                 <div className="col" style={{"gap":"40px"} as any}>

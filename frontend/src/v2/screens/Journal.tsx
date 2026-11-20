@@ -4,6 +4,7 @@
 // then wired to the API by hand. Logic: ./Journal.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
@@ -98,6 +99,7 @@ export default function JournalScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"24px","paddingTop":"24px","maxWidth":"1100px","width":"100%","margin":"0 auto"} as any}>
+            <EffectStrip />
             {d.ready ? null : <div className="sk" style={{"height":"260px","borderRadius":"24px"} as any} aria-busy="true" />}
             <div className="row sp" style={{"alignItems":"flex-end"} as any}>
               <div className="col" style={{"gap":"8px"} as any}>

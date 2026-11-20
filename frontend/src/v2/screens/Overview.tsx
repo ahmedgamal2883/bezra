@@ -9,6 +9,7 @@ import { useWho } from '@/v2/data/who';
 import { useOverviewData } from '@/v2/data/overview';
 import SeedLoader from '@/components/SeedLoader';
 import PriorityPicker from '@/v2/PriorityPicker';
+import CropPlanCard from '@/v2/CropPlanCard';
 
 export default function OverviewScreen() {
   const __r = useV2Href();
@@ -17,7 +18,6 @@ export default function OverviewScreen() {
   const __v: any = {};
   return (
     <>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@900&display=swap" />
       <style>{OV_CSS}</style>
       <div className="v2 root">
         <div className="shell">
@@ -110,6 +110,8 @@ export default function OverviewScreen() {
                 <Link href={__r("Log-What") + ""} className="ovchip press">{"Add to journal"}</Link>
               </div>
             </section>
+
+            <CropPlanCard id={v.id} />
 
             <section className="card ovyou">
               <div className="ovyoutx">
@@ -268,12 +270,12 @@ const OV_CSS = `.v2 .ov .ovcard{background:#fff;border-radius:24px;padding:22px;
 .v2 .ov .ovtile.orange{background:linear-gradient(160deg,#F7A33A,#D96A16);color:#fff}
 .v2 .ov .ovtl{font-size:13px;font-weight:600}
 .v2 .ov .ovts{font-size:13px}
-.v2 .ov .ovbig{font-family:'Doto','Hanken Grotesk',monospace;font-size:56px;font-weight:900;line-height:1;letter-spacing:2px;margin-top:auto}
+.v2 .ov .ovbig{font-size:48px;font-weight:700;line-height:1;letter-spacing:-1px;margin-top:auto;font-variant-numeric:tabular-nums}
 .v2 .ov .ovrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #F0EFEA}
 .v2 .ov .ovrt{font-size:15px;font-weight:600}
 .v2 .ov .ovrs{font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .v2 .ov .ovweek{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .v2 .ov .ovday{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 2px;border-radius:14px;background:#F6F5F1;min-width:0}
 .v2 .ov .ovday.water{background:#E3F0F7}
-@media (max-width:820px){.v2 .ov .ovgrid2{grid-template-columns:1fr}.v2 .ov .ovtiles{grid-template-columns:1fr 1fr;gap:12px}.v2 .ov .ovh1{font-size:28px}.v2 .ov .ovbig{font-size:42px}.v2 .ov .ovcard{padding:18px}.v2 .ov .ovweek{gap:4px}.v2 .ov .ovday{padding:8px 0;font-size:13px}}
+@media (max-width:820px){.v2 .ov .ovgrid2{grid-template-columns:1fr}.v2 .ov .ovtiles{grid-template-columns:1fr 1fr;gap:12px}.v2 .ov .ovh1{font-size:28px}.v2 .ov .ovbig{font-size:36px}.v2 .ov .ovcard{padding:18px}.v2 .ov .ovweek{gap:4px}.v2 .ov .ovday{padding:8px 0;font-size:13px}}
 `;
