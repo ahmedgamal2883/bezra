@@ -173,7 +173,7 @@ export default function EngineerScreen(props: Record<string, unknown> = {}) {
               </tbody>
             </table>
             <p className="meta">
-              {"Spray products and doses are your call as the engineer. Bezra never suggests them."}
+              {"Bezra may suggest a usual amount, always marked to check with you. The final product and dose are your call as the engineer."}
             </p>
             <footer className="foot" style={{"paddingTop":"24px"} as any}>
               <span>

@@ -10,6 +10,7 @@ import { useOverviewData } from '@/v2/data/overview';
 import SeedLoader from '@/components/SeedLoader';
 import PriorityPicker from '@/v2/PriorityPicker';
 import CropPlanCard from '@/v2/CropPlanCard';
+import Tour from '@/v2/tour/Tour';
 
 export default function OverviewScreen() {
   const __r = useV2Href();
@@ -123,6 +124,7 @@ export default function OverviewScreen() {
               <div className="ovyoupr">
                 <PriorityPicker id={v.id} onSaved={() => v.reload?.()} />
               </div>
+              <Link href={__r("V18-Journal") + ""} className="ovgo press">{"Open your journal"} <span aria-hidden="true">→</span></Link>
             </section>
 
             <div className="ovgrid2">
@@ -145,6 +147,7 @@ export default function OverviewScreen() {
                     <span className="meta" style={{"fontSize":"12px"} as any}>{v.map.source + " · 30 m squares"}</span>
                   </>
                 ) : <SeedLoader inline />}
+                <Link href={__r("V18-Crop") + ""} className="ovgo press">{"See your map on Crop"} <span aria-hidden="true">→</span></Link>
               </section>
 
               <section className="ovcard" aria-labelledby="ov-act">
@@ -160,6 +163,7 @@ export default function OverviewScreen() {
                   {v.action.taskId ? <button type="button" className="btn press" onClick={() => v.act.done(v.action.taskId)}>{"Mark as done"}</button> : null}
                   <Link href={__r("V18-Today") + ""} className="btn soft press">{"See it on Today"}</Link>
                 </div>
+                <Link href={__r("V18-Today") + ""} className="ovgo press">{"Open Today"} <span aria-hidden="true">→</span></Link>
               </section>
             </div>
 
@@ -175,7 +179,7 @@ export default function OverviewScreen() {
 
             <div className="ovgrid2">
               <section className="ovcard" aria-labelledby="ov-tasks">
-                <div className="row sp"><h2 id="ov-tasks" className="ovh2">{"Today's tasks"}</h2><Link href={__r("V18-Today") + ""} className="meta" style={{"textDecoration":"underline"} as any}>{"See all"}</Link></div>
+                <div className="row sp"><h2 id="ov-tasks" className="ovh2">{"Today's tasks"}</h2></div>
                 {v.tasks.length ? v.tasks.map((t: any) => (
                   <div key={t.id} className="ovrow">
                     <div className="col" style={{"gap":"2px","minWidth":"0"} as any}><b className="ovrt">{t.title}</b><span className="meta ovrs">{t.sub}</span></div>
@@ -189,15 +193,17 @@ export default function OverviewScreen() {
                     <span className={"ovpill " + t.cls}>{t.label}</span>
                   </div>
                 ))}
+                <Link href={__r("V18-Today") + ""} className="ovgo press">{"All tasks on Today"} <span aria-hidden="true">→</span></Link>
               </section>
               <section className="ovcard" aria-labelledby="ov-warn">
-                <div className="row sp"><h2 id="ov-warn" className="ovh2">{"Warnings"}</h2><Link href={__r("V18-Crop") + ""} className="meta" style={{"textDecoration":"underline"} as any}>{"See all"}</Link></div>
+                <div className="row sp"><h2 id="ov-warn" className="ovh2">{"Warnings"}</h2></div>
                 {v.alerts.length ? v.alerts.map((x: any, i: number) => (
                   <div key={i} className="ovrow">
                     <div className="col" style={{"gap":"2px","minWidth":"0"} as any}><b className="ovrt">{x.title}</b><span className="meta ovrs">{x.why}</span></div>
                     <span className={"ovpill " + x.cls}>{x.label}</span>
                   </div>
                 )) : <SeedLoader inline />}
+                <Link href={__r("V18-Crop") + ""} className="ovgo press">{"All warnings on Crop"} <span aria-hidden="true">→</span></Link>
               </section>
             </div>
 
@@ -216,11 +222,13 @@ export default function OverviewScreen() {
                   </div>
                 ) : v.weekErr ? <p className="meta">{"The forecast is not available right now."}</p> : <SeedLoader inline />}
                 <span className="meta" style={{"fontSize":"12px"} as any}>{v.weekSrc || ""}</span>
+                <Link href={__r("V18-Season") + ""} className="ovgo press">{"Weather and season on Season"} <span aria-hidden="true">→</span></Link>
               </section>
               <section className="ovcard" aria-labelledby="ov-rot">
-                <div className="row sp"><h2 id="ov-rot" className="ovh2">{"Rotation"}</h2><Link href={__r("V18-Soil") + ""} className="meta" style={{"textDecoration":"underline"} as any}>{"Open soil"}</Link></div>
+                <div className="row sp"><h2 id="ov-rot" className="ovh2">{"Rotation"}</h2></div>
                 <div className="ovrow"><span className="meta">{"Next winter in your plan"}</span><b>{v.nextWinter || "Not chosen yet"}</b></div>
                 {v.best ? <div className="col" style={{"gap":"4px"} as any}><span className="meta">{"Best for your soil"}</span><b>{v.best.name}</b><span className="meta">{v.best.seq}</span></div> : <SeedLoader inline />}
+                <Link href={__r("V18-Soil") + ""} className="ovgo press">{"Rotation on Soil"} <span aria-hidden="true">→</span></Link>
               </section>
             </div>
             <p className="meta" style={{"fontSize":"13px"} as any}>{"Bezra helps you think. It doesn't decide for you."}</p>
@@ -230,12 +238,16 @@ export default function OverviewScreen() {
 
         </div>
       </div>
+      <Tour page="Overview" />
     </>
   );
 }
 
 const OV_CSS = `.v2 .ov .ovcard{background:#fff;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .v2 .ov .ovh1{font-size:34px;font-weight:600;letter-spacing:-.8px;margin:0}
+.v2 .ov .ovgo{align-self:flex-start;margin-top:auto;padding-top:6px;font-size:14px;font-weight:600;color:var(--green);display:inline-flex;gap:6px;align-items:center}
+.v2 .ov .ovgo:hover{text-decoration:underline}
+[dir=rtl] .v2 .ov .ovgo span{transform:scaleX(-1)}
 .v2 .ov .ovh2{font-size:18px;font-weight:600;margin:0}
 .v2 .ov .ovlead{font-size:19px;line-height:1.45;margin:0;max-width:820px}
 .v2 .ov .ovlist{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:4px;font-size:16px}
