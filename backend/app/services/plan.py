@@ -320,7 +320,7 @@ def _what_changed(c: Ctx, base, nt: date) -> list[dict]:
     wheat = f["crop"] == "wheat"
     out = []
     fc = [d for d in w.forecast_days(8) if d["date"] > today.isoformat()]
-    src = "Open-Meteo forecast"
+    src = getattr(w, "forecast_source", "Open-Meteo forecast")
 
     def stage_on(ds: str) -> str:
         x = base.at(date.fromisoformat(ds))

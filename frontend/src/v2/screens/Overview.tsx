@@ -221,6 +221,7 @@ export default function OverviewScreen() {
                     ))}
                   </div>
                 ) : v.weekErr ? <p className="meta">{"The forecast is not available right now."}</p> : <SeedLoader inline />}
+                {v.weekOld ? <p className="meta" style={{"fontSize":"13px","margin":"0","color":"#8A5A0B"} as any}>{v.weekOld}</p> : null}
                 <span className="meta" style={{"fontSize":"12px"} as any}>{v.weekSrc || ""}</span>
                 <Link href={__r("V18-Season") + ""} className="ovgo press">{"Weather and season on Season"} <span aria-hidden="true">→</span></Link>
               </section>

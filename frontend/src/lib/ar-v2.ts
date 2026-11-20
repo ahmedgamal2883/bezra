@@ -178,6 +178,7 @@ export const V2_EXACT: Record<string, string> = {
   "Compared with what you grow now. Estimates from Bezra's soil model on your field's NASA weather.": 'مقارنة باللي بتزرعه دلوقتي. تقديرات من نموذج التربة في بذرة على جو أرضك من ناسا.',
   'Change your rotation with Bezra': 'غيّر دورتك مع بذرة',
   'Make your own rotation with Bezra': 'اعمل دورتك بنفسك مع بذرة',
+  'Back to your field overview': 'ارجع لنظرة عامة على أرضك',
   'Why this?': 'ليه دي؟',
   'Why': 'السبب',
   'Evidence': 'الدليل',
@@ -345,7 +346,7 @@ export const V2_EXACT: Record<string, string> = {
   'From the season so far': 'من الموسم لحد دلوقتي',
   'Since sowing': 'من الزراعة',
   // ---- Details views ----
-  'Rust weather this week': 'جو الصدأ الأسبوع ده', 'Open-Meteo forecast': 'توقعات Open-Meteo',
+  'Rust weather this week': 'جو الصدأ الأسبوع ده', 'Open-Meteo forecast': 'توقعات Open-Meteo', 'MET Norway forecast': 'توقعات الأرصاد النرويجية (MET Norway)',
   'Crop calendar (weeks after sowing)': 'تقويم الزرع (أسابيع بعد الزراعة)',
   'Yellow rust needs cool nights (7 to 18 °C) with dew or fog on the leaves.': 'الصدأ الأصفر محتاج ليالي باردة (من 7 لـ 18 درجة) مع ندى أو شبورة على الورق.',
   'Rust weather index, NASA POWER and Open-Meteo humidity and dew point': 'مؤشر جو الصدأ، من رطوبة ونقطة ندى NASA POWER وOpen-Meteo',

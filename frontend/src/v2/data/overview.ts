@@ -114,6 +114,10 @@ export function useOverviewData() {
   const turns = new Set(tk.tasks.filter((t: any) => t.category === 'irrigation').map((t: any) => t.date));
   out.week = fcDays.slice(0, 7).map((d: any) => ({ day: DAYS[d0(d.date).getDay()], date: d0(d.date).getDate(), hi: Math.round(d.tmax), lo: Math.round(d.tmin), rain: Math.round(d.rain || 0), water: turns.has(d.date) }));
   out.weekSrc = fc?.source;
+  // a forecast more than a day old (the source refused the server for a while): say from when, never pretend it is new
+  const iss = String(fc?.issued || '').slice(0, 10);
+  out.weekOld = iss && (d0(today).getTime() - d0(iss).getTime()) / 86400000 >= 2
+    ? (ar ? `توقعات الجو ماتحدّثتش من ${dmAr(iss)}، فبيظهر بس الأيام اللي فاضلة فيها.` : `The forecast has not been updated since ${dm(iss)}, so only the days left in it are shown.`) : null;
   out.weekErr = !fc && !!fcA.error;  // the server has no forecast for us: say so, never an endless loader
 
   // ---- rotation: next winter's plan and the best rotation
