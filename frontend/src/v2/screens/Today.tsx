@@ -120,6 +120,10 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                 <Link href="/signup" className="btn press" style={{"height":"42px"} as any}>{"Create an account to keep it"}</Link>
               </div>
             ) : null}
+            <Link href={__r("V18-Overview") + ""} className="ovback press">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+              {"Back to your field overview"}
+            </Link>
             {__v?.simple ? (
               <>
                 <div className="col" style={{"gap":"20px"} as any}>

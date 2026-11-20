@@ -178,6 +178,7 @@ export const V2_EXACT: Record<string, string> = {
   "Compared with what you grow now. Estimates from Bezra's soil model on your field's NASA weather.": 'مقارنة باللي بتزرعه دلوقتي. تقديرات من نموذج التربة في بذرة على جو أرضك من ناسا.',
   'Change your rotation with Bezra': 'غيّر دورتك مع بذرة',
   'Make your own rotation with Bezra': 'اعمل دورتك بنفسك مع بذرة',
+  'Back to your field overview': 'ارجع لنظرة عامة على أرضك',
   'Why this?': 'ليه دي؟',
   'Why': 'السبب',
   'Evidence': 'الدليل',

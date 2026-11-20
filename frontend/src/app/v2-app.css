@@ -47,6 +47,9 @@ body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important;
    empty column). Phones and tablets (<=1100px) are one column and are not touched. */
 @media (min-width:1101px){
   .v2 .today > section.mapbox{position:sticky;top:96px;height:min(720px, calc(100vh - 112px))!important}
+  /* Details: the image dates + layered map column stays beside the long list the same way */
+  .v2 .today > div.col:first-child{position:sticky;top:96px}
+  .v2 .today > div.col:first-child > section.mapbox{height:min(700px, calc(100vh - 170px))!important}
 }
 
 /* Arabic (right to left): chips and buttons whose padding is wider on one side (icon or avatar on one side, text on
@@ -61,3 +64,10 @@ body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important;
 [dir=rtl] .v2 .go{padding:0 16px 0 8px}
 [dir=rtl] .v2 .composer{padding:0 20px 0 8px}
 [dir=rtl] .v2 .gbanner{padding:12px 18px 12px 12px}
+
+/* the page you are on keeps its dark pill on hover (a later hover rule turned it light with white text) */
+.v2 .nav a[aria-current=page]:hover{background:var(--dark);color:#fff}
+
+/* Today: a way back to the whole-field Overview, in Simple and Details */
+.v2 .ovback{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:19px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);font-size:14px;font-weight:600;color:var(--green)}
+.v2 .ovback:hover{background:#F1F0EC}
