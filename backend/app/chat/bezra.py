@@ -2,8 +2,9 @@
 
 Returns {text, mood, cards[], sources[]}. `mood` drives the mascot (happy | thinking | concerned | proud).
 Tools read the same engine as the screens, so the chat and the screens agree.
-Rule #3: never fertilizer or pesticide amounts. The system prompt says so, and a last check on the reply
-replaces any amount with a referral to the engineer.
+Rule #3 (Nov 2026, the farmer's choice): a fertilizer or pesticide amount may be given as Bezra's best general
+suggestion, always with a small "check it with your engineer" line; a last check on the reply adds that line and an
+engineer card whenever an amount appears, and never deletes the amount.
 """
 from __future__ import annotations
 
@@ -29,8 +30,8 @@ How you answer:
 - Use the tools for any number about the field, the weather, the season or a what-if. Never make up numbers.
 - If the data can't answer, say so plainly ("I'm not sure", "مش متأكد") and say what would help.
 - Say impact as a range ("protects about 8 to 12% of your harvest").
-- Never give fertilizer or pesticide amounts, doses, liters, kilos or product names to buy. Your engineer decides those.
-  For those questions, explain kindly that the engineer decides, and add an "engineer" card.
+- Fertilizer or pesticide amounts: you may give the usual general amount (Egyptian extension guidance), clearly as a
+  suggestion, and always say to check it with the engineer before using it; add an "engineer" card. No brand names.
 - Never forecast rain as a fact. Never claim certainty you don't have.
 
 Output fields:
@@ -104,6 +105,44 @@ TOOLS = [
                     "ESA Sentinel-1, cooler surface in NASA ECOSTRESS) with the date window, confidence and whether "
                     "the farmer confirmed it. Use when the farmer asks if Bezra knows they watered.",
      "input_schema": {"type": "object", "properties": {}, "required": [], "additionalProperties": False}},
+    {"name": "save_crop_plan", "strict": True,
+     "description": "Save a season plan for a crop Bezra has no model for (e.g. tomato, onion, potato, sugar beet), "
+                    "made with the farmer in this chat. Only call it after the farmer said yes to the plan you showed. "
+                    "Each step is a day after sowing/planting, a short title, why, and an amount if one helps (e.g. a "
+                    "usual fertilizer or spray amount; shown with 'check with your engineer'). Also how the crop affects "
+                    "the soil, what harvest to expect, the main risks (pests, diseases, heat, water), the season length "
+                    "and its water need. Everything then shows on the website (Overview, Crop, Today's tasks), marked as "
+                    "Bezra's chat plan. Saving again replaces the old plan; send an empty steps list to remove it.",
+     "input_schema": {"type": "object", "properties": {
+         "crop": {"type": "string", "description": "Crop name as the farmer said it"},
+         "steps": {"type": "array", "items": {"type": "object", "properties": {
+             "day": {"type": "integer", "description": "Days after sowing or planting, 0 to 365"},
+             "title": {"type": "string"}, "why": {"type": "string"},
+             "amount": {"type": "string", "description": "Usual amount if one helps, else empty"},
+             "category": {"type": "string", "enum": ["irrigation", "fertilizer", "spray", "inspection", "milestone"]}},
+             "required": ["day", "title", "why", "amount", "category"], "additionalProperties": False}},
+         "season_days": {"type": "integer", "description": "Days from planting to harvest"},
+         "soil_effect": {"type": "string", "description": "How this crop affects the soil (feeds or tires it, and why)"},
+         "harvest": {"type": "string", "description": "What harvest to expect per feddan in the Delta, as a range"},
+         "water": {"type": "string", "description": "Its water need and how often to water"},
+         "risks": {"type": "array", "items": {"type": "string"}, "description": "Main things that can hurt it here"}},
+         "required": ["crop", "steps", "season_days", "soil_effect", "harvest", "water", "risks"], "additionalProperties": False}},
+    {"name": "save_rotation", "strict": True,
+     "description": "Save the farmer's own multi-year rotation, made with them in this chat, and run it through Bezra's "
+                    "soil model (10 years on the field's real NASA POWER weather). Each season is a winter crop and a summer "
+                    "crop (summer may be empty). For each crop give the farmer's name for it and the closest crop the model "
+                    "knows (winter: wheat, berseem, fahl, faba, sugarbeet; summer: rice, maize, cotton), e.g. onion -> faba, "
+                    "potato -> sugarbeet, tomato -> cotton, sesame -> maize. Returns soil strength in 10 years vs what they "
+                    "grow now, water per year and heat years. Only call it after the farmer agreed; it then shows on Overview "
+                    "and Soil. Send an empty seasons list to remove it.",
+     "input_schema": {"type": "object", "properties": {
+         "name": {"type": "string", "description": "A short name for the rotation"},
+         "notes": {"type": "string", "description": "One or two sentences: why this rotation, what to watch"},
+         "seasons": {"type": "array", "items": {"type": "object", "properties": {
+             "winter": {"type": "string"}, "winter_model": {"type": "string", "enum": ["wheat", "berseem", "fahl", "faba", "sugarbeet"]},
+             "summer": {"type": "string"}, "summer_model": {"type": "string", "enum": ["rice", "maize", "cotton", ""]}},
+             "required": ["winter", "winter_model", "summer", "summer_model"], "additionalProperties": False}}},
+         "required": ["name", "notes", "seasons"], "additionalProperties": False}},
     {"name": "search_kb", "strict": True,
      "description": "Search Bezra's notes: what NDVI means, why sow early, how soil water is estimated, rust weather, "
                     "heat at grain fill, where the data comes from, the season plan (timing only), the rule on doses.",
@@ -134,7 +173,11 @@ def _system(c: Ctx) -> str:
     return (SYSTEM.replace("Eng. Mona Adel", _engineer_name(c)).replace("Eng. Mona", _engineer_name(c))
             + f"\nThe farmer is {c.f.get('farmer') or 'the farmer'}. Their engineer is {_engineer_name(c)}. "
               f"Field: {c.f['name']} ({c.f['crop']}), {c.f.get('village')}, "
-              f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}.")
+              f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}."
+            + "\nIf the farmer grows a crop you have no model for, you may build a simple season plan with them: ask the "
+              "planting date and what they already do, show the steps (days after planting, title, why, usual amount if it "
+              "helps) with its soil effect, expected harvest, water need and risks, and only after they agree call save_crop_plan. "
+              "The farmer can also make their own rotation with you (any crops, even ones Bezra has no model for): agree it, then call save_rotation and explain the result. Say it is a general plan to check with the engineer.")
 
 
 def _summary_brief(c: Ctx) -> dict:
@@ -196,9 +239,86 @@ def run_tool(c: Ctx, name: str, args: dict):
         from ..services import irrigation
         d = irrigation.detect(c)
         return {"beta": True, "events": d["events"], "waiting_for_answer": d["ask"], "rules": d["rules"]}
+    if name == "save_crop_plan":
+        return save_crop_plan(c, args.get("crop") or "", args.get("steps") or [], args)
+    if name == "save_rotation":
+        return save_rotation(c, args)
     if name == "search_kb":
         return kb.search(args["query"])
     raise ValueError(f"unknown tool {name}")
+
+
+def save_rotation(c: Ctx, args: dict) -> dict:
+    """Stores the farmer's own rotation (custom_rotation) and returns the soil model's result for it."""
+    from .. import db
+    from ..engine.crops import CROPS
+    from ..services import rotation
+    seasons = []
+    for x in (args.get("seasons") or [])[:4]:
+        w, sm = x.get("winter_model"), (x.get("summer_model") or "")
+        if w not in CROPS or CROPS[w].season != "winter" or (sm and (sm not in CROPS or CROPS[sm].season != "summer")):
+            continue
+        seasons.append({"winter": str(x.get("winter") or "").strip()[:40] or CROPS[w].en, "winter_model": w,
+                        "summer": str(x.get("summer") or "").strip()[:40] if sm else "", "summer_model": sm})
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    if seasons:
+        f["custom_rotation"] = {"name": str(args.get("name") or "").strip()[:60], "notes": str(args.get("notes") or "").strip()[:300],
+                                "seasons": seasons, "made": c.today.isoformat()}
+    else:
+        f.pop("custom_rotation", None)
+    db.save_field(f, owner)
+    c.f["custom_rotation"] = f.get("custom_rotation")
+    if not seasons:
+        return {"saved": False, "note": "The farmer's own rotation was removed."}
+    r = rotation.build(c)
+    cu = r.get("custom") or {}
+    return {"saved": True, "soil_vs_what_you_grow_now_pct": cu.get("vs_current_pct"), "soil_face": cu.get("soil_face"),
+            "water_m3_per_feddan_year": cu.get("water_m3_feddan_year"), "water_vs_now_pct": cu.get("water_vs_current_pct"),
+            "heat_years": cu.get("heat_years"), "years_simulated": cu.get("years_simulated"), "stand_ins": cu.get("stand_ins"),
+            "note": "Shown on Overview and Soil. Crops Bezra has no model for ran as the closest crop it knows (stand_ins)."}
+
+
+def save_crop_plan(c: Ctx, crop: str, steps: list, more: dict | None = None) -> dict:
+    """Stores the chat-made plan on the field (custom_plan); tasks.build turns it into tasks, Overview and Crop show
+    the crop card. Amounts are kept, marked to check with the engineer. At most 40 steps, day 0..365."""
+    from .. import db
+    cats = {"irrigation", "fertilizer", "spray", "inspection", "milestone"}
+    clean = []
+    for st in steps[:40]:
+        try:
+            day = int(st.get("day"))
+        except (TypeError, ValueError):
+            continue
+        title, why = str(st.get("title") or "").strip()[:120], str(st.get("why") or "").strip()[:300]
+        if not title or not 0 <= day <= 365:
+            continue
+        amount = str(st.get("amount") or "").strip()[:120] or None
+        clean.append({"day": day, "title": title, "why": why, "amount": amount,
+                      "category": st.get("category") if st.get("category") in cats else "inspection"})
+    clean.sort(key=lambda x: x["day"])
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    if clean:
+        more = more or {}
+        sd = more.get("season_days")
+        f["custom_plan"] = {"crop": crop.strip()[:60], "steps": clean, "made": c.today.isoformat(),
+                            "season_days": int(sd) if isinstance(sd, (int, float)) and 20 <= sd <= 400 else None,
+                            "soil_effect": str(more.get("soil_effect") or "").strip()[:400] or None,
+                            "harvest": str(more.get("harvest") or "").strip()[:200] or None,
+                            "water": str(more.get("water") or "").strip()[:300] or None,
+                            "risks": [str(x).strip()[:160] for x in (more.get("risks") or []) if str(x).strip()][:8]}
+    else:
+        f.pop("custom_plan", None)
+    db.save_field(f, owner)
+    c.f["custom_plan"] = f.get("custom_plan")
+    return {"saved": len(clean), "sow_date": c.sow.isoformat(),
+            "note": ("The plan now shows on the website: tasks on Today, the crop card on Overview and Crop. Amounts are "
+                     "marked to check with the engineer.") if clean else "The chat plan was removed from the field."}
 
 
 def _engineer_name(c: Ctx) -> str:
@@ -216,11 +336,12 @@ def _guard(reply: dict) -> dict:
     """Rule #3 safety net: strip any input amount that slipped through."""
     blob = reply["text"] + " " + " ".join(i["value"] + " " + i["label"] for c in reply["cards"] for i in c["items"])
     if INPUT_WORDS.search(blob) and DOSE.search(blob):
-        arabic = bool(re.search(r"[؀-ۿ]", reply["text"]))
-        reply["text"] = ("الكمية دي لازم مهندسك يحددها بعد ما يشوف الأرض. أنا بقولك امتى، مش قد إيه."
-                         if arabic else "Your engineer decides that amount after seeing the field. I can tell you when, not how much.")
-        reply["cards"] = [{"type": "engineer", "title": "Ask your engineer", "items": [], "provenance": "none"}]
-        reply["mood"] = "thinking"
+        arabic = bool(re.search("[\u0600-\u06ff]", reply["text"]))
+        note = "\u0631\u0627\u062c\u0639 \u0627\u0644\u0643\u0645\u064a\u0629 \u062f\u064a \u0645\u0639 \u0645\u0647\u0646\u062f\u0633\u0643 \u0642\u0628\u0644 \u0645\u0627 \u062a\u0633\u062a\u062e\u062f\u0645\u0647\u0627." if arabic else "Check this amount with your engineer before you use it."
+        if note not in reply["text"]:
+            reply["text"] = reply["text"].rstrip() + "\n" + note
+        if not any(c.get("type") == "engineer" for c in reply["cards"]):
+            reply["cards"] = reply["cards"] + [{"type": "engineer", "title": "Ask your engineer", "items": [], "provenance": "none"}]
     return reply
 
 

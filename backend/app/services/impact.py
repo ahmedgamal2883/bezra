@@ -159,13 +159,13 @@ def build(c: Ctx) -> dict:
         "lost_so_far": losses(so_far.factors) if c.today > c.sow else [], "actions": actions, "missed": missed,
         "provenance": "estimated",
         "source": "Season model (FAO-56 water balance + crop warmth) on NASA POWER and Open-Meteo weather",
-        "price": _price(crop, ardeb(w_idx), ardeb(without_idx)),
+        "price": _price(crop, ardeb(w_idx), ardeb(without_idx), c.f.get("price_ardeb")),
     }
 
 
-def _price(crop: str, w: float | None, wo: float | None) -> dict | None:
-    """Pure: the extra harvest in money, only where an official price exists (wheat)."""
-    if crop not in PRICE or w is None or wo is None:
+def _price(crop: str, w: float | None, wo: float | None, own: float | None = None) -> dict | None:
+    """Pure: the extra harvest in money, at the farmer's own price when they gave one, else the official price (wheat)."""
+    if w is None or wo is None or (crop not in PRICE and not own):
         return None
-    egp, src = PRICE[crop]
+    egp, src = (float(own), "Your price (you told us)") if own else PRICE[crop]
     return {"egp_per_ardeb": egp, "source": src, "gain_egp_per_feddan": round((w - wo) * egp, -1)}

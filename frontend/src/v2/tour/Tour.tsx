@@ -12,22 +12,24 @@ import { useLang } from '@/lib/i18n';
 import { Mascot } from '@/components/chrome';
 import STEPS from './steps.json';
 
-type Page = 'Today' | 'Journal' | 'Crop' | 'Soil' | 'Season' | 'Try' | 'Ask';
+type Page = 'Overview' | 'Today' | 'Journal' | 'Crop' | 'Soil' | 'Season' | 'Try' | 'Ask';
 type TourData = { sec: string; of: string; next: string; back: string; done: string; skip: string; close: string; endTxt: string; nextLabel: string; nextHref: string; steps: { s: string | null; t: string; b: string }[] };
 const ORDER: Page[] = ['Today', 'Journal', 'Crop', 'Soil', 'Season', 'Try', 'Ask'];
 const PATH: Record<Page, (id: string) => string> = {
-  Today: (id) => `/field/${id}/today`, Journal: (id) => `/field/${id}/journal`, Crop: (id) => `/field/${id}/crop`, Soil: (id) => `/field/${id}/soil`,
+  Overview: (id) => `/field/${id}/overview`, Today: (id) => `/field/${id}/today`, Journal: (id) => `/field/${id}/journal`, Crop: (id) => `/field/${id}/crop`, Soil: (id) => `/field/${id}/soil`,
   Season: (id) => `/field/${id}/season`, Try: (id) => `/field/${id}/season/try`, Ask: () => '/ask',
 };
 // the tour's layers use .v2 for the design's styles but must stay see-through (.v2 is also the page root)
 const LAYER: React.CSSProperties = { background: 'transparent', padding: 0, minHeight: 0 };
 const put = (body: Record<string, unknown>) => fetch(`${API}/me/tour`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
 
+// Overview (where the sample field opens) only shows the welcome sheet; its tour starts on Today.
 export default function Tour({ page }: { page: Page }) {
   const { id } = useField();
   const { user } = useUser();
   const { lang } = useLang();
-  const T = ((STEPS as Record<string, TourData>)[lang === 'ar' ? `${page}-AR` : page] || (STEPS as Record<string, TourData>)[page]);
+  const tp = page === 'Overview' ? 'Today' : page;
+  const T = ((STEPS as Record<string, TourData>)[lang === 'ar' ? `${tp}-AR` : tp] || (STEPS as Record<string, TourData>)[tp]);
   const [mode, setMode] = useState<'off' | 'welcome' | 'steps' | 'end'>('off');
   const [i, setI] = useState(0);
   const [box, setBox] = useState<{ spot: React.CSSProperties; card: React.CSSProperties } | null>(null);
@@ -37,7 +39,8 @@ export default function Tour({ page }: { page: Page }) {
   useEffect(() => {
     if (!user) return;
     const q = new URLSearchParams(window.location.search).get('tour');
-    if (q === 'welcome' && page === 'Today') { setMode('welcome'); return; }
+    if (q === 'welcome' && (page === 'Today' || page === 'Overview')) { setMode('welcome'); return; }
+    if (page === 'Overview') return;
     if (q) { setMode('steps'); setI(0); put({ status: 'in_progress', step: ORDER.indexOf(page) + 1 }); return; }
     if (page !== 'Today') return;
     fetch(`${API}/me/tour`).then((r) => (r.ok ? r.json() : null)).then((t) => {
@@ -112,7 +115,7 @@ export default function Tour({ page }: { page: Page }) {
           </div>
           <p className="txt">{ar ? 'بذرة بتقرا أرضك من الفضاء وبتقولك تعمل إيه يوم بيوم. تحب جولة سريعة؟ بتاخد حوالي دقيقتين.' : 'Bezra reads your field from space and tells you what to do, day by day. Want a quick tour? It takes about 2 minutes.'}</p>
           <div className="row" style={{ gap: '10px', marginTop: '4px' }}>
-            <button type="button" className="btn press" style={{ height: '54px', fontSize: '16px', flex: 1 }} autoFocus onClick={() => { setMode('steps'); setDir(1); setI(0); put({ status: 'in_progress', step: 1 }); }}>{ar ? 'فرّجني' : 'Show me around'}</button>
+            <button type="button" className="btn press" style={{ height: '54px', fontSize: '16px', flex: 1 }} autoFocus onClick={() => { put({ status: 'in_progress', step: 1 }); if (page === 'Overview') { window.location.href = PATH.Today(id) + '?tour=1'; return; } setMode('steps'); setDir(1); setI(0); }}>{ar ? 'فرّجني' : 'Show me around'}</button>
             <button type="button" className="btn soft press" style={{ height: '54px', fontSize: '16px', flex: 1 }} onClick={() => { setMode('off'); put({ status: 'skipped', skippedAt: new Date().toISOString() }); }}>{ar ? 'هتفرج لوحدي' : "I'll explore on my own"}</button>
           </div>
           <span className="meta" style={{ textAlign: 'center' }}>{ar ? 'تقدر تعيد الجولة في أي وقت من حسابك.' : 'You can replay the tour any time from your profile.'}</span>

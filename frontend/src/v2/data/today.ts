@@ -26,7 +26,7 @@ const TAG: Record<string, [string, string]> = {
 };
 const LEVEL_TONE: Record<string, string> = { Low: '#2E7D45', Medium: '#B4660B', High: '#C2412A' };
 
-export type Todo = { id: string; done: boolean; t: string; s: string; ds: string; g: string; tag: string; tc: string; category: string; ask?: string[]; imp?: { h: number; s: number } | null; pl?: string; wind?: string };
+export type Todo = { id: string; done: boolean; t: string; s: string; ds: string; g: string; tag: string; tc: string; category: string; ask?: string[]; imp?: { h: number; s: number } | null; pl?: string; wind?: string; st?: string };
 
 export function useTodayData(id: string) {
   const [ver, setVer] = useState(0);
@@ -77,7 +77,9 @@ export function useTodayData(id: string) {
       return { id: t.id, category: t.category, done: doneToday(t), t: t.title, s: [t.amount && !/engineer/i.test(t.amount) ? t.amount[0].toUpperCase() + t.amount.slice(1) + '.' : '', t.why].filter(Boolean).join(' '),
         ds: [t.source, t.date !== today ? 'Planned for ' + shortDate(t.date) : ''].filter(Boolean).join(' · '), g, tag, tc,
         ask: t.category === 'check' ? ['Looks fine', 'Something is wrong'] : undefined, imp: impactOf(t, s),
-        pl: priorityLine(t.id === 'straw' ? 'straw' : t.category, prio), wind: t.wind || '' };
+        pl: priorityLine(t.id === 'straw' ? 'straw' : t.category, prio), wind: t.wind || '',
+        // a status a farmer reads at a glance: done today, late (its day passed), or today
+        st: doneToday(t) ? 'Done' : (t.status === 'overdue' || t.status === 'not_done' || (t.window ? t.window[1] < today : t.date < today)) ? 'Late' : 'Today' };
     });
     // today's list: urgent first (as the server sends them), then what serves the farmer's priority; Coming up stays by date
     const urg = (x: any) => (tk.data.tasks.find((t: any) => t.id === x.id)?.priority === 'high' ? 0 : 1);

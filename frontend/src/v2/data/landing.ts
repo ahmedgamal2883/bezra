@@ -58,7 +58,7 @@ export function useLanding() {
   out.proof = hc?.waves ? `We gave Bezra only the forecasts that existed before each heat wave. On the sample field it warned ${hc.warned} of ${hc.waves} heat waves since 2021, and it missed ${hc.waves - hc.warned}. We show that too.` : '';
   out.toArabic = (e: any) => { e?.preventDefault?.(); setLang('ar'); };
   // to: a field page to land on (e.g. 'season/try'), so links on the landing work without signing in
-  const guestTo = (to = 'today?tour=welcome') => async (e: any) => {
+  const guestTo = (to = 'overview?tour=welcome') => async (e: any) => {
     e?.preventDefault?.();
     try {
       // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days

@@ -4,6 +4,7 @@
 // then wired to the API by hand. Logic: ./Season.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
@@ -30,6 +31,12 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
+              <Link href={__r("V18-Overview") + ""} className="press">
+                <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+                {"Overview"}
+              </Link>
               <Link href={__r("V18-Today") + ""} className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
@@ -92,6 +99,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"28px","paddingTop":"8px"} as any}>
+            <EffectStrip />
             {__v?.ready ? null : <div className="sk" style={{"height":"260px","borderRadius":"24px"} as any} aria-busy="true" />}
             {__v?.simple ? (
               <>
@@ -225,7 +233,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib} className="grow" title={b.l + ": " + b.v} style={__css(b.sty)} />)}
                       </div>
                       <div className="row sp meta">
-                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib}>{b.l}</span>)}
+                        {((__v?.hotAxis) || ((__v?.hot) || []).map((b: any) => b.l)).map((l: any, ib: number) => <span key={ib}>{l}</span>)}
                       </div>
                     </div>
                     <div className="col" style={{"gap":"12px"} as any}>
@@ -235,13 +243,25 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                       <p className="txt" style={{"fontSize":"16px"} as any}>
                         {__v?.twin ? "Fields near " + __v.twin.name + " already have springs like yours will. What helps there: " + __v.twin.practice : ""}
                       </p>
-                      <span className="doneline" style={{"alignSelf":"flex-start"} as any}>
+                      <span className="doneline" style={{"alignSelf":"flex-start","padding":"0 16px","height":"40px"} as any}>
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                           <path d="m5 12.5 4.5 4.5L19 7.5" />
                         </svg>
                         {__s(__v?.sownLine)}
                       </span>
                     </div>
+                  </section>) : null}
+                  {__v?.past10?.length ? (
+                  <section className="col" style={{"gap":"16px"} as any} aria-labelledby="p10-h">
+                    <span id="p10-h" className="meta" style={{"fontWeight":"600","letterSpacing":".04em"} as any}>{"WHAT HURT WHEAT HERE BEFORE · LAST 10 SEASONS"}</span>
+                    {__v.past10.map((r: any, i: number) => (
+                      <div key={i} className="col" style={{"gap":"6px"} as any}>
+                        <div className="row sp"><span style={{"fontSize":"17px"} as any}>{r.label}</span><b style={{"fontSize":"17px"} as any}>{r.count}</b></div>
+                        <div style={{"height":"12px","borderRadius":"999px","background":"#E6E5DF","overflow":"hidden"} as any}><span style={__css(r.sty)} /></div>
+                        <span className="meta" style={{"fontSize":"13px"} as any}>{r.rule}</span>
+                      </div>
+                    ))}
+                    <span className="meta" style={{"fontSize":"12px"} as any}>{__v.past10Src}</span>
                   </section>) : null}
                 </div>
               </>
@@ -414,7 +434,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib} className="grow" title={b.l + ": " + b.v} style={__css(b.sty)} />)}
                       </div>
                       <div className="row sp meta">
-                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib}>{b.l}</span>)}
+                        {((__v?.hotAxis) || ((__v?.hot) || []).map((b: any) => b.l)).map((l: any, ib: number) => <span key={ib}>{l}</span>)}
                       </div>
                       <span className="pq sat">
                         {__s(__v?.hotSrc)}

@@ -30,3 +30,34 @@ body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important;
   animation: v2-bz-bob 1.1s ease-in-out infinite; }
 @keyframes v2-bz-bob { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
 @media (prefers-reduced-motion: reduce) { .v2 .sk::after { animation: none; } }
+
+/* Today: a status per task, and quick links under the headline */
+.v2 .stpill{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.v2 .stpill.now{background:#FDECD3;color:#8A4B06}
+.v2 .stpill.late{background:#FBE0DA;color:#9A2F1C}
+.v2 .stpill.ok{background:#DCEFD9;color:#1F5E2E}
+.v2 .qchip{height:36px;padding:0 14px;border-radius:999px;background:#fff;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:var(--ink)}
+
+/* Today: each section reads as its own block (was one long run of hairlines) */
+.v2.td section.col[aria-labelledby]{border-top:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-top:14px}
+.v2.td section.col[aria-labelledby] > h2:first-child,.v2.td section.col[aria-labelledby] > div:first-child h2{padding-inline-start:10px;border-inline-start:3px solid var(--green)}
+@media (max-width:760px){.v2.td section.col[aria-labelledby]{padding:14px 14px;border-radius:14px}}
+
+/* Today, wide screens: the map stays beside the task list while it scrolls (it used to scroll away and leave an
+   empty column). Phones and tablets (<=1100px) are one column and are not touched. */
+@media (min-width:1101px){
+  .v2 .today > section.mapbox{position:sticky;top:96px;height:min(720px, calc(100vh - 112px))!important}
+}
+
+/* Arabic (right to left): chips and buttons whose padding is wider on one side (icon or avatar on one side, text on
+   the other) are mirrored, so the text side keeps its room. Same sizes as the English ones. */
+[dir=rtl] .v2 .nav a{padding:0 12px 0 16px}
+[dir=rtl] .v2 .who{padding:0 4px 0 14px}
+[dir=rtl] .v2 .lv{padding:0 8px 0 10px}
+[dir=rtl] .v2 .btn.cta{padding:0 18px 0 6px}
+[dir=rtl] .v2 .doneline{padding:0 16px 0 6px}
+[dir=rtl] .v2 .toast{padding:0 20px 0 8px}
+[dir=rtl] .v2 .welcome .stops>span{padding:6px 6px 6px 12px!important}
+[dir=rtl] .v2 .go{padding:0 16px 0 8px}
+[dir=rtl] .v2 .composer{padding:0 20px 0 8px}
+[dir=rtl] .v2 .gbanner{padding:12px 18px 12px 12px}

@@ -4,15 +4,19 @@
 // then wired to the API by hand. Logic: ./Crop.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import Logic from './Crop.logic';
 import { useCropData } from '@/v2/data/crop';
+import CropPlanCard from '@/v2/CropPlanCard';
+import { useField } from '@/lib/field';
 
 export default function CropScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
+  const __fid = useField().id;
   const __w = useWho();
   const crop = useCropData();
   const __v = { ...useDC(Logic, props), ...crop };
@@ -30,6 +34,12 @@ export default function CropScreen(props: Record<string, unknown> = {}) {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
+              <Link href={__r("V18-Overview") + ""} className="press">
+                <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+                {"Overview"}
+              </Link>
               <Link href={__r("V18-Today") + ""} className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
@@ -92,6 +102,8 @@ export default function CropScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"28px","paddingTop":"8px"} as any}>
+            <EffectStrip />
+            <CropPlanCard id={__fid} />
             {__v?.simple ? (
               <>
                 <div className="col" style={{"gap":"32px"} as any}>

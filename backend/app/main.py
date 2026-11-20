@@ -467,6 +467,38 @@ def set_priority(field_id: str, req: Priority, user: dict = Depends(current_user
     return {"priority": f["priority"]}
 
 
+class Money(BaseModel):
+    price_ardeb: float | None = None   # the farmer's own selling price, EGP per ardeb (empty = the official price)
+    cost_turn: float | None = None     # what one watering turn costs them (pump fuel, rent), EGP
+
+
+@app.get("/fields/{field_id}/effect")
+def get_effect(field_id: str, user: dict = Depends(current_user)):
+    """What each priority means here in numbers: water in Bezra's plan and the water-saver option, money with Bezra."""
+    from .services import effect
+    return effect.build(_ctx(field_id, user))
+
+
+@app.post("/fields/{field_id}/money")
+def set_money(field_id: str, req: Money, user: dict = Depends(current_user)):
+    """The farmer's own numbers for the money view. Both optional; empty clears it."""
+    _ctx(field_id, user)
+    for v in (req.price_ardeb, req.cost_turn):
+        if v is not None and not 0 < v < 1_000_000:
+            raise HTTPException(422, "Enter a number above 0")
+    f = db.get_field(field_id)
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    for k, v in (("price_ardeb", req.price_ardeb), ("cost_turn", req.cost_turn)):
+        if v is None:
+            f.pop(k, None)
+        else:
+            f[k] = round(v, 2)
+    db.save_field(f, owner)
+    return {"price_ardeb": f.get("price_ardeb"), "cost_turn": f.get("cost_turn")}
+
+
 @app.put("/fields/{field_id}")
 def edit_field(field_id: str, req: EditField, user: dict = Depends(current_user)):
     """Rework C: the farmer (or their engineer) can change the field's answers any time."""
@@ -897,6 +929,15 @@ def get_impact(field_id: str, user: dict = Depends(current_user)):
     """Your harvest: usual, with Bezra, without Bezra, and what the season has cost so far (all estimates)."""
     from .services import impact
     return impact.build(_ctx(field_id, user))
+
+
+@app.get("/fields/{field_id}/forecast")
+def get_forecast(field_id: str, user: dict = Depends(current_user)):
+    """The next days' weather at the field (Open-Meteo), straight from the weather the field already holds in memory."""
+    c = _ctx(field_id, user)
+    rows = [{"date": d, "tmax": r.get("tmax"), "tmin": r.get("tmin"), "rain": r.get("rain"), "et0": r.get("et0")}
+            for d, r in sorted((getattr(c.w, "fc", {}) or {}).items())][:8]
+    return {"days": rows, "source": "Open-Meteo forecast", "issued": getattr(c.w, "forecast_generated", None)}
 
 
 @app.get("/fields/{field_id}/seasons")

@@ -83,8 +83,41 @@ def build(c: Ctx) -> dict:
     twins.sort(key=lambda t: -t["similarity"])
 
     return {"hot_days": {"bars": bars, "trend_per_decade": round(slope * 10, 1),
+                         "years": [[y, n] for y, n in sorted(hs.items())],  # every spring since 1990 (the yearly chart)
                          "source": f"NASA POWER {min(hs)}-{max(hs)}, days over 32 °C in March and April; 2040 = linear trend"},
             "windows": windows,
             "twins": twins[:3],
             "twins_source": "Field's spring around 2040 (trend) vs NASA POWER climatology of wheat regions",
-            "trend_2040": {"tmax": round(dx, 2), "tmin": round(dn, 2)}}
+            "trend_2040": {"tmax": round(dx, 2), "tmin": round(dn, 2)},
+            "past10": _past10(c, hs)}
+
+
+# a spring "hurt by heat": more days over 32 °C in March-April (grain fill) than this field's 1990s average,
+# so the count shows the change, not the usual Delta spring (3+ days happens almost every year)
+RUST_WINTER_DAYS = 20  # a winter "with rust weather": 20+ rust days (engine.season.is_rust_day), 1 Dec to 15 Mar
+
+
+def _past10(c: Ctx, hs: dict[int, int]) -> dict:
+    """What the weather did to wheat here in the last 10 seasons, from NASA POWER only (no farmer data needed):
+    springs with grain-fill heat, winters with rust weather. Each count says its rule."""
+    from datetime import timedelta
+    from ..engine.season import is_rust_day
+    springs = [y for y in sorted(hs) if date(y, 4, 30) <= c.w.power_last][-10:]
+    base = [v for y, v in hs.items() if 1990 <= y <= 1999]
+    hot_ref = round(sum(base) / len(base)) if base else 10
+    heat = [y for y in springs if hs[y] > hot_ref]
+    rust = []
+    for y in springs:
+        d, n = date(y - 1, 12, 1), 0
+        while d <= date(y, 3, 15):
+            r = c.w.historical(d)
+            n += bool(r and r.get("dew") is not None and r.get("rh") is not None and is_rust_day(r))
+            d += timedelta(days=1)
+        if n >= RUST_WINTER_DAYS:
+            rust.append(y)
+    return {"seasons": len(springs), "from": springs[0] if springs else None, "to": springs[-1] if springs else None,
+            "rows": [{"key": "heat", "label": "Heat while the grain fills", "count": len(heat), "years": heat,
+                      "rule": f"more than {hot_ref} days over 32 °C in March and April (the 1990s average here)"},
+                     {"key": "rust", "label": "Rust weather", "count": len(rust), "years": rust,
+                      "rule": f"{RUST_WINTER_DAYS}+ cool, damp nights from December to mid March"}],
+            "source": "NASA POWER daily weather at your field"}

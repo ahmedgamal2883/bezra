@@ -13,7 +13,7 @@ const PAGES: Record<string, To> = {
   'Today-Joined': f('today'), 'Guest-Today': f('today'),
   'Log-What': (id) => `/field/${id}/today?log=1`, 'Log-Leaf': (id) => `/field/${id}/today?log=1`,
   Journal: f('journal'), JournalD: f('journal'),
-  Crop: f('crop'), CropD: f('crop'), 'Crop-Rust': f('crop/rust'), 'Crop-RustD': f('crop/rust'),
+  Overview: f('overview'), Crop: f('crop'), CropD: f('crop'), 'Crop-Rust': f('crop/rust'), 'Crop-RustD': f('crop/rust'),
   Check: f('crop/check'), 'Check-Result': f('crop/check'), 'Check-Unsure': f('crop/check'),
   Soil: f('soil'), SoilD: f('soil'), Season: f('season'), SeasonD: f('season'), 'Season-Joined': f('season'),
   Try: f('season/try'), TryD: f('season/try'), 'Try-Change': f('season/try'), 'Try-Replay': f('season/try'),

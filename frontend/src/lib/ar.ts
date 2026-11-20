@@ -826,6 +826,14 @@ export const PATTERNS: [RegExp, string][] = ([
   [`^Water tomorrow, (.+)$`, 'اروي بكرة، $1'],
   [`^Rain expected (\\w+)$`, 'متوقع مطر يوم $d1'],
   [`^Heat on (.+)$`, 'حر يوم $d1'],
+  // amounts and composed lines (tried last: each piece is translated on its own)
+  [`^[Aa]bout (\\d[\\d,]*) m³$`, 'حوالي $1 م³'],
+  [`^[Aa]bout (\\d[\\d,]*) m³\\. (.+)$`, 'حوالي $1 م³. $2'],
+  [`^[Aa]bout ([\\d.–-]+) kg of (.+) per feddan \\(([\\d.]+) bags?\\)\\.?$`, 'حوالي $1 كيلو $2 للفدان ($3 شكارة).'],
+  [`^Planned for ${D}$`, 'متخطط يوم $d1'],
+  [`^Leaves: (.+)$`, 'الورق: $1'],
+  [`^Pest: (.+)$`, 'آفة: $1'],
+  [`^(.+) · (.+)$`, '$1 · $2'],
 ] as [string, string][]).map(([p, r]) => [new RegExp(p), r]);
 
 // the redesign's templates are tried first

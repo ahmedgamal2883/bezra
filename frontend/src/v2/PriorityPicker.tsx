@@ -3,6 +3,7 @@
 // it orders the rotation cards, the day's tasks and the field alerts. Pick, then Confirm.
 import { useEffect, useState } from 'react';
 import { API, useApi } from '@/lib/api';
+import PriorityEffect from '@/v2/PriorityEffect';
 
 export const PRIORITY_CHOICES: [string, string][] = [['soil', 'Stronger soil'], ['water', 'Less water'], ['money', 'More harvest'], ['fodder', 'Fodder']];
 
@@ -40,6 +41,7 @@ export default function PriorityPicker({ id, onSaved }: { id: string | null | un
         ) : null}
       </div>
       <span className="meta" style={{ fontSize: '13px' }}>{'Bezra orders your tasks, warnings and rotations by this. Urgent warnings always come first.'}</span>
+      <PriorityEffect id={id} pick={pick} />
     </div>
   );
 }

@@ -617,6 +617,26 @@ export default function LandingScreen(props: Record<string, unknown> = {}) {
                   </div>
                 </div>
               </div>
+              <div className="feat r">
+                <div className="col" style={{"gap":"14px"} as any}>
+                  <span className="stepn">
+                    {"04"}
+                  </span>
+                  <h3 className="h2x" style={{"fontSize":"38px"} as any}>
+                    {"Your farm assistant, for anything"}
+                  </h3>
+                  <p className="txt" style={{"fontSize":"18px"} as any}>
+                    {"Ask Bezra anything about your farm, in Arabic or English. It reads your field's own data to answer, and it can build a whole season plan with you for any crop: the steps go into your tasks, with what it does to your soil, the harvest to expect and what can hurt it."}
+                  </p>
+                </div>
+                <div className="fvis">
+                  <div className="mcard" style={{"position":"relative","width":"440px","padding":"22px"} as any}>
+                    <span className="sec" style={{"fontSize":"11px"} as any}>{"ASK BEZRA"}</span>
+                    <p className="txt" style={{"marginTop":"10px","fontWeight":600} as any}>{"“I want to plant onions after the wheat. Make me a plan.”"}</p>
+                    <p className="txt" style={{"marginTop":"8px"} as any}>{"Bezra asks your planting date, shows the steps, and once you agree, they appear in your tasks. Amounts come with a note to check them with your engineer."}</p>
+                  </div>
+                </div>
+              </div>
             </section>
             <section id="proof" className="grid hair" style={{"gridTemplateColumns":"minmax(0, 1fr) minmax(0, 1fr)","gap":"64px","paddingTop":"72px","alignItems":"center"} as any}>
               <div className="col" style={{"gap":"18px"} as any}>

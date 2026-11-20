@@ -24,7 +24,7 @@ DEMO = "demo"
 FIELD = ["", "/summary", "/tasks", "/checkin", "/irrigation", "/journal", "/ndvi", "/mapframe", "/photo.jpg", "/rotation",
          "/rotation?priorities=water,soil", "/rotation?priorities=fodder,soil", "/seasons", "/health", "/calendar",
          "/squares", "/layers", "/scale", "/impact", "/next", "/plan", "/field-alerts", "/rust", "/freshness", "/alerts",
-         "/today", "/raw", "/reviews"]
+         "/today", "/raw", "/reviews", "/forecast", "/effect"]
 OTHER = ["/auth/me", "/fields", "/me/tour", "/sample", "/hindcast", "/chat/status", "/status/apis"]
 
 

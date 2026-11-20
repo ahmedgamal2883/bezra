@@ -4,6 +4,8 @@
 // then wired to the API by hand. Logic: ./Soil.logic.js
 import { Fragment } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
+import OwnRotation from '@/v2/OwnRotation';
 import PriorityPicker from '@/v2/PriorityPicker';
 import SeedLoader from '@/components/SeedLoader';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
@@ -32,6 +34,12 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
+              <Link href={__r("V18-Overview") + ""} className="press">
+                <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+                {"Overview"}
+              </Link>
               <Link href={__r("V18-Today") + ""} className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
@@ -94,6 +102,8 @@ export default function SoilScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"28px","paddingTop":"8px"} as any}>
+            <EffectStrip />
+            <OwnRotation />
             {__v?.simple ? (
               <>
                 <div className="col" style={{"gap":"40px"} as any}>

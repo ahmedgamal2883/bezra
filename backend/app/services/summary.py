@@ -151,7 +151,17 @@ def build(c: Ctx) -> dict:
     rain = sum((w.obs.get((since + timedelta(days=i)).isoformat()) or {}).get("rain", 0) for i in range(1, (today - since).days + 1))
     used = sum(x["m3"] for x in f["waterings"])
     water_pct = round(cur.water_pct) if cur else None
-    apply_m3 = round(on_turn.irrigated_mm * MM_TO_M3_PER_FEDDAN * f["area_feddan"], -1) if on_turn else None
+    # the amount is the season plan's own for this turn (one number everywhere: Today, Overview, the plan, the chat);
+    # the old net-depletion formula is only a fallback if the plan has no amount for that day
+    apply_m3 = None
+    try:
+        from . import plan as _plan
+        pt = next((t for t in _plan.build(c)["tasks"] if t["type"] == "water" and t["planned_date"] == nt.isoformat()), None)
+        apply_m3 = ((pt or {}).get("amount") or {}).get("m3")
+    except Exception:
+        apply_m3 = None
+    if apply_m3 is None and on_turn:
+        apply_m3 = round(on_turn.irrigated_mm * MM_TO_M3_PER_FEDDAN * f["area_feddan"], -1)
     after_pct = round(on_turn.water_pct) if on_turn else None
     gain = max(0.0, (base.yield_index - skip.yield_index) * 100)
     protect = (round(gain * 0.7), max(1, round(gain))) if gain >= 1 else None
@@ -281,7 +291,7 @@ def build(c: Ctx) -> dict:
         "watch": _watch(c),
         "action": action | {
             "protects": num(protect, "%", est, "Season model: with vs without this turn, FAO-56 water balance + yield index", as_of),
-            "apply_m3": num(apply_m3, "m3", est, "Depletion at the turn x 4.2 m3/mm/feddan x area", as_of),
+            "apply_m3": num(apply_m3, "m3", est, "The season plan's amount for this turn: soil need / 60% surface efficiency x 4.2 m3/mm/feddan x area", as_of),
             "confidence": "Medium", "confidence_why": "soil is a first guess",
             "method": f"FAO-56, Kc {kc_now}, RAW 50%" if kc_now is not None else None,
             "next_turn": nt.isoformat(),

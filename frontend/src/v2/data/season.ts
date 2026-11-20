@@ -106,6 +106,24 @@ export function useSeasonData() {
     const first = bars[0], now = bars.find((b: any) => /20(1|2)0s|now|today/i.test(b.label)) || bars[bars.length - 2] || bars[bars.length - 1];
     out.hotSay = `Hot spring days (over 32 °C in March and April): about ${Math.round(first.value)} a year in the ${first.label}, about ${Math.round(now.value)} in the ${now.label}.`;
     out.hotSrc = nx.hot_days.source;
+    // every spring since 1990 (one bar a year); the springs counted as "hurt by heat" in the last 10 are orange
+    const yrs: [number, number][] = nx.hot_days.years || [];
+    const hotYears = new Set<number>((nx.past10?.rows || []).find((r: any) => r.key === 'heat')?.years || []);
+    if (yrs.length > 5) {
+      const ymax = Math.max(...yrs.map((y) => y[1]), 1);
+      out.hot = yrs.map(([y, v], i) => ({ l: String(y), v, sty: `--i:${i};flex:1;height:${Math.max(6, v / ymax * 100)}px;border-radius:3px;background:${hotYears.has(y) ? '#F29B1E' : '#E3D3B4'};` }));
+      out.hotAxis = [yrs[0][0], 2000, 2010, yrs[yrs.length - 1][0]].map(String);
+      const avg = (a: number, b: number) => { const v = yrs.filter(([y]) => y >= a && y <= b).map(([, n]) => n); return v.length ? Math.round(v.reduce((x, y) => x + y, 0) / v.length) : 0; };
+      const last = yrs[yrs.length - 1][0];
+      out.hotSay = `Hot spring days went from about ${avg(1990, 1999)} a year in the 1990s to about ${avg(last - 9, last)} in the last 10 years.`;
+    }
+    // what hurt wheat here in the last 10 seasons (weather only, each with its rule)
+    if (nx.past10?.rows?.length) {
+      const n = nx.past10.seasons || 10;
+      out.past10 = nx.past10.rows.map((r: any) => ({ label: r.label, count: `${r.count} of ${n}`, rule: r.rule,
+        sty: `display:block;width:${Math.round(r.count / n * 100)}%;height:100%;border-radius:999px;background:${r.key === 'heat' ? '#C2452D' : '#E07A2E'};` }));
+      out.past10Src = nx.past10.source;
+    }
     const tw = nx.twins?.[0];
     out.twin = tw ? { name: tw.name, practice: tw.practice, sim: tw.similarity, src: nx.twins_source } : null;
   }

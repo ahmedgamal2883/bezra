@@ -4,6 +4,7 @@
 // then wired to the API by hand. Logic: ./Today.logic.js
 import { Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import EffectStrip from '@/v2/EffectStrip';
 import { useDC, css as __css, s as __s } from '@/lib/dc';
 import Tour from '@/v2/tour/Tour';
 import { useV2Href } from '@/v2/routes';
@@ -31,7 +32,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
   });
   return (
     <>
-      <div className="v2 root">
+      <div className="v2 root td">
         <div className="shell">
           <header className="top">
             <Link href={__r("V18-Today") + ""} className="brand" aria-label="Bezra, Today">
@@ -43,6 +44,12 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
               {"bezra"}
             </Link>
             <nav aria-label="Main" className="nav">
+              <Link href={__r("V18-Overview") + ""} className="press">
+                <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+                {"Overview"}
+              </Link>
               <Link href={__r("V18-Today") + ""} aria-current="page" className="press">
                 <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20" />
@@ -105,6 +112,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
             </div>
           </header>
           <main className="main" style={{"gap":"24px","paddingTop":"16px"} as any}>
+            <EffectStrip />
             {user?.guest ? (
               <div className="gbanner" role="status">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8h.01M11 12h1v5h1" /></svg>
@@ -262,6 +270,11 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         <p style={{"fontSize":"18px","color":"var(--ink2)"} as any}>
                           {__s(__v?.headS)}
                         </p>
+                        <div className="row" style={{"gap":"8px","flexWrap":"wrap","marginTop":"6px"} as any}>
+                          <Link href={__r("V18-Overview") + ""} className="qchip press">{"Field overview"}</Link>
+                          <Link href={__r("V18-Story") + ""} className="qchip press">{"What should I do?"}</Link>
+                          <Link href="/ask" className="qchip press">{"Ask Bezra"}</Link>
+                        </div>
                       </div>
                       <section className="col hair" aria-labelledby="todo-h">
                         <div className="tdh">
@@ -327,8 +340,11 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                     </>
                                   ) : null}
                                 </div>
-                                <span className={__s(k?.tc) as any} style={{"marginTop":"4px"} as any}>
-                                  {__s(k?.tag)}
+                                <span className="col" style={{"gap":"6px","alignItems":"flex-end"} as any}>
+                                  {k?.st ? <span className={k.stc}>{k.st}</span> : null}
+                                  <span className={__s(k?.tc) as any}>
+                                    {__s(k?.tag)}
+                                  </span>
                                 </span>
                               </div>
                             </Fragment>
@@ -793,8 +809,11 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                                     </>
                                   ) : null}
                                 </div>
-                                <span className={__s(k?.tc) as any} style={{"marginTop":"4px"} as any}>
-                                  {__s(k?.tag)}
+                                <span className="col" style={{"gap":"6px","alignItems":"flex-end"} as any}>
+                                  {k?.st ? <span className={k.stc}>{k.st}</span> : null}
+                                  <span className={__s(k?.tc) as any}>
+                                    {__s(k?.tag)}
+                                  </span>
                                 </span>
                               </div>
                             </Fragment>
@@ -1614,6 +1633,11 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         </>
                       ) : null}
                       <span />
+                      {__v?.canQuick ? (
+                        <button type="button" className="btn soft press" onClick={__v?.quick} style={{"height":"50px"} as any}>
+                          {"Save now"}
+                        </button>
+                      ) : null}
                       <button type="button" className="btn press" onClick={__v?.next} style={{"minWidth":"140px","height":"50px"} as any}>
                         {__s(__v?.nextLabel)}
                       </button>

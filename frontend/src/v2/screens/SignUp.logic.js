@@ -77,7 +77,7 @@ const guest = async (ev) => {
   // your own copy of the sample field (POST /auth/guest): no other guest sees your notes, kept for 7 days
   const r = await post('/auth/guest', {});
   if (!r.ok) throw new Error('guest');
-  go('/field/' + r.j.field_id + '/today?tour=welcome');
+  go('/field/' + r.j.field_id + '/overview?tour=welcome');
  } catch (x) { set({ busy: false, err: { form: 'Could not open the sample field. Try again.' } }); }
 };
 return Object.assign(base, { up: st === 'up', inn: st === 'in', code: false, name: S.name, phone: S.phone, pw: S.pw,
