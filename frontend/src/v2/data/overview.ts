@@ -5,6 +5,7 @@
 import { useCallback, useState } from 'react';
 import { API, useApi } from '@/lib/api';
 import { useField } from '@/lib/field';
+import { useLang } from '@/lib/i18n';
 import { usePriority, priorityRank } from '@/v2/PriorityPicker';
 import { nextWinterName, soilFive } from '@/v2/data/soil';
 
@@ -13,10 +14,18 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const d0 = (s: string) => new Date(s + 'T12:00:00');
 const dm = (s: string) => { const d = d0(s); return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`; };
+const DAYS_AR = ['الحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'];
+const MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+const dmAr = (s: string) => { const d = d0(s); return `${DAYS_AR[d.getDay()]} ${d.getDate()} ${MONTHS_AR[d.getMonth()]}`; };
 const LETTERS = 'ABCDEFGHIJ';
+const STAGE_AR: Record<string, string> = { Emerging: 'الإنبات', Tillering: 'التفريع', 'Stem growth': 'طلوع الساق', Heading: 'طلوع السنابل',
+  'Grain filling': 'امتلاء الحبوب', Ripening: 'النضج', Ripe: 'النضج' };
+const CROP_AR: Record<string, string> = { wheat: 'القمح', maize: 'الذرة', berseem: 'البرسيم', cotton: 'القطن', rice: 'الرز', faba: 'الفول' };
 
 export function useOverviewData() {
   const { id, field } = useField();
+  const { lang } = useLang();
+  const ar = lang === 'ar';
   const [ver, setVer] = useState(0);
   const q = ver ? `?v=${ver}` : '';
   const sm = useApi<any>(id ? `/fields/${id}/summary${q}` : null).data;
@@ -24,7 +33,8 @@ export function useOverviewData() {
   const al = useApi<any>(id ? `/fields/${id}/alerts${q}` : null).data;
   const im = useApi<any>(id ? `/fields/${id}/impact${q}` : null).data;
   const sq = useApi<any>(id ? `/fields/${id}/squares` : null).data;
-  const fc = useApi<any>(id ? `/fields/${id}/forecast` : null).data;
+  const fcA = useApi<any>(id ? `/fields/${id}/forecast` : null);
+  const fc = fcA.data;
   const ro = useApi<any>(id ? `/fields/${id}/rotation` : null).data;
   const fd = useApi<any>(id ? `/fields/${id}` : null).data;
   const prio = usePriority(id, ver);
@@ -36,8 +46,10 @@ export function useOverviewData() {
   const f = sm.field || {};
   const hour = new Date().getHours();
   out.hello = `${hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'}${f.farmer && f.farmer !== 'Guest' ? ', ' + String(f.farmer).split(' ')[0] : ''}.`;
-  out.date = dm(today);
-  out.fieldLine = `${f.name || field?.name || ''} · ${String(f.crop || '').toLowerCase()}, day ${sm.day_n} of about ${sm.season_days}`;
+  out.date = ar ? dmAr(today) : dm(today);
+  const cropW = String(f.crop || '').toLowerCase();
+  out.fieldLine = ar ? `${f.name || field?.name || ''} · ${CROP_AR[cropW] || cropW}، يوم ${sm.day_n} من حوالي ${sm.season_days}`
+    : `${f.name || field?.name || ''} · ${cropW}, day ${sm.day_n} of about ${sm.season_days}`;
   out.stage = sm.stage;
 
   // ---- tasks: today's open ones first (urgent, then the farmer's priority), then what comes next
@@ -52,24 +64,27 @@ export function useOverviewData() {
   out.coming = coming.map(row);
 
   // ---- brief: what needs the farmer today, in one sentence
-  const warn = (al?.alerts || []).filter((a: any) => a.level === 'high' || a.level === 'med');
-  const things = [...due.slice(0, 2).map((t: any) => t.title.replace(/\.$/, '').toLowerCase()), ...warn.slice(0, 1).map((a: any) => a.title.replace(/\.$/, '').toLowerCase())];
+  // warnings that are not already a task above (water and the weak square each have their task)
+  const warn = (al?.alerts || []).filter((a: any) => (a.level === 'high' || a.level === 'med') && !['water', 'data'].includes(a.kind));
   const n = due.length + warn.length;
-  out.brief = n === 0 ? 'Nothing needs you today. Your field is on track.'
-    : `${n === 1 ? 'One thing needs' : `${n} things need`} you today: ${things.join('; ')}.`;
+  // a heading, then one line per thing (each is a task or warning title, so it is translated on its own)
+  out.brief = n === 0 ? 'Nothing needs you today. Your field is on track.' : n === 1 ? 'One thing needs you today:' : `${n} things need you today:`;
+  out.briefItems = n === 0 ? [] : [...due.slice(0, 3).map((t: any) => t.title), ...warn.slice(0, 1).map((a: any) => a.title)];
 
   // ---- today's action and why (summary.action: the same one Today shows)
   const a = sm.action || {};
-  const wt = tk.tasks.find((t: any) => t.category === 'irrigation' && t.date === a.next_turn);
+  // the watering this action is about: one due now (today or late) first, else the next turn
+  const wt = tk.tasks.find((t: any) => t.category === 'irrigation' && open(t) && t.date <= today) || tk.tasks.find((t: any) => t.category === 'irrigation' && t.date === a.next_turn);
   const fcDays: any[] = fc?.days || [];
   const rain7 = Math.round(fcDays.reduce((s: number, d: any) => s + (d.rain || 0), 0));
   const why: string[] = [];
   if (sm.soil_water) why.push(`Soil water is at ${sm.soil_water.value}% (refill at ${sm.soil_water.refill}%).`);
-  if (sm.stage) why.push(`Your ${String(f.crop || 'crop').toLowerCase()} is ${String(sm.stage).toLowerCase()}.`);
+  if (sm.stage) why.push(ar ? `${CROP_AR[cropW] || cropW} في مرحلة ${STAGE_AR[sm.stage] || sm.stage}.` : `Your ${cropW || 'crop'} is ${String(sm.stage).toLowerCase()}.`);
   if (fcDays.length) why.push(rain7 > 0 ? `About ${rain7} mm of rain is forecast this week.` : 'No rain is forecast this week.');
   if (a.protects?.value) why.push(`It protects about ${a.protects.value[0]}–${a.protects.value[1]}% of your harvest.`);
   out.action = { title: a.title, body: a.body, amount: wt?.amount || null, why, conf: a.confidence || null, confWhy: a.confidence_why || '', method: a.method || '',
-    taskId: wt && open(wt) ? wt.id : null, done: wt?.answer?.answer === 'done' };
+    // only a watering that is due now (today or late) gets the button, never a future one
+    taskId: wt && open(wt) && wt.date <= today ? wt.id : null, done: wt?.answer?.answer === 'done' };
 
   // ---- four tiles
   const tiles: any[] = [];
@@ -79,9 +94,9 @@ export function useOverviewData() {
   }
   if (im?.with_bezra?.ardeb != null && im?.without_bezra?.ardeb != null) {
     const g = Math.round((im.with_bezra.ardeb - im.without_bezra.ardeb) * 10) / 10;
-    tiles.push({ k: 'effect', label: 'Bezra effect, this season', big: `${g >= 0 ? '+' : ''}${g}`, small: `ardeb per feddan${im.price?.gain_egp_per_feddan ? ` · about ${Number(im.price.gain_egp_per_feddan).toLocaleString('en-US')} EGP` : ''}`, tone: 'orange', href: 'season' });
+    tiles.push({ k: 'effect', label: 'Bezra effect, this season', big: `${g >= 0 ? '+' : ''}${g}`, small: ar ? `أردب للفدان${im.price?.gain_egp_per_feddan ? ` · حوالي ${Number(im.price.gain_egp_per_feddan).toLocaleString('en-US')} جنيه` : ''}` : `ardeb per feddan${im.price?.gain_egp_per_feddan ? ` · about ${Number(im.price.gain_egp_per_feddan).toLocaleString('en-US')} EGP` : ''}`, tone: 'orange', href: 'season' });
   }
-  tiles.push({ k: 'day', label: 'Season', big: String(sm.day_n), small: `day of about ${sm.season_days} · ${String(sm.stage || '').toLowerCase()}`, tone: 'plain', href: 'season' });
+  tiles.push({ k: 'day', label: 'Season', big: String(sm.day_n), small: ar ? `يوم من حوالي ${sm.season_days} · ${STAGE_AR[sm.stage] || sm.stage || ''}` : `day of about ${sm.season_days} · ${String(sm.stage || '').toLowerCase()}`, tone: 'plain', href: 'season' });
   if (sm.water_used?.value != null) tiles.push({ k: 'water', label: 'Water given this season', big: Number(sm.water_used.value).toLocaleString('en-US'), small: 'm³, from your journal', tone: 'plain', href: 'journal' });
   out.tiles = tiles;
 
@@ -99,12 +114,13 @@ export function useOverviewData() {
   const turns = new Set(tk.tasks.filter((t: any) => t.category === 'irrigation').map((t: any) => t.date));
   out.week = fcDays.slice(0, 7).map((d: any) => ({ day: DAYS[d0(d.date).getDay()], date: d0(d.date).getDate(), hi: Math.round(d.tmax), lo: Math.round(d.tmin), rain: Math.round(d.rain || 0), water: turns.has(d.date) }));
   out.weekSrc = fc?.source;
+  out.weekErr = !fc && !!fcA.error;  // the server has no forecast for us: say so, never an endless loader
 
   // ---- rotation: next winter's plan and the best rotation
   const nw = fd?.next_winter, nwCrop = typeof nw === 'string' ? nw : nw?.crop;
   out.nextWinter = nwCrop ? nextWinterName(nwCrop) : null;
   const best = ro ? [...(ro.strategies || []), ...(ro.more || [])].find((s: any) => s.pick) : null;
-  out.best = best ? { name: best.name?.[0], seq: (best.sequence_names || []).map((q2: any) => q2.filter(Boolean).join(' → ')).join(' · ') } : null;
+  out.best = best ? { name: ar ? (best.name?.[1] || best.name?.[0]) : best.name?.[0], seq: ((ar ? best.sequence_names_ar : best.sequence_names) || []).map((q2: any) => q2.filter(Boolean).join(' → ')).join(' · ') } : null;
 
   out.act = {
     done: async (taskId: string) => {

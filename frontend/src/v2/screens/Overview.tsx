@@ -101,6 +101,7 @@ export default function OverviewScreen() {
                 <Link href={__r("V18-Today") + ""} className="btn soft press" style={{"height":"40px"} as any}>{"Open today's list"}</Link>
               </div>
               <p className="ovlead">{v.brief}</p>
+              {v.briefItems?.length ? <ul className="ovlist">{v.briefItems.map((x: string, i: number) => <li key={i}>{x}</li>)}</ul> : null}
               <div className="row" style={{"gap":"8px","flexWrap":"wrap"} as any}>
                 <Link href={__r("V18-Story") + ""} className="ovchip press">{"What should I do?"}</Link>
                 <Link href="/ask" className="ovchip press">{"Ask Bezra"}</Link>
@@ -114,7 +115,7 @@ export default function OverviewScreen() {
                 <div className="row sp"><h2 id="ov-map" className="ovh2">{"Your field from space"}</h2>{v.map ? <span className="meta">{v.map.date}</span> : null}</div>
                 {v.map ? (
                   <>
-                    <div className="ovmap" style={{"gridTemplateColumns":`repeat(${v.map.cols}, 1fr)`} as any} role="img" aria-label={"Field squares, coloured by how green they are, " + v.map.date}>
+                    <div className="ovmap" style={{"--cols": v.map.cols} as any} role="img" aria-label={"Field squares, coloured by how green they are, " + v.map.date}>
                       {v.map.cells.map((c: any, i: number) => (
                         <span key={i} className={"ovsq " + c.cls} title={c.pct != null ? c.name + ": " + (c.pct >= 0 ? "+" : "") + c.pct + "% vs the rest" : c.name}>
                           {c.cls !== 'outside' ? <><b>{c.name}</b>{c.pct != null && c.cls === 'less' ? <small>{c.pct + "%"}</small> : null}</> : null}
@@ -198,7 +199,7 @@ export default function OverviewScreen() {
                       </div>
                     ))}
                   </div>
-                ) : <SeedLoader inline />}
+                ) : v.weekErr ? <p className="meta">{"The forecast is not available right now."}</p> : <SeedLoader inline />}
                 <span className="meta" style={{"fontSize":"12px"} as any}>{v.weekSrc || ""}</span>
               </section>
               <section className="ovcard" aria-labelledby="ov-rot">
@@ -222,9 +223,10 @@ const OV_CSS = `.v2 .ov .ovcard{background:#fff;border-radius:24px;padding:22px;
 .v2 .ov .ovh1{font-size:34px;font-weight:600;letter-spacing:-.8px;margin:0}
 .v2 .ov .ovh2{font-size:18px;font-weight:600;margin:0}
 .v2 .ov .ovlead{font-size:19px;line-height:1.45;margin:0;max-width:820px}
+.v2 .ov .ovlist{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:4px;font-size:16px}
 .v2 .ov .ovchip{height:36px;padding:0 14px;border-radius:999px;background:#F1F0EC;display:inline-flex;align-items:center;font-size:14px;font-weight:600}
 .v2 .ov .ovgrid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.v2 .ov .ovmap{display:grid;gap:4px;max-width:420px;width:100%}
+.v2 .ov .ovmap{display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:4px;max-width:420px;width:100%}
 .v2 .ov .ovsq{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:#17251C}
 .v2 .ov .ovsq.good{background:#4E8A3A;color:#fff}
 .v2 .ov .ovsq.normal{background:#DDE3B0}
