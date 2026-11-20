@@ -899,6 +899,15 @@ def get_impact(field_id: str, user: dict = Depends(current_user)):
     return impact.build(_ctx(field_id, user))
 
 
+@app.get("/fields/{field_id}/forecast")
+def get_forecast(field_id: str, user: dict = Depends(current_user)):
+    """The next days' weather at the field (Open-Meteo), straight from the weather the field already holds in memory."""
+    c = _ctx(field_id, user)
+    rows = [{"date": d, "tmax": r.get("tmax"), "tmin": r.get("tmin"), "rain": r.get("rain"), "et0": r.get("et0")}
+            for d, r in sorted((getattr(c.w, "fc", {}) or {}).items())][:8]
+    return {"days": rows, "source": "Open-Meteo forecast", "issued": getattr(c.w, "forecast_generated", None)}
+
+
 @app.get("/fields/{field_id}/seasons")
 def get_seasons(field_id: str, user: dict = Depends(current_user)):
     """Past seasons: report numbers and the season's timeline (each event labelled with where it came from)."""

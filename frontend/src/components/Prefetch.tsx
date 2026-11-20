@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { prefetch } from '@/lib/api';
 
 const PATHS = ['', '/summary', '/tasks', '/checkin', '/irrigation', '/journal', '/ndvi', '/mapframe', '/rotation', '/seasons',
-  '/health', '/alerts', '/today', '/calendar', '/squares', '/layers', '/scale', '/field-alerts', '/plan', '/impact', '?p=0'];
+  '/health', '/alerts', '/today', '/calendar', '/squares', '/layers', '/scale', '/field-alerts', '/plan', '/impact', '/forecast', '?p=0'];
 
 export default function Prefetch({ id }: { id: string }) {
   useEffect(() => {

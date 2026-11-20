@@ -121,7 +121,7 @@ const mini = SQN.map((n) => { const on = LG.all || LG.wh.includes(n); return { l
 const whens = [['today', 'Today'], ['yesterday', 'Yesterday']].map(([id, l]) => ({ label: l, cls: 'opt' + (LG.when === id ? ' on' : ''), pressed: String(LG.when === id), pick: () => up({ when: id }) }));
 const R = (() => {
  const t = LG.ty, o = optName;
- if (t === 'water') { const a = LG.prevTurn, b = D.nextTurn; return ['Got it. Your watering is in the journal and the water plan now starts from it.', a && b && a !== b ? 'Next watering' : '', a && b && a !== b ? a : '', a && b && a !== b ? 'About ' + b : '']; }
+ if (t === 'water') { const a = LG.prevTurn, b = D.nextTurn; return ['Got it. Your watering is in the journal and the water plan now starts from it.', a && b && a !== b ? 'Next watering' : '', a && b && a !== b ? a : '', a && b && a !== b ? b : '']; }
  if (t === 'feed') return ['Saved: ' + (LG.dk ? 'amount not known' : LG.amt + ' kg ' + o.toLowerCase() + ' per feddan') + (where ? ' on the ' + where : '') + '.' + (sug && !LG.dk ? (tooMuch ? ' That is more than double the usual amount. Check it with your engineer.' : (LG.amt > sug[1] ? ' A little above the usual range.' : ' That is inside the usual range.')) : ''), '', '', ''];
  if (t === 'spray') return ['Saved. Your engineer can see what you sprayed and when.', '', '', ''];
  if (t === 'pest') return [o === 'Aphids' ? 'Aphids are common now and rarely serious at this stage. Look at the same squares again in a few days.' : 'Saved. A close photo helps your engineer tell what it is.', '', '', ''];
@@ -143,7 +143,7 @@ const flip = async (k) => {
  try { await D.act.answerTask(k.id, 'done'); }
  catch (e) { set({ td: Object.assign({}, S.td, { [k.id]: false }), toast: 'Could not save. Check your connection and try again.' }); }
 };
-const todo = TASKS.map((k) => ({ t: k.t, s: k.s, ds: k.ds, g: k.g, hasG: !!k.g, pl: k.pl || '', wind: k.wind || '', tag: k.tag, tc: k.tc, cls: 'tdrow' + (isDone(k) ? ' done' : ''), box: 'tbox press' + (isDone(k) ? ' on' : ''), checked: String(!!isDone(k)),
+const todo = TASKS.map((k) => ({ t: k.t, s: k.s, ds: k.ds, g: k.g, hasG: !!k.g, pl: k.pl || '', wind: k.wind || '', st: isDone(k) ? 'Done' : (k.st || ''), stc: 'stpill ' + (isDone(k) ? 'ok' : k.st === 'Late' ? 'late' : 'now'), tag: k.tag, tc: k.tc, cls: 'tdrow' + (isDone(k) ? ' done' : ''), box: 'tbox press' + (isDone(k) ? ' on' : ''), checked: String(!!isDone(k)),
  toggle: () => flip(k), label: (isDone(k) ? 'Done: ' : 'Mark done: ') + k.t,
  askOpen: !!(isDone(k) && k.ask && !TA[k.id]), answered: isDone(k) && TA[k.id] ? 'Saved to your journal: ' + TA[k.id].toLowerCase() + '.' : '', hasAnswer: !!(isDone(k) && TA[k.id]),
  asks: (k.ask || []).map((a) => ({ label: a, pick: () => set({ ta: Object.assign({}, TA, { [k.id]: a }) }) })), askQ: 'What did you find?' }));

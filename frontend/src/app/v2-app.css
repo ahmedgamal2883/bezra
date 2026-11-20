@@ -30,3 +30,10 @@ body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important;
   animation: v2-bz-bob 1.1s ease-in-out infinite; }
 @keyframes v2-bz-bob { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
 @media (prefers-reduced-motion: reduce) { .v2 .sk::after { animation: none; } }
+
+/* Today: a status per task, and quick links under the headline */
+.v2 .stpill{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.v2 .stpill.now{background:#FDECD3;color:#8A4B06}
+.v2 .stpill.late{background:#FBE0DA;color:#9A2F1C}
+.v2 .stpill.ok{background:#DCEFD9;color:#1F5E2E}
+.v2 .qchip{height:36px;padding:0 14px;border-radius:999px;background:#fff;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:var(--ink)}
