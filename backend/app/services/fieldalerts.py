@@ -267,7 +267,7 @@ def build(c: Ctx) -> dict:
             "where": None, "sure": "med", "sure_why": "A forecast, not a promise.", "causes": [],
             "action": f"Give a light watering on {(d0 - timedelta(days=1)).strftime('%A')}.", "ask": ASK["heat"],
             "evidence": None, "state": "closed" if a.get("closed") else "open", "closed_by": a.get("closed_by"),
-            "answer": a.get("answer"), "source": "Open-Meteo forecast", "provenance": "estimated",
+            "answer": a.get("answer"), "source": getattr(c.w, "forecast_source", "Open-Meteo forecast"), "provenance": "estimated",
             "voice": "جاي أيام حر. اسقي رية خفيفة قبلها بيوم.",
         })
 

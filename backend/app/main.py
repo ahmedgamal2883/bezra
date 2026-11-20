@@ -937,7 +937,7 @@ def get_forecast(field_id: str, user: dict = Depends(current_user)):
     c = _ctx(field_id, user)
     rows = [{"date": d, "tmax": r.get("tmax"), "tmin": r.get("tmin"), "rain": r.get("rain"), "et0": r.get("et0")}
             for d, r in sorted((getattr(c.w, "fc", {}) or {}).items())][:8]
-    return {"days": rows, "source": "Open-Meteo forecast", "issued": getattr(c.w, "forecast_generated", None)}
+    return {"days": rows, "source": getattr(c.w, "forecast_source", "Open-Meteo forecast"), "issued": getattr(c.w, "forecast_generated", None)}
 
 
 @app.get("/fields/{field_id}/seasons")

@@ -2,7 +2,7 @@
 
   past days  : NASA POWER (ET0 computed with FAO-56 Penman-Monteith)
   POWER gap  : Open-Meteo's recent days (POWER lags 2-5 days)
-  next 7 days: Open-Meteo forecast
+  next 7 days: Open-Meteo forecast (MET Norway when Open-Meteo refuses)
   later      : POWER daily climatology (mean of 1991-2025 for that calendar day), for projections only
 Every day carries `src` so screens can show where a number came from.
 """
@@ -35,9 +35,28 @@ class Weather:
             self.obs[ds] = {**{k: r[k] for k in ("tmax", "tmin", "tmean", "rh", "dew", "rain")}, "et0": et0, "src": "power"}
         self.fc: dict[str, dict] = {}
         self.forecast_generated = None
+        self.forecast_source = openmeteo.SOURCE
         self.openmeteo_meta = {"state": "missing"}
         try:
-            om, self.openmeteo_meta = openmeteo.weather(lat, lon)
+            om, self.openmeteo_meta = None, {"state": "missing"}
+            try:
+                om, self.openmeteo_meta = openmeteo.weather(lat, lon)
+            except Exception:
+                pass
+            if self.openmeteo_meta.get("state") not in ("live", "cached"):
+                # Open-Meteo refused or failed (429 on the shared server address): MET Norway's forecast for the days
+                # ahead, on top of whatever Open-Meteo last gave for the days already past
+                try:
+                    from ..connectors import metno
+                    mn, mmeta = metno.weather(lat, lon)
+                    if mn.get("days"):
+                        om = {"generated": mn["generated"], "days": {**((om or {}).get("days") or {}), **mn["days"]}}
+                        self.forecast_source = metno.SOURCE
+                        self.openmeteo_meta = {**self.openmeteo_meta, "backup": metno.SOURCE, "backup_state": mmeta.get("state")}
+                except Exception:
+                    pass
+            if not om:
+                raise RuntimeError("no forecast")
             self.forecast_generated = om["generated"]
             for ds, r in om["days"].items():
                 d = date.fromisoformat(ds)

@@ -36,7 +36,7 @@ def _weather(c: Ctx) -> dict:
                         "years": sorted({k[:4] for k in c.w.obs})[:1] + sorted({k[:4] for k in c.w.obs})[-1:],
                         "days_stored": len(c.w.obs),
                         "source": "NASA POWER daily (MERRA-2 / CERES), AG community; newest days Open-Meteo"},
-            "forecast": {"rows": fc, "issued": c.w.forecast_generated, "source": "Open-Meteo forecast"}}
+            "forecast": {"rows": fc, "issued": c.w.forecast_generated, "source": getattr(c.w, "forecast_source", "Open-Meteo forecast")}}
 
 
 _pool = None

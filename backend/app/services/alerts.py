@@ -170,7 +170,7 @@ def _build(c: Ctx) -> dict:
                     "Your wheat is at a heat sensitive stage." if wheat and sensitive else
                     ("Wheat is not yet at a heat sensitive stage." if wheat else "")).strip(),
                 "steps": ["Water lightly 2 days before the hot days.", "Do not skip a turn this week."] if hot and sensitive else ["Nothing to do."],
-                "provenance": "Estimated", "source": "Open-Meteo forecast", "confidence": "High" if not hot else "Medium",
+                "provenance": "Estimated", "source": getattr(w, "forecast_source", "Open-Meteo forecast"), "confidence": "High" if not hot else "Medium",
                 "voice": "مفيش حر خطر الأسبوع ده." if not hot else "جاي أيام حر. اسقي رية خفيفة قبلها بيومين."})
 
     new = sum(1 for x in out if x["level"] in ("high", "med"))
