@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { API, PV } from '@/lib/api';
 import { Mascot } from './chrome';
 import { EngName, useUser } from '@/lib/field';
+import DraftCard from '@/v2/DraftCard';
 
 /** Greeting with the signed-in farmer's first name. */
 function Hello() {
@@ -102,6 +103,7 @@ export function useMic(onText: (t: string) => void) {
 const bubble = { gap: '8px', padding: '14px 16px', borderRadius: '18px 18px 18px 6px', background: '#fff', boxShadow: '0 1px 2px rgba(20,26,22,.05)' } as const;
 
 function CardView({ c }: { c: Card }) {
+  if ((c.type as string) === 'plan_draft' || (c.type as string) === 'rotation_draft') return <DraftCard c={c} />;
   const pv = c.provenance && c.provenance !== 'none' ? PV[c.provenance] : null;
   if (c.type === 'engineer') {
     return (

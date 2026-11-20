@@ -25,7 +25,8 @@ SYSTEM = """You are Bezra, a small seed who helps farmers in the Nile Delta, Egy
 through NASA satellite and weather data. Bezra helps the farmer think. It doesn't decide for them.
 
 How you answer:
-- Answer in the language of the farmer's message. Arabic messages get Egyptian Arabic (عامية مصرية), simple and warm.
+- Answer in the language of the farmer's latest message, and keep it for the whole conversation (an English
+  conversation stays English). Answer in the language of the farmer's message. Arabic messages get Egyptian Arabic (عامية مصرية), simple and warm.
   English messages get plain English. Short: 1 to 3 sentences in "text", then cards if a number helps.
 - Use the tools for any number about the field, the weather, the season or a what-if. Never make up numbers.
 - If the data can't answer, say so plainly ("I'm not sure", "مش متأكد") and say what would help.
@@ -111,10 +112,11 @@ TOOLS = [
                     "Each step is a day after sowing/planting, a short title, why, and an amount if one helps (e.g. a "
                     "usual fertilizer or spray amount; shown with 'check with your engineer'). Also how the crop affects "
                     "the soil, what harvest to expect, the main risks (pests, diseases, heat, water), the season length "
-                    "and its water need. Everything then shows on the website (Overview, Crop, Today's tasks), marked as "
-                    "Bezra's chat plan. Saving again replaces the old plan; send an empty steps list to remove it.",
+                    "and its water need. It does NOT save: the farmer sees every step as a card with a Save "
+                    "button and decides; once saved it shows on Overview, Crop and Today's tasks. Send an empty steps list to offer removing it.",
      "input_schema": {"type": "object", "properties": {
          "crop": {"type": "string", "description": "Crop name as the farmer said it"},
+         "start_date": {"type": "string", "description": "Planting/sowing date of THIS crop as YYYY-MM-DD (step days count from it)"},
          "steps": {"type": "array", "items": {"type": "object", "properties": {
              "day": {"type": "integer", "description": "Days after sowing or planting, 0 to 365"},
              "title": {"type": "string"}, "why": {"type": "string"},
@@ -126,21 +128,21 @@ TOOLS = [
          "harvest": {"type": "string", "description": "What harvest to expect per feddan in the Delta, as a range"},
          "water": {"type": "string", "description": "Its water need and how often to water"},
          "risks": {"type": "array", "items": {"type": "string"}, "description": "Main things that can hurt it here"}},
-         "required": ["crop", "steps", "season_days", "soil_effect", "harvest", "water", "risks"], "additionalProperties": False}},
+         "required": ["crop", "start_date", "steps", "season_days", "soil_effect", "harvest", "water", "risks"], "additionalProperties": False}},
     {"name": "save_rotation", "strict": True,
      "description": "Save the farmer's own multi-year rotation, made with them in this chat, and run it through Bezra's "
                     "soil model (10 years on the field's real NASA POWER weather). Each season is a winter crop and a summer "
                     "crop (summer may be empty). For each crop give the farmer's name for it and the closest crop the model "
                     "knows (winter: wheat, berseem, fahl, faba, sugarbeet; summer: rice, maize, cotton), e.g. onion -> faba, "
                     "potato -> sugarbeet, tomato -> cotton, sesame -> maize. Returns soil strength in 10 years vs what they "
-                    "grow now, water per year and heat years. Only call it after the farmer agreed; it then shows on Overview "
-                    "and Soil. Send an empty seasons list to remove it.",
+                    "grow now, water per year and heat years. It does NOT save: the farmer sees the rotation and its numbers as a "
+                    "card with a Save button and decides. Send an empty seasons list to offer removing it.",
      "input_schema": {"type": "object", "properties": {
          "name": {"type": "string", "description": "A short name for the rotation"},
          "notes": {"type": "string", "description": "One or two sentences: why this rotation, what to watch"},
          "seasons": {"type": "array", "items": {"type": "object", "properties": {
              "winter": {"type": "string"}, "winter_model": {"type": "string", "enum": ["wheat", "berseem", "fahl", "faba", "sugarbeet"]},
-             "summer": {"type": "string"}, "summer_model": {"type": "string", "enum": ["rice", "maize", "cotton", ""]}},
+             "summer": {"type": "string"}, "summer_model": {"type": "string", "enum": ["rice", "maize", "cotton", "none"]}},
              "required": ["winter", "winter_model", "summer", "summer_model"], "additionalProperties": False}}},
          "required": ["name", "notes", "seasons"], "additionalProperties": False}},
     {"name": "search_kb", "strict": True,
@@ -176,8 +178,8 @@ def _system(c: Ctx) -> str:
               f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}."
             + "\nIf the farmer grows a crop you have no model for, you may build a simple season plan with them: ask the "
               "planting date and what they already do, show the steps (days after planting, title, why, usual amount if it "
-              "helps) with its soil effect, expected harvest, water need and risks, and only after they agree call save_crop_plan. "
-              "The farmer can also make their own rotation with you (any crops, even ones Bezra has no model for): agree it, then call save_rotation and explain the result. Say it is a general plan to check with the engineer.")
+              "helps) with its soil effect, expected harvest, water need and risks, then call save_crop_plan: it shows the farmer the whole plan as a card with a Save button (nothing is saved until they press it, so never say it is saved). "
+              "The farmer can also make their own rotation with you (any crops, even ones Bezra has no model for): call save_rotation: it shows the rotation and the soil model numbers as a card with a Save button; explain the numbers and never say it is saved. Say it is a general plan to check with the engineer.")
 
 
 def _summary_brief(c: Ctx) -> dict:
@@ -248,43 +250,66 @@ def run_tool(c: Ctx, name: str, args: dict):
     raise ValueError(f"unknown tool {name}")
 
 
-def save_rotation(c: Ctx, args: dict) -> dict:
-    """Stores the farmer's own rotation (custom_rotation) and returns the soil model's result for it."""
+def _store(c: Ctx, key: str, value) -> None:
     from .. import db
-    from ..engine.crops import CROPS
-    from ..services import rotation
-    seasons = []
-    for x in (args.get("seasons") or [])[:4]:
-        w, sm = x.get("winter_model"), (x.get("summer_model") or "")
-        if w not in CROPS or CROPS[w].season != "winter" or (sm and (sm not in CROPS or CROPS[sm].season != "summer")):
-            continue
-        seasons.append({"winter": str(x.get("winter") or "").strip()[:40] or CROPS[w].en, "winter_model": w,
-                        "summer": str(x.get("summer") or "").strip()[:40] if sm else "", "summer_model": sm})
     f = db.get_field(c.f["id"])
     owner = f.pop("owner_id")
     for k in ("farmer", "engineer_id"):
         f.pop(k, None)
-    if seasons:
-        f["custom_rotation"] = {"name": str(args.get("name") or "").strip()[:60], "notes": str(args.get("notes") or "").strip()[:300],
-                                "seasons": seasons, "made": c.today.isoformat()}
+    if value is None:
+        f.pop(key, None)
     else:
-        f.pop("custom_rotation", None)
+        f[key] = value
     db.save_field(f, owner)
-    c.f["custom_rotation"] = f.get("custom_rotation")
+    c.f[key] = value
+
+
+def _draft_card(c: Ctx, card: dict) -> None:
+    """A card the chat adds to its own answer, made by the server from the draft (never written by the model)."""
+    c.__dict__.setdefault("_draft_cards", []).append(card)
+
+
+def rotation_record(args: dict, today) -> dict | None:
+    from ..engine.crops import CROPS
+    seasons = []
+    for x in (args.get("seasons") or [])[:4]:
+        w, sm = x.get("winter_model"), (x.get("summer_model") or "")
+        sm = "" if sm == "none" else sm   # "none" = no summer crop (Gemini refuses an empty enum value)
+        if w not in CROPS or CROPS[w].season != "winter" or (sm and (sm not in CROPS or CROPS[sm].season != "summer")):
+            continue
+        seasons.append({"winter": str(x.get("winter") or "").strip()[:40] or CROPS[w].en, "winter_model": w,
+                        "summer": (str(x.get("summer") or "").strip()[:40] or CROPS[sm].en) if sm else "", "summer_model": sm})
     if not seasons:
-        return {"saved": False, "note": "The farmer's own rotation was removed."}
-    r = rotation.build(c)
+        return None
+    name = str(args.get("name") or "").strip()[:60] or " → ".join(x["winter"] + (f", {x['summer']}" if x["summer"] else "") for x in seasons)
+    return {"name": name, "notes": str(args.get("notes") or "").strip()[:300], "seasons": seasons, "made": today.isoformat()}
+
+
+def save_rotation(c: Ctx, args: dict) -> dict:
+    """Prepares the farmer's own rotation as a DRAFT, runs it through the soil model (without saving it) and shows it
+    in the chat as a card with a Save button. Only that button (POST /fields/{id}/chat-draft/rotation) saves it."""
+    from ..services import rotation
+    from ..services.context import Ctx as _Ctx
+    rec = rotation_record(args, c.today)
+    if not rec:
+        if not (args.get("seasons") or []):
+            _draft_card(c, {"type": "rotation_draft", "title": "Remove your own rotation", "items": [], "provenance": "none", "remove": True})
+            return {"draft": True, "note": "A card with a Remove button is shown. Nothing is removed until the farmer presses it."}
+        return {"draft": False, "error": "No usable season: each needs a winter model crop."}
+    _store(c, "draft_rotation", rec)
+    r = rotation.build(_Ctx({**c.f, "custom_rotation": rec}, c.w, c.today))
     cu = r.get("custom") or {}
-    return {"saved": True, "soil_vs_what_you_grow_now_pct": cu.get("vs_current_pct"), "soil_face": cu.get("soil_face"),
-            "water_m3_per_feddan_year": cu.get("water_m3_feddan_year"), "water_vs_now_pct": cu.get("water_vs_current_pct"),
-            "heat_years": cu.get("heat_years"), "years_simulated": cu.get("years_simulated"), "stand_ins": cu.get("stand_ins"),
-            "note": "Shown on Overview and Soil. Crops Bezra has no model for ran as the closest crop it knows (stand_ins)."}
+    res = {"soil_vs_now_pct": cu.get("vs_current_pct"), "water_vs_now_pct": cu.get("water_vs_current_pct"),
+           "water_m3_per_feddan_year": cu.get("water_m3_feddan_year"), "heat_years": cu.get("heat_years"),
+           "years_simulated": cu.get("years_simulated"), "stand_ins": cu.get("stand_ins") or []}
+    _draft_card(c, {"type": "rotation_draft", "title": rec["name"], "items": [], "provenance": "estimated",
+                    "rotation": rec, "result": res})
+    return {"draft": True, **res,
+            "note": "NOT saved yet. The farmer sees this rotation and its numbers as a card with a Save button. Explain the "
+                    "numbers and tell them to press Save if they want it. Never say it is saved."}
 
 
-def save_crop_plan(c: Ctx, crop: str, steps: list, more: dict | None = None) -> dict:
-    """Stores the chat-made plan on the field (custom_plan); tasks.build turns it into tasks, Overview and Crop show
-    the crop card. Amounts are kept, marked to check with the engineer. At most 40 steps, day 0..365."""
-    from .. import db
+def plan_record(c: Ctx, crop: str, steps: list, more: dict | None) -> dict | None:
     cats = {"irrigation", "fertilizer", "spray", "inspection", "milestone"}
     clean = []
     for st in steps[:40]:
@@ -296,29 +321,56 @@ def save_crop_plan(c: Ctx, crop: str, steps: list, more: dict | None = None) -> 
         if not title or not 0 <= day <= 365:
             continue
         amount = str(st.get("amount") or "").strip()[:120] or None
+        if amount and re.fullmatch(r"[\s0\-–—.]*|none|n/?a|لا يوجد|لا شيء", amount, re.I):
+            amount = None
         clean.append({"day": day, "title": title, "why": why, "amount": amount,
                       "category": st.get("category") if st.get("category") in cats else "inspection"})
+    if not clean:
+        return None
     clean.sort(key=lambda x: x["day"])
-    f = db.get_field(c.f["id"])
-    owner = f.pop("owner_id")
-    for k in ("farmer", "engineer_id"):
-        f.pop(k, None)
-    if clean:
-        more = more or {}
-        sd = more.get("season_days")
-        f["custom_plan"] = {"crop": crop.strip()[:60], "steps": clean, "made": c.today.isoformat(),
-                            "season_days": int(sd) if isinstance(sd, (int, float)) and 20 <= sd <= 400 else None,
-                            "soil_effect": str(more.get("soil_effect") or "").strip()[:400] or None,
-                            "harvest": str(more.get("harvest") or "").strip()[:200] or None,
-                            "water": str(more.get("water") or "").strip()[:300] or None,
-                            "risks": [str(x).strip()[:160] for x in (more.get("risks") or []) if str(x).strip()][:8]}
-    else:
-        f.pop("custom_plan", None)
-    db.save_field(f, owner)
-    c.f["custom_plan"] = f.get("custom_plan")
-    return {"saved": len(clean), "sow_date": c.sow.isoformat(),
-            "note": ("The plan now shows on the website: tasks on Today, the crop card on Overview and Crop. Amounts are "
-                     "marked to check with the engineer.") if clean else "The chat plan was removed from the field."}
+    more = more or {}
+    sd = more.get("season_days")
+    try:  # the plan's own planting day (not the field's wheat sowing day); within a year either side of today
+        start = date.fromisoformat(str(more.get("start_date") or "")[:10])
+        start = start if abs((start - c.today).days) <= 366 else None
+    except ValueError:
+        start = None
+    return {"crop": crop.strip()[:60], "steps": clean, "made": c.today.isoformat(), "start": (start or c.sow).isoformat(),
+            "season_days": int(sd) if isinstance(sd, (int, float)) and 20 <= sd <= 400 else None,
+            "soil_effect": str(more.get("soil_effect") or "").strip()[:400] or None,
+            "harvest": str(more.get("harvest") or "").strip()[:200] or None,
+            "water": str(more.get("water") or "").strip()[:300] or None,
+            "risks": [str(x).strip()[:160] for x in (more.get("risks") or []) if str(x).strip()][:8]}
+
+
+def save_crop_plan(c: Ctx, crop: str, steps: list, more: dict | None = None) -> dict:
+    """Prepares the chat-made crop plan as a DRAFT and shows it in the chat as a card (every step, amounts marked to
+    check with the engineer) with a Save button. Only that button (POST /fields/{id}/chat-draft/plan) saves it."""
+    rec = plan_record(c, crop, steps, more)
+    if not rec:
+        if not steps:
+            _draft_card(c, {"type": "plan_draft", "title": "Remove your crop plan", "items": [], "provenance": "none", "remove": True})
+            return {"draft": True, "note": "A card with a Remove button is shown. Nothing is removed until the farmer presses it."}
+        return {"draft": False, "error": "No usable step: each needs a day 0-365 and a title."}
+    _store(c, "draft_plan", rec)
+    _draft_card(c, {"type": "plan_draft", "title": rec["crop"], "items": [], "provenance": "estimated", "plan": rec})
+    return {"draft": True, "steps": len(rec["steps"]), "start": rec["start"],
+            "note": "NOT saved yet. The farmer sees every step as a card with a Save button. Tell them to look at it and "
+                    "press Save if it is right. Never say it is saved. Amounts are shown with 'check with your engineer'."}
+
+
+def confirm_draft(c: Ctx, kind: str, remove: bool = False) -> dict:
+    """The farmer pressed Save (or Remove) on a chat card."""
+    key, draft_key = ("custom_plan", "draft_plan") if kind == "plan" else ("custom_rotation", "draft_rotation")
+    if remove:
+        _store(c, key, None)
+        return {"saved": False, "removed": True}
+    d = c.f.get(draft_key)
+    if not d:
+        return {"saved": False, "error": "nothing to save"}
+    _store(c, key, d)
+    _store(c, draft_key, None)
+    return {"saved": True}
 
 
 def _engineer_name(c: Ctx) -> str:
@@ -345,9 +397,36 @@ def _guard(reply: dict) -> dict:
     return reply
 
 
+def _lang_rule(message: str) -> str:
+    ar = bool(re.search(r"[\u0600-\u06ff]", message))
+    return ("\nThe farmer's last message is in Arabic: answer in Egyptian Arabic." if ar else
+            "\nThe farmer's last message is in English: answer in English only.")
+
+
+SAVED_CLAIM = re.compile(r"\b(saved|i have saved|i've saved|added it to your field)\b|حفظت|اتحفظ|حفظتها|حفظته", re.I)
+
+
+def _drafts(c: Ctx, message: str, reply: dict) -> dict:
+    """Adds the draft cards (made by the server) and makes sure the text never claims a save that did not happen:
+    plans and rotations are saved only by the farmer's own button."""
+    cards = c.__dict__.pop("_draft_cards", [])
+    ar = bool(re.search(r"[\u0600-\u06ff]", message))
+    if cards:
+        reply["cards"] = [x for x in reply.get("cards", []) if x.get("type") not in ("plan_draft", "rotation_draft")] + cards
+        note = ("شوف التفاصيل تحت، ولو مناسبة دوس «احفظ في أرضي»." if ar else "Look at it below, and press Save if it is right.")
+        if SAVED_CLAIM.search(reply.get("text", "")):
+            reply["text"] = note
+        elif not re.search(r"احفظ|حفظ في الكارت|press save|save button|\bsave\b", reply.get("text", ""), re.I):
+            reply["text"] = reply.get("text", "").rstrip() + "\n" + note
+    elif SAVED_CLAIM.search(reply.get("text", "")) and re.search(r"plan|rotation|خطة|دورة|دوره", reply.get("text", ""), re.I):
+        reply["text"] = ("لسه محفظتش حاجة. قولي المحصول وميعاد الزراعة وأنا أجهزلك الخطة تحفظها بزرار." if ar else
+                         "Nothing is saved yet. Tell me the crop and the planting date, and I will prepare the plan for you to save with a button.")
+    return reply
+
+
 def chat(c: Ctx, history: list[dict], message: str) -> dict:
     if gemini.available():
-        return _guard(gemini.chat(c, history, message, _system(c), TOOLS, run_tool, OUTPUT_SCHEMA))
+        return _drafts(c, message, _guard(gemini.chat(c, history, message, _system(c) + _lang_rule(message), TOOLS, run_tool, OUTPUT_SCHEMA)))
     client = anthropic.Anthropic()
     messages: list = [{"role": h["role"], "content": h["text"]} for h in history[-12:] if h.get("text")]
     messages.append({"role": "user", "content": message})
@@ -377,7 +456,7 @@ def chat(c: Ctx, history: list[dict], message: str) -> dict:
         if not calls:
             text = next((b.text for b in resp.content if b.type == "text"), "")
             reply = json.loads(text)
-            return _guard(reply) | {"tools": used_tools}
+            return _drafts(c, message, _guard(reply) | {"tools": used_tools})
         results = []
         for b in calls:
             used_tools.append(b.name)

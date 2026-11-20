@@ -24,7 +24,7 @@ export default function OwnRotation() {
       <div style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', fontSize: '14px' }}>
         {pct(cu.vs_current_pct) ? <span><b style={{ fontSize: '17px' }}>{pct(cu.vs_current_pct)}</b> {ar ? 'التربة بعد 10 سنين' : 'soil in 10 years'}</span> : null}
         {pct(cu.water_vs_current_pct) ? <span><b style={{ fontSize: '17px' }}>{pct(cu.water_vs_current_pct)}</b> {ar ? 'المية في السنة' : 'water a year'}</span> : null}
-        {cu.heat_years != null ? <span><b style={{ fontSize: '17px' }}>{cu.heat_years}</b> {ar ? `سنين حر من ${cu.years_simulated}` : `heat years of ${cu.years_simulated}`}</span> : null}
+        {cu.heat_years != null && cu.years_simulated ? <span><b style={{ fontSize: '17px' }}>{Math.round(100 * cu.heat_years / cu.years_simulated) + '%'}</b> {ar ? 'من السنين المجرّبة فيها ضرر حر' : 'of simulated years with heat damage'}</span> : null}
       </div>
       {cu.notes ? <span style={{ fontSize: '14px', lineHeight: 1.45 }}>{cu.notes}</span> : null}
       {stand ? <span className="meta" style={{ fontSize: '12px' }}>{stand}</span> : null}

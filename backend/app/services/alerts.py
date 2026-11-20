@@ -60,19 +60,23 @@ def _build(c: Ctx) -> dict:
 
     # 1. water ----------------------------------------------------------------------------------
     lv = s["risks"]["water"]["level"]
+    catch_up = str((s.get("action") or {}).get("title", "")).startswith("Water today, to catch up")
     below = sw is not None and sw < 50
     out.append({
         "kind": "water", "chip": "w", "level": LV_KEY[lv], "level_label": lv,
-        "title": f"Water turn {nt.strftime('%A')}, don't skip it" if lv != "Low" else f"Next water turn {nt.strftime('%A')} {_dm(nt)}",
-        "when": f"{_wd(nt)} {_dm(nt)}",
+        # a missed turn: the alert asks for today's catch-up watering, like the day's action (not the next turn, which
+        # the plan may say can be skipped)
+        "title": ("Water today: a turn was missed" if catch_up else
+                  f"Water turn {nt.strftime('%A')}, don't skip it" if lv != "Low" else f"Next water turn {nt.strftime('%A')} {_dm(nt)}"),
+        "when": "Today" if catch_up else f"{_wd(nt)} {_dm(nt)}",
         "why": (f"{fields.CROP_LABEL[f['crop']]} is not sown yet. Water just after sowing. " if s["day_n"] < 0 else
                 f"{fields.CROP_LABEL[f['crop']]} is {s['stage'].lower()}. " + (f"Soil at {sw}%, {'under' if below else 'above'} the 50% refill point. " if sw is not None else ""))
                + ("No rain in the forecast." if rain7 < 1 else f"About {round(rain7)} mm of rain in the forecast, not certain."),
-        "steps": [f"Water on your turn {nt.strftime('%A')}, early morning."]
+        "steps": (["Water today or tomorrow, early morning."] if catch_up else [f"Water on your turn {nt.strftime('%A')}, early morning."])
                  + ([f"Make sure water reaches the {spot['where'].lower()}."] if spot else [])
                  + ['Tap "I watered" after.'],
         "provenance": "Estimated", "source": "FAO-56 balance, NASA POWER, Open-Meteo", "confidence": "Medium",
-        "voice": f"دورك في المية يوم {AR_DAYS[nt.weekday()]}. متفوّتهوش. الأرض فيها {sw} في المية مية." if lv != "Low"
+        "voice": "فاتك دور مية. اسقي النهارده لو تقدر." if catch_up else f"دورك في المية يوم {AR_DAYS[nt.weekday()]}. متفوّتهوش. الأرض فيها {sw} في المية مية." if lv != "Low"
                  else f"الأرض فيها مية كفاية لحد دورك يوم {AR_DAYS[nt.weekday()]}.",
     })
 

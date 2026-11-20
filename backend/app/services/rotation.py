@@ -13,6 +13,7 @@ Outputs per strategy: relative yield path per crop (share of what the field can 
 """
 from __future__ import annotations
 
+import re
 import statistics as st
 import time
 from datetime import date, timedelta
@@ -425,6 +426,14 @@ def summarize(sid: str, seq: list[tuple], runs: list[dict], start_ece: float) ->
 _soil_now: dict[str, tuple[float, dict]] = {}
 
 
+def _same_crop(name: str, key: str) -> bool:
+    """The farmer's crop name is the model crop itself (English or Arabic, e.g. 'Maize', 'ذرة', 'قمح'), not a stand-in."""
+    n = name.strip().lower()
+    cp = CROPS[key]
+    words = {key, cp.en.lower(), cp.ar} | {w for w in re.split(r"[\s(),]+", cp.en.lower() + " " + cp.ar) if len(w) > 2}
+    return n in words or any(n and (n in w or w in n) for w in words if len(w) > 2)
+
+
 def _custom_out(f: dict, out: list[dict]) -> dict | None:
     """The farmer's own rotation result with its own crop names and which model crop stood in for each."""
     sm = next((x for x in out if x.get("custom")), None)
@@ -438,7 +447,7 @@ def _custom_out(f: dict, out: list[dict]) -> dict | None:
     sm["sequence_names_ar"] = sm["sequence_names"]
     sm["stand_ins"] = [{"crop": x.get(k), "model": CROPS[x[k + "_model"]].en, "model_ar": CROPS[x[k + "_model"]].ar}
                        for x in seasons for k in ("winter", "summer")
-                       if x.get(k) and x.get(k + "_model") and x.get(k).strip().lower() not in (CROPS[x[k + "_model"]].en.lower(), x[k + "_model"])]
+                       if x.get(k) and x.get(k + "_model") and not _same_crop(x[k], x[k + "_model"])]
     sm["notes"] = cr.get("notes")
     sm["made"] = cr.get("made")
     return sm
