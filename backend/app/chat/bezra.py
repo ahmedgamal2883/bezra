@@ -127,6 +127,22 @@ TOOLS = [
          "water": {"type": "string", "description": "Its water need and how often to water"},
          "risks": {"type": "array", "items": {"type": "string"}, "description": "Main things that can hurt it here"}},
          "required": ["crop", "steps", "season_days", "soil_effect", "harvest", "water", "risks"], "additionalProperties": False}},
+    {"name": "save_rotation", "strict": True,
+     "description": "Save the farmer's own multi-year rotation, made with them in this chat, and run it through Bezra's "
+                    "soil model (10 years on the field's real NASA POWER weather). Each season is a winter crop and a summer "
+                    "crop (summer may be empty). For each crop give the farmer's name for it and the closest crop the model "
+                    "knows (winter: wheat, berseem, fahl, faba, sugarbeet; summer: rice, maize, cotton), e.g. onion -> faba, "
+                    "potato -> sugarbeet, tomato -> cotton, sesame -> maize. Returns soil strength in 10 years vs what they "
+                    "grow now, water per year and heat years. Only call it after the farmer agreed; it then shows on Overview "
+                    "and Soil. Send an empty seasons list to remove it.",
+     "input_schema": {"type": "object", "properties": {
+         "name": {"type": "string", "description": "A short name for the rotation"},
+         "notes": {"type": "string", "description": "One or two sentences: why this rotation, what to watch"},
+         "seasons": {"type": "array", "items": {"type": "object", "properties": {
+             "winter": {"type": "string"}, "winter_model": {"type": "string", "enum": ["wheat", "berseem", "fahl", "faba", "sugarbeet"]},
+             "summer": {"type": "string"}, "summer_model": {"type": "string", "enum": ["rice", "maize", "cotton", ""]}},
+             "required": ["winter", "winter_model", "summer", "summer_model"], "additionalProperties": False}}},
+         "required": ["name", "notes", "seasons"], "additionalProperties": False}},
     {"name": "search_kb", "strict": True,
      "description": "Search Bezra's notes: what NDVI means, why sow early, how soil water is estimated, rust weather, "
                     "heat at grain fill, where the data comes from, the season plan (timing only), the rule on doses.",
@@ -160,7 +176,8 @@ def _system(c: Ctx) -> str:
               f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}."
             + "\nIf the farmer grows a crop you have no model for, you may build a simple season plan with them: ask the "
               "planting date and what they already do, show the steps (days after planting, title, why, usual amount if it "
-              "helps) with its soil effect, expected harvest, water need and risks, and only after they agree call save_crop_plan. Say it is a general plan to check with the engineer.")
+              "helps) with its soil effect, expected harvest, water need and risks, and only after they agree call save_crop_plan. "
+              "The farmer can also make their own rotation with you (any crops, even ones Bezra has no model for): agree it, then call save_rotation and explain the result. Say it is a general plan to check with the engineer.")
 
 
 def _summary_brief(c: Ctx) -> dict:
@@ -224,9 +241,44 @@ def run_tool(c: Ctx, name: str, args: dict):
         return {"beta": True, "events": d["events"], "waiting_for_answer": d["ask"], "rules": d["rules"]}
     if name == "save_crop_plan":
         return save_crop_plan(c, args.get("crop") or "", args.get("steps") or [], args)
+    if name == "save_rotation":
+        return save_rotation(c, args)
     if name == "search_kb":
         return kb.search(args["query"])
     raise ValueError(f"unknown tool {name}")
+
+
+def save_rotation(c: Ctx, args: dict) -> dict:
+    """Stores the farmer's own rotation (custom_rotation) and returns the soil model's result for it."""
+    from .. import db
+    from ..engine.crops import CROPS
+    from ..services import rotation
+    seasons = []
+    for x in (args.get("seasons") or [])[:4]:
+        w, sm = x.get("winter_model"), (x.get("summer_model") or "")
+        if w not in CROPS or CROPS[w].season != "winter" or (sm and (sm not in CROPS or CROPS[sm].season != "summer")):
+            continue
+        seasons.append({"winter": str(x.get("winter") or "").strip()[:40] or CROPS[w].en, "winter_model": w,
+                        "summer": str(x.get("summer") or "").strip()[:40] if sm else "", "summer_model": sm})
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    if seasons:
+        f["custom_rotation"] = {"name": str(args.get("name") or "").strip()[:60], "notes": str(args.get("notes") or "").strip()[:300],
+                                "seasons": seasons, "made": c.today.isoformat()}
+    else:
+        f.pop("custom_rotation", None)
+    db.save_field(f, owner)
+    c.f["custom_rotation"] = f.get("custom_rotation")
+    if not seasons:
+        return {"saved": False, "note": "The farmer's own rotation was removed."}
+    r = rotation.build(c)
+    cu = r.get("custom") or {}
+    return {"saved": True, "soil_vs_what_you_grow_now_pct": cu.get("vs_current_pct"), "soil_face": cu.get("soil_face"),
+            "water_m3_per_feddan_year": cu.get("water_m3_feddan_year"), "water_vs_now_pct": cu.get("water_vs_current_pct"),
+            "heat_years": cu.get("heat_years"), "years_simulated": cu.get("years_simulated"), "stand_ins": cu.get("stand_ins"),
+            "note": "Shown on Overview and Soil. Crops Bezra has no model for ran as the closest crop it knows (stand_ins)."}
 
 
 def save_crop_plan(c: Ctx, crop: str, steps: list, more: dict | None = None) -> dict:

@@ -91,6 +91,24 @@ TEXT = {
            "risks": ("Heavy machinery at harvest on wet clay.", "معدات تقيلة وقت الحصاد على طين مبلول.")},
 }
 
+CUSTOM_TEXT = {"name": ("Your own rotation", "الدورة بتاعتك"),
+               "why": ("The rotation you made with Bezra, run through the same soil model.", "الدورة اللي عملتها مع بذرة، متجربة على نفس نموذج التربة."),
+               "evidence": [], "gaps": ("A crop Bezra has no model for runs as the closest crop it knows.", "المحصول اللي بذرة معندهاش نموذج ليه بيتجرب زي أقرب محصول تعرفه."),
+               "risks": ("", "")}
+
+
+def custom_seq(f: dict) -> list[tuple] | None:
+    """The field's own rotation (custom_rotation, saved by the chat) as model crops; None if not usable."""
+    cr = f.get("custom_rotation") or {}
+    seq = []
+    for x in cr.get("seasons") or []:
+        w, sm = x.get("winter_model"), x.get("summer_model") or None
+        if w not in CROPS or CROPS[w].season != "winter" or (sm and (sm not in CROPS or CROPS[sm].season != "summer")):
+            return None
+        seq.append((w, sm))
+    return seq or None
+
+
 DRIVER = {
     "salinity": {"down": ("salt is building up in the root zone", "الملوحة بتزيد عند الجذور"),
                  "up": ("salt is going down", "الملوحة بتقل"),
@@ -390,7 +408,7 @@ def summarize(sid: str, seq: list[tuple], runs: list[dict], start_ece: float) ->
                             "crops": [cr["crop"] for cr in y["crops"]]}
                     break
     water = st.mean(y["water_mm"] for y in yrs)
-    t = TEXT[sid]
+    t = TEXT.get(sid) or CUSTOM_TEXT
     return {"id": sid, "name": t["name"], "sequence": [[w, s] for w, s in seq],
             "sequence_names": [[CROPS[w].en, CROPS[s].en if s else None] for w, s in seq],
             "sequence_names_ar": [[CROPS[w].ar, CROPS[s].ar if s else None] for w, s in seq],
@@ -405,6 +423,25 @@ def summarize(sid: str, seq: list[tuple], runs: list[dict], start_ece: float) ->
 
 # ---- the soil now, for the in-season engine (R13) --------------------------------------------------------------
 _soil_now: dict[str, tuple[float, dict]] = {}
+
+
+def _custom_out(f: dict, out: list[dict]) -> dict | None:
+    """The farmer's own rotation result with its own crop names and which model crop stood in for each."""
+    sm = next((x for x in out if x.get("custom")), None)
+    cr = f.get("custom_rotation") or {}
+    if not sm or not cr:
+        return None
+    seasons = cr.get("seasons") or []
+    sm = dict(sm)
+    sm["name"] = (cr.get("name") or "Your own rotation", cr.get("name") or "الدورة بتاعتك")
+    sm["sequence_names"] = [[x.get("winter") or CROPS[x["winter_model"]].en, x.get("summer") or (CROPS[x["summer_model"]].en if x.get("summer_model") else None)] for x in seasons]
+    sm["sequence_names_ar"] = sm["sequence_names"]
+    sm["stand_ins"] = [{"crop": x.get(k), "model": CROPS[x[k + "_model"]].en, "model_ar": CROPS[x[k + "_model"]].ar}
+                       for x in seasons for k in ("winter", "summer")
+                       if x.get(k) and x.get(k + "_model") and x.get(k).strip().lower() not in (CROPS[x[k + "_model"]].en.lower(), x[k + "_model"])]
+    sm["notes"] = cr.get("notes")
+    sm["made"] = cr.get("made")
+    return sm
 
 
 def soil_now(c: Ctx) -> dict:
@@ -474,7 +511,7 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
           priorities: str = "water,soil",
           current: str | None = None, lab_ec: float | None = None, lab_om: float | None = None, high_water_table: bool | None = None,
           past: str | None = None) -> dict:
-    key = f"{c.f['id']}|{rice}|{water}|{residue}|{residue_plan}|{priorities}|{current}|{lab_ec}|{lab_om}|{high_water_table}|{past}|{c.f.get('soil_ec')}|{c.f.get('soil_om')}|{c.f.get('water_ec')}|{c.today}"
+    key = f"{c.f['id']}|{rice}|{water}|{residue}|{residue_plan}|{priorities}|{current}|{lab_ec}|{lab_om}|{high_water_table}|{past}|{c.f.get('soil_ec')}|{c.f.get('soil_om')}|{c.f.get('water_ec')}|{c.today}|{c.f.get('custom_rotation')}"
     hit = _cache.get(key)
     if hit and time.time() - hit[0] < 3600:
         return hit[1]
@@ -510,6 +547,9 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
         if w0 in CROPS and s1 in CROPS and CROPS[w0].season == "winter" and CROPS[s1].season == "summer" and (rice or s1 != "rice"):
             current = f"{w0}-{s1}"
     strats = strategies(rice, current, salty=s0["ece"] >= 4)
+    cseq = custom_seq(c.f)
+    if cseq:
+        strats = strats + [{"id": "RC", "seq": cseq, "custom": True}]
     cur_seq = strats[0]["seq"]
     p95 = local_p95(c.w)
     spin_win = [w for w in wins if w[2] == "past"][-1]      # today's climate: the latest past window
@@ -548,10 +588,10 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
         seq = strat["seq"]
         crops_in = {k for pair in seq for k in pair if k}
         bad = [CROPS[k] for k in crops_in if CROPS[k].salt_factor(s0["ece"]) < 0.5]   # loses more than half: hide
-        if not rice and "rice" in crops_in and not strat.get("current"):
+        if not rice and "rice" in crops_in and not strat.get("current") and not strat.get("custom"):
             hidden.append({"id": strat["id"], "reason": ("Rice is not allowed on your land.", "الرز مش مسموح في أرضك.")})
             continue
-        if bad and not strat.get("current"):
+        if bad and not strat.get("current") and not strat.get("custom"):
             hidden.append({"id": strat["id"], "reason": (f"Too salty for {', '.join(b.en for b in bad)} at your soil's EC.",
                                                          f"الأرض مالحة زيادة على {'، '.join(b.ar for b in bad)}.")})
             continue
@@ -569,11 +609,12 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
             sm["warming"] = {"heat_years": sw["heat_years"], "years_simulated": sw["years_simulated"],
                              "yield_year10": [cr["yield"]["median"] for cr in sw["years"][-1]["crops"]]}
         sm["current"] = bool(strat.get("current"))
+        sm["custom"] = bool(strat.get("custom"))
         # robust: the worst start-salinity case for the soil factor in year 10
         sm["robust_soil_year10"] = min((cr["soil"]["total"] for r in runs for cr in r["years"][-1]["crops"]), default=None)
         out.append(sm)
 
-    others = [s for s in out if not s["current"]]
+    others = [s for s in out if not s["current"] and not s.get("custom")]
     if others:
         def norm(vals):
             lo, hi = min(vals), max(vals)
@@ -615,7 +656,7 @@ def build(c: Ctx, *, rice: bool = True, water: str = "canal", residue: str = "re
            "soil_test": {"ec": c.f.get("soil_ec"), "om": c.f.get("soil_om"), "date": c.f.get("soil_test_date")},
            "inputs": {"rice": rice, "water": water, "water_ec": ecw, "water_ec_source": "your water test" if saved_wec else "typical for the source", "residue": residue, "residue_plan": plan_res, "priorities": prio, "current": current,
                       "lab_ec": lab_ec, "lab_om": lab_om, "saline_water_table": saline_gw},
-           "strategies": current_s + others[:3], "more": others[3:], "hidden": hidden,
+           "strategies": current_s + others[:3], "more": others[3:], "hidden": hidden, "custom": _custom_out(c.f, out),
            "weather": {"windows": [f"{y}-{y + YEARS - 1}" for y in WINDOWS], "warming": warm_info,
                        "source": "NASA POWER daily at the field (MERRA-2), ET0 FAO-56 Penman-Monteith"},
            "method": "Soil Ledger (RothC-26.3 carbon, relative N balance, FAO-29 salt balance, rule counters) x crop heat windows; "

@@ -120,7 +120,13 @@ export function useOverviewData() {
   const nw = fd?.next_winter, nwCrop = typeof nw === 'string' ? nw : nw?.crop;
   out.nextWinter = nwCrop ? nextWinterName(nwCrop) : null;
   const best = ro ? [...(ro.strategies || []), ...(ro.more || [])].find((s: any) => s.pick) : null;
-  out.best = best ? { name: ar ? (best.name?.[1] || best.name?.[0]) : best.name?.[0], seq: ((ar ? best.sequence_names_ar : best.sequence_names) || []).map((q2: any) => q2.filter(Boolean).join(' → ')).join(' · ') } : null;
+  const seqTxt = (r: any) => ((ar ? r.sequence_names_ar : r.sequence_names) || []).map((q2: any) => q2.filter(Boolean).join(' ← '.replace('←', ar ? '←' : '→'))).join(' · ');
+  const pct = (x: any) => (x == null ? null : `${x > 0 ? '+' : ''}${Math.round(x)}%`);
+  out.best = best ? { name: ar ? (best.name?.[1] || best.name?.[0]) : best.name?.[0], seq: seqTxt(best), soil: pct(best.vs_current_pct), water: pct(best.water_vs_current_pct) } : null;
+  // the farmer's own rotation (made with Bezra in the chat), run through the same soil model
+  const cu = ro?.custom;
+  out.own = cu ? { name: ar ? (cu.name?.[1] || cu.name?.[0]) : cu.name?.[0], seq: seqTxt(cu), soil: pct(cu.vs_current_pct), water: pct(cu.water_vs_current_pct),
+    stand: (cu.stand_ins || []).map((x: any) => (ar ? `${x.crop} اتجرب زي ${x.model_ar}` : `${x.crop} ran as ${x.model.toLowerCase()}`)).join(' · '), notes: cu.notes || '' } : null;
 
   out.act = {
     done: async (taskId: string) => {

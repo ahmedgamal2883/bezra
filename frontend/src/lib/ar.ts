@@ -830,6 +830,9 @@ export const PATTERNS: [RegExp, string][] = ([
   [`^[Aa]bout (\\d[\\d,]*) m³$`, 'حوالي $1 م³'],
   [`^[Aa]bout (\\d[\\d,]*) m³\\. (.+)$`, 'حوالي $1 م³. $2'],
   [`^[Aa]bout ([\\d.–-]+) kg of (.+) per feddan \\(([\\d.]+) bags?\\)\\.?$`, 'حوالي $1 كيلو $2 للفدان ($3 شكارة).'],
+  [`^Planned for ${D}$`, 'متخطط يوم $d1'],
+  [`^Leaves: (.+)$`, 'الورق: $1'],
+  [`^Pest: (.+)$`, 'آفة: $1'],
   [`^(.+) · (.+)$`, '$1 · $2'],
 ] as [string, string][]).map(([p, r]) => [new RegExp(p), r]);
 

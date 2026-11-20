@@ -18,7 +18,7 @@ from pathlib import Path
 DIR = Path(__file__).resolve().parent.parent / "snapshot"
 HEAVY = re.compile(r"^/fields/(g-[0-9a-f]+)/(rotation|scale|calendar|layers|layers/[\w-]+\.png|photo\.jpg|seasons|squares|health|ndvi|mapframe|irrigation)$")
 # the field record keys that change the answers: if a guest edits one, its copy is computed like any other field
-SAME_KEYS = ("lat", "lon", "polygon", "crop", "sow_date", "soil_ec", "soil_om", "water_ec", "prev_crop", "area_feddan")
+SAME_KEYS = ("lat", "lon", "polygon", "crop", "sow_date", "soil_ec", "soil_om", "water_ec", "prev_crop", "area_feddan", "custom_rotation")
 WARM = ["rotation", "rotation?priorities=water,soil", "rotation?priorities=fodder,soil", "scale", "calendar", "layers",
         "seasons", "squares", "health", "ndvi", "mapframe", "irrigation", "photo.jpg"]
 

@@ -24,3 +24,18 @@ def test_chat_plan_becomes_tasks_and_keeps_amounts():
     assert len(got) == 2 and fert["amount"] == "About 50 kg urea per feddan" and fert["note"] == "Check with your engineer"
     bezra.run_tool(ctx(fid), "save_crop_plan", {"crop": "Tomato", "steps": []})
     assert not [t for t in T.build(ctx(fid))["tasks"] if t.get("chat_plan")]
+
+
+def test_own_rotation_runs_through_the_soil_model():
+    cl = TestClient(app)
+    fid = cl.post("/auth/guest").json()["field_id"]
+    out = bezra.run_tool(ctx(fid), "save_rotation", {"name": "Onion and maize", "notes": "Break the cereal run.", "seasons": [
+        {"winter": "Onion", "winter_model": "faba", "summer": "Maize", "summer_model": "maize"},
+        {"winter": "Wheat", "winter_model": "wheat", "summer": "", "summer_model": ""}]})
+    assert out["saved"] and out["soil_vs_what_you_grow_now_pct"] is not None
+    assert out["stand_ins"] == [{"crop": "Onion", "model": "Faba bean", "model_ar": "فول بلدي"}]
+    ro = cl.get(f"/fields/{fid}/rotation").json()
+    assert ro["custom"]["sequence_names"][0] == ["Onion", "Maize"]
+    assert all(not s.get("custom") for s in ro["strategies"] + ro["more"])  # never ranked with Bezra's own strategies
+    bezra.run_tool(ctx(fid), "save_rotation", {"name": "", "notes": "", "seasons": []})
+    assert cl.get(f"/fields/{fid}/rotation").json().get("custom") is None

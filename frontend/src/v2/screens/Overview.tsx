@@ -207,7 +207,7 @@ export default function OverviewScreen() {
               </section>
             </div>
 
-            <div className="ovgrid2">
+            <div className="ovgrid2 top">
               <section className="ovcard" aria-labelledby="ov-wx">
                 <h2 id="ov-wx" className="ovh2">{"Next 7 days"}</h2>
                 {v.week.length ? (
@@ -227,7 +227,31 @@ export default function OverviewScreen() {
               <section className="ovcard" aria-labelledby="ov-rot">
                 <div className="row sp"><h2 id="ov-rot" className="ovh2">{"Rotation"}</h2></div>
                 <div className="ovrow"><span className="meta">{"Next winter in your plan"}</span><b>{v.nextWinter || "Not chosen yet"}</b></div>
-                {v.best ? <div className="col" style={{"gap":"4px"} as any}><span className="meta">{"Best for your soil"}</span><b>{v.best.name}</b><span className="meta">{v.best.seq}</span></div> : <SeedLoader inline />}
+                {v.best ? (
+                  <div className="ovrot">
+                    <span className="meta">{"Best for your soil"}</span>
+                    <b>{v.best.name}</b>
+                    <span className="meta">{v.best.seq}</span>
+                    <div className="ovrotnums">
+                      {v.best.soil ? <span><b>{v.best.soil}</b> {"soil in 10 years"}</span> : null}
+                      {v.best.water ? <span><b>{v.best.water}</b> {"water a year"}</span> : null}
+                    </div>
+                  </div>
+                ) : <SeedLoader inline />}
+                {v.own ? (
+                  <div className="ovrot own">
+                    <span className="meta">{"Your own rotation, made with Bezra"}</span>
+                    <b>{v.own.name}</b>
+                    <span className="meta">{v.own.seq}</span>
+                    <div className="ovrotnums">
+                      {v.own.soil ? <span><b>{v.own.soil}</b> {"soil in 10 years"}</span> : null}
+                      {v.own.water ? <span><b>{v.own.water}</b> {"water a year"}</span> : null}
+                    </div>
+                    {v.own.stand ? <span className="meta" style={{"fontSize":"12px"} as any}>{v.own.stand}</span> : null}
+                  </div>
+                ) : null}
+                <span className="meta" style={{"fontSize":"12px"} as any}>{"Compared with what you grow now. Estimates from Bezra's soil model on your field's NASA weather."}</span>
+                <Link href="/ask" className="ovchip press" style={{"alignSelf":"flex-start"} as any}>{v.own ? "Change your rotation with Bezra" : "Make your own rotation with Bezra"}</Link>
                 <Link href={__r("V18-Soil") + ""} className="ovgo press">{"Rotation on Soil"} <span aria-hidden="true">→</span></Link>
               </section>
             </div>
@@ -248,6 +272,10 @@ const OV_CSS = `.v2 .ov .ovcard{background:#fff;border-radius:24px;padding:22px;
 .v2 .ov .ovgo{align-self:flex-start;margin-top:auto;padding-top:6px;font-size:14px;font-weight:600;color:var(--green);display:inline-flex;gap:6px;align-items:center}
 .v2 .ov .ovgo:hover{text-decoration:underline}
 [dir=rtl] .v2 .ov .ovgo span{transform:scaleX(-1)}
+.v2 .ov .ovrot{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:14px;background:var(--inset)}
+.v2 .ov .ovrot.own{background:var(--sun-tint)}
+.v2 .ov .ovrotnums{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px;font-size:13px}
+.v2 .ov .ovrotnums b{font-size:16px}
 .v2 .ov .ovh2{font-size:18px;font-weight:600;margin:0}
 .v2 .ov .ovlead{font-size:19px;line-height:1.45;margin:0;max-width:820px}
 .v2 .ov .ovlist{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:4px;font-size:16px}
@@ -256,6 +284,7 @@ const OV_CSS = `.v2 .ov .ovcard{background:#fff;border-radius:24px;padding:22px;
 .v2 .ov .lab{font-size:12px;letter-spacing:.08em;font-weight:700;color:#6B6A63}
 .v2 .ov .ovchip{height:36px;padding:0 14px;border-radius:999px;background:#F1F0EC;display:inline-flex;align-items:center;font-size:14px;font-weight:600}
 .v2 .ov .ovgrid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.v2 .ov .ovgrid2.top{align-items:start}
 .v2 .ov .ovmap{display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:4px;max-width:420px;width:100%}
 .v2 .ov .ovsq{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:#17251C}
 .v2 .ov .ovsq.good{background:#4E8A3A;color:#fff}
