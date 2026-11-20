@@ -8,6 +8,7 @@ import { useV2Href } from '@/v2/routes';
 import { useWho } from '@/v2/data/who';
 import { useOverviewData } from '@/v2/data/overview';
 import SeedLoader from '@/components/SeedLoader';
+import PriorityPicker from '@/v2/PriorityPicker';
 
 export default function OverviewScreen() {
   const __r = useV2Href();
@@ -106,7 +107,19 @@ export default function OverviewScreen() {
                 <Link href={__r("V18-Story") + ""} className="ovchip press">{"What should I do?"}</Link>
                 <Link href="/ask" className="ovchip press">{"Ask Bezra"}</Link>
                 <Link href={__r("V19-Try") + ""} className="ovchip press">{"Try a change first"}</Link>
-                <Link href={__r("V18-Journal") + ""} className="ovchip press">{"Add to journal"}</Link>
+                <Link href={__r("Log-What") + ""} className="ovchip press">{"Add to journal"}</Link>
+              </div>
+            </section>
+
+            <section className="card ovyou">
+              <div className="ovyoutx">
+                <div className="lab">{"YOU ARE IN CHARGE"}</div>
+                <p style={{"margin":"4px 0 0","fontSize":"16px","lineHeight":"1.45"} as any}>{"Watered, fed or sprayed already? Write it in the journal and the plan moves with you: a watering you did cancels the turn it covers."}</p>
+                <Link href={__r("Log-What") + ""} className="btn press" style={{"height":"44px","marginTop":"10px","display":"inline-flex"} as any}>{"Add to journal"}</Link>
+                <p className="muted" style={{"margin":"14px 0 0","fontSize":"14px"} as any}>{"Growing a crop Bezra does not know? Ask Bezra and it builds a season plan with you; the steps show up in your tasks."} <Link href="/ask" style={{"textDecoration":"underline"} as any}>{"Make a plan with Bezra"}</Link></p>
+              </div>
+              <div className="ovyoupr">
+                <PriorityPicker id={v.id} onSaved={() => v.reload?.()} />
               </div>
             </section>
 
@@ -224,6 +237,9 @@ const OV_CSS = `.v2 .ov .ovcard{background:#fff;border-radius:24px;padding:22px;
 .v2 .ov .ovh2{font-size:18px;font-weight:600;margin:0}
 .v2 .ov .ovlead{font-size:19px;line-height:1.45;margin:0;max-width:820px}
 .v2 .ov .ovlist{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:4px;font-size:16px}
+.v2 .ov .ovyou{display:grid;grid-template-columns:1fr 1fr;gap:24px;border-inline-start:4px solid #2F6B3A}
+@media (max-width:820px){.v2 .ov .ovyou{grid-template-columns:1fr}}
+.v2 .ov .lab{font-size:12px;letter-spacing:.08em;font-weight:700;color:#6B6A63}
 .v2 .ov .ovchip{height:36px;padding:0 14px;border-radius:999px;background:#F1F0EC;display:inline-flex;align-items:center;font-size:14px;font-weight:600}
 .v2 .ov .ovgrid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .v2 .ov .ovmap{display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:4px;max-width:420px;width:100%}

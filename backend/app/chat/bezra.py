@@ -104,6 +104,21 @@ TOOLS = [
                     "ESA Sentinel-1, cooler surface in NASA ECOSTRESS) with the date window, confidence and whether "
                     "the farmer confirmed it. Use when the farmer asks if Bezra knows they watered.",
      "input_schema": {"type": "object", "properties": {}, "required": [], "additionalProperties": False}},
+    {"name": "save_crop_plan", "strict": True,
+     "description": "Save a season plan for a crop Bezra has no model for (e.g. tomato, onion, potato, sugar beet), "
+                    "made with the farmer in this chat. Only call it after the farmer said yes to the plan you showed. "
+                    "Each step is a day after sowing/planting, a short title and why. Timing and care only: never "
+                    "amounts of fertilizer or pesticide (the engineer sets those). The steps then appear as tasks on "
+                    "Today, marked as Bezra's chat plan to check with the engineer. Saving again replaces the old plan; "
+                    "send an empty steps list to remove it.",
+     "input_schema": {"type": "object", "properties": {
+         "crop": {"type": "string", "description": "Crop name as the farmer said it"},
+         "steps": {"type": "array", "items": {"type": "object", "properties": {
+             "day": {"type": "integer", "description": "Days after sowing or planting, 0 to 365"},
+             "title": {"type": "string"}, "why": {"type": "string"},
+             "category": {"type": "string", "enum": ["irrigation", "fertilizer", "spray", "inspection", "milestone"]}},
+             "required": ["day", "title", "why", "category"], "additionalProperties": False}}},
+         "required": ["crop", "steps"], "additionalProperties": False}},
     {"name": "search_kb", "strict": True,
      "description": "Search Bezra's notes: what NDVI means, why sow early, how soil water is estimated, rust weather, "
                     "heat at grain fill, where the data comes from, the season plan (timing only), the rule on doses.",
@@ -134,7 +149,10 @@ def _system(c: Ctx) -> str:
     return (SYSTEM.replace("Eng. Mona Adel", _engineer_name(c)).replace("Eng. Mona", _engineer_name(c))
             + f"\nThe farmer is {c.f.get('farmer') or 'the farmer'}. Their engineer is {_engineer_name(c)}. "
               f"Field: {c.f['name']} ({c.f['crop']}), {c.f.get('village')}, "
-              f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}.")
+              f"{c.f.get('governorate')}. Today is {c.today:%A %d %B %Y}."
+            + "\nIf the farmer grows a crop you have no model for, you may build a simple season plan with them: ask the "
+              "planting date and what they already do, show the steps (days after planting, title, why; timing only, no "
+              "doses), and only after they agree call save_crop_plan. Say it is a general plan to check with the engineer.")
 
 
 def _summary_brief(c: Ctx) -> dict:
@@ -196,9 +214,44 @@ def run_tool(c: Ctx, name: str, args: dict):
         from ..services import irrigation
         d = irrigation.detect(c)
         return {"beta": True, "events": d["events"], "waiting_for_answer": d["ask"], "rules": d["rules"]}
+    if name == "save_crop_plan":
+        return save_crop_plan(c, args.get("crop") or "", args.get("steps") or [])
     if name == "search_kb":
         return kb.search(args["query"])
     raise ValueError(f"unknown tool {name}")
+
+
+def save_crop_plan(c: Ctx, crop: str, steps: list) -> dict:
+    """Stores the chat-made plan on the field (custom_plan); tasks.build turns it into tasks. Steps with an input
+    amount are dropped (the engineer sets doses), at most 40 steps, day 0..365."""
+    from .. import db
+    cats = {"irrigation", "fertilizer", "spray", "inspection", "milestone"}
+    clean, dropped = [], 0
+    for st in steps[:40]:
+        try:
+            day = int(st.get("day"))
+        except (TypeError, ValueError):
+            continue
+        title, why = str(st.get("title") or "").strip()[:120], str(st.get("why") or "").strip()[:300]
+        if not title or not 0 <= day <= 365:
+            continue
+        if DOSE.search(title + " " + why) and INPUT_WORDS.search(title + " " + why):
+            dropped += 1
+            continue
+        clean.append({"day": day, "title": title, "why": why, "category": st.get("category") if st.get("category") in cats else "inspection"})
+    clean.sort(key=lambda x: x["day"])
+    f = db.get_field(c.f["id"])
+    owner = f.pop("owner_id")
+    for k in ("farmer", "engineer_id"):
+        f.pop(k, None)
+    if clean:
+        f["custom_plan"] = {"crop": crop.strip()[:60], "steps": clean, "made": c.today.isoformat()}
+    else:
+        f.pop("custom_plan", None)
+    db.save_field(f, owner)
+    c.f["custom_plan"] = f.get("custom_plan")
+    return {"saved": len(clean), "dropped_for_doses": dropped, "sow_date": c.sow.isoformat(),
+            "note": "The steps now show on Today as tasks from Bezra's chat plan, to check with the engineer."}
 
 
 def _engineer_name(c: Ctx) -> str:

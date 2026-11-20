@@ -77,6 +77,7 @@ const T = {
  spray: { label: 'Sprayed', sub: 'Against disease, bugs or weeds', ic: 'shield', q: 'What kind of spray?', opts: [['For disease', 'Fungicide'], ['For bugs', 'Insecticide'], ['For weeds', 'Weed killer'], ['Not sure', '']], amount: true, sprayAmt: true },
  pest: { label: 'Saw a pest', sub: 'Bugs, worms, anything that eats', ic: 'bug', q: 'Which one looks closest?', opts: [['Aphids', 'Tiny green bugs', 'bug-aphid'], ['Caterpillar', 'Worm on leaves', 'bug-worm'], ['Mites', 'Tiny red dots', 'bug-mite'], ['Grasshopper', '', 'bug-hopper'], ['Not sure', '', 'bug-unsure']] },
  leaf: { label: 'Leaves look wrong', sub: 'Odd colour, spots or marks', ic: 'leaf', q: 'Which one looks closest?', opts: [['Yellow leaves', '', 'leaf-yellow'], ['Orange spots', '', 'leaf-orange'], ['Brown patches', '', 'leaf-brown'], ['Dry tips', '', 'leaf-tips'], ['White powder', '', 'leaf-white'], ['Not sure', '', 'leaf-unsure']] },
+ photo: { label: 'Took a photo', sub: 'Show us what you see', ic: 'photo', q: '', opts: [] },
  other: { label: 'Something else', sub: 'Anything worth noting', ic: 'edit', q: 'What happened?', opts: [] } };
 const LG = S.lg, ty = LG.ty ? T[LG.ty] : null;
 const flow = ['what', 'detail', 'where'];
@@ -85,17 +86,18 @@ const up = (o) => set({ lg: Object.assign({}, LG, o) });
 const go = (st) => up({ st, err: '' });
 const SQN = inside.map((c) => c.name);
 const optName = ty && LG.opt >= 0 ? ty.opts[LG.opt][0] : '';
+const optOr = optName || 'not sure';  // a skipped choice is saved as 'not sure', never blocks the save
 const where = LG.all ? 'whole field' : (LG.wh.length ? LG.wh.join(', ') : '');
 const sug = LG.ty === 'feed' && LG.opt >= 0 ? FEED[LG.opt][2] : null;
 const tooMuch = !!(sug && LG.amt > sug[1] * 2);
 const when = () => { const t = D.today; if (!t) return t; if (LG.when === 'yesterday') { const d = new Date(t + 'T12:00:00'); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10); } return t; };
 const save = async () => {
- const t = LG.ty, tags = LG.all ? ['whole field'] : LG.wh.slice();
+ const t = LG.ty, tags = LG.all || !LG.wh.length ? ['whole field'] : LG.wh.slice();  // no square tapped = the whole field
  const body = t === 'water' ? { kind: 'water', date: when(), note: optName ? optName + ' watering' : null, tags }
-  : t === 'feed' ? { kind: 'fertilizer', date: when(), amount: LG.dk ? null : LG.amt, unit: LG.dk ? null : 'kg per feddan', note: optName, tags }
-  : t === 'spray' ? { kind: 'spray', date: when(), note: optName, tags }
-  : t === 'pest' ? { kind: 'observe', date: when(), note: 'Pest: ' + optName, tags: tags.concat(['pest']) }
-  : t === 'leaf' ? { kind: 'observe', date: when(), note: 'Leaves: ' + optName, tags: tags.concat(['leaf']) }
+  : t === 'feed' ? { kind: 'fertilizer', date: when(), amount: LG.dk || LG.amt <= 0 ? null : LG.amt, unit: LG.dk || LG.amt <= 0 ? null : 'kg per feddan', note: optName || null, tags }
+  : t === 'spray' ? { kind: 'spray', date: when(), note: optName || null, tags }
+  : t === 'pest' ? { kind: 'observe', date: when(), note: 'Pest: ' + optOr, tags: tags.concat(['pest']) }
+  : t === 'leaf' ? { kind: 'observe', date: when(), note: 'Leaves: ' + optOr, tags: tags.concat(['leaf']) }
   : { kind: 'note', date: when(), note: LG.note || 'Note', tags };
  up({ busy: true, err: '' });
  const prevTurn = D.nextTurn || null; try { await D.act.saveLog(body); set({ lg: Object.assign({}, S.lg, { st: 'done', err: '', saved: true, busy: false, last: { kind: body.kind, date: body.date }, prevTurn }) }); }
@@ -103,18 +105,15 @@ const save = async () => {
 };
 const next = () => {
  if (LG.busy) return;
- if (LG.st === 'what') { if (!LG.ty) return up({ err: 'Pick what happened.' }); return go('detail'); }
+ if (LG.st === 'what') { if (!LG.ty) return up({ err: 'Pick what happened.' }); if (LG.ty === 'photo') { window.location.href = '/field/' + D.fieldId + '/crop/check'; return; } return go('detail'); }
  if (LG.st === 'detail') {
-  if (LG.ty !== 'other' && LG.opt < 0) return up({ err: 'Pick one. If you are not sure, choose Not sure.' });
-  if (LG.ty === 'other' && !LG.note.trim()) return up({ err: 'Write a few words about what happened.' });
-  if (ty.amount && !ty.sprayAmt && !LG.dk && LG.amt <= 0) return up({ err: 'Add how much you used, or tap I don\'t know.' });
   return go('where'); }
- if (LG.st === 'where') { if (!LG.all && LG.wh.length === 0) return up({ err: 'Tap the squares where it happened, or choose Whole field.' }); return save(); } };
+ if (LG.st === 'where') return save(); };
 const back = () => go(flow[Math.max(0, si - 1)]);
 const dirty = !!LG.ty;
 const close = () => (dirty && LG.st !== 'done' ? up({ conf: true }) : set({ lg: Object.assign({}, LG, { open: false }) }));
 const unit = 'kg per feddan';
-const types = Object.keys(T).map((k) => ({ label: T[k].label, sub: T[k].sub, cls: 'tbtn press' + (LG.ty === k ? ' on' : ''), pressed: String(LG.ty === k), is_water: k === 'water', is_feed: k === 'feed', is_spray: k === 'spray', is_pest: k === 'pest', is_leaf: k === 'leaf', is_photo: false, is_other: k === 'other', pick: () => up({ ty: k, opt: -1, amt: 0, dk: false, err: '' }), k }));
+const types = Object.keys(T).map((k) => ({ label: T[k].label, sub: T[k].sub, cls: 'tbtn press' + (LG.ty === k ? ' on' : ''), pressed: String(LG.ty === k), is_water: k === 'water', is_feed: k === 'feed', is_spray: k === 'spray', is_pest: k === 'pest', is_leaf: k === 'leaf', is_photo: k === 'photo', is_other: k === 'other', pick: () => up({ ty: k, opt: -1, amt: 0, dk: false, err: '' }), k }));
 const opts = ty ? ty.opts.map((o, j) => ({ label: o[0], sub: o[1], pic: o[2] || '', hasPic: !!o[2], p_leaf_yellow: o[2] === 'leaf-yellow', p_leaf_orange: o[2] === 'leaf-orange', p_leaf_brown: o[2] === 'leaf-brown', p_leaf_tips: o[2] === 'leaf-tips', p_leaf_white: o[2] === 'leaf-white', p_leaf_unsure: o[2] === 'leaf-unsure', p_bug_aphid: o[2] === 'bug-aphid', p_bug_worm: o[2] === 'bug-worm', p_bug_mite: o[2] === 'bug-mite', p_bug_hopper: o[2] === 'bug-hopper', p_bug_unsure: o[2] === 'bug-unsure', cls: 'obtn press' + (LG.opt === j ? ' on' : ''), pressed: String(LG.opt === j), pick: () => up({ opt: j, err: '', amt: LG.ty === 'feed' && FEED[j][2] ? Math.round((FEED[j][2][0] + FEED[j][2][1]) / 2 / 5) * 5 : LG.amt }) })) : [];
 const mini = SQN.map((n) => { const on = LG.all || LG.wh.includes(n); return { label: n, pressed: String(on), st: on ? 'background: #141A16; color: #fff;' : 'background: rgba(255,255,255,.55); color: #141A16;',
  pick: () => up({ all: false, err: '', wh: LG.wh.includes(n) ? LG.wh.filter((x) => x !== n) : LG.wh.concat([n]) }) }; });
@@ -122,7 +121,7 @@ const whens = [['today', 'Today'], ['yesterday', 'Yesterday']].map(([id, l]) => 
 const R = (() => {
  const t = LG.ty, o = optName;
  if (t === 'water') { const a = LG.prevTurn, b = D.nextTurn; return ['Got it. Your watering is in the journal and the water plan now starts from it.', a && b && a !== b ? 'Next watering' : '', a && b && a !== b ? a : '', a && b && a !== b ? b : '']; }
- if (t === 'feed') return ['Saved: ' + (LG.dk ? 'amount not known' : LG.amt + ' kg ' + o.toLowerCase() + ' per feddan') + (where ? ' on the ' + where : '') + '.' + (sug && !LG.dk ? (tooMuch ? ' That is more than double the usual amount. Check it with your engineer.' : (LG.amt > sug[1] ? ' A little above the usual range.' : ' That is inside the usual range.')) : ''), '', '', ''];
+ if (t === 'feed') return ['Saved: ' + (LG.dk || LG.amt <= 0 ? 'amount not known' : LG.amt + ' kg ' + o.toLowerCase() + ' per feddan') + (where ? ' on the ' + where : '') + '.' + (sug && !LG.dk && LG.amt > 0 ? (tooMuch ? ' That is more than double the usual amount. Check it with your engineer.' : (LG.amt > sug[1] ? ' A little above the usual range.' : ' That is inside the usual range.')) : ''), '', '', ''];
  if (t === 'spray') return ['Saved. Your engineer can see what you sprayed and when.', '', '', ''];
  if (t === 'pest') return [o === 'Aphids' ? 'Aphids are common now and rarely serious at this stage. Look at the same squares again in a few days.' : 'Saved. A close photo helps your engineer tell what it is.', '', '', ''];
  if (t === 'leaf') return [o === 'Orange spots' ? 'Orange spots in a cool, damp week can mean rust. Check other squares tomorrow, and tell your engineer.' : (o === 'Yellow leaves' ? 'Yellow leaves in one part of the field often mean water reaches it late. We keep watching it from space.' : 'Saved. Your engineer will see this note.'), '', '', ''];
@@ -177,7 +176,7 @@ const kpis = D.kpis || [];
 const coming = (D.coming || []);
 
 return Object.assign(MAPV, { lg: LG.open, lgConf: !!LG.conf, stWhat: LG.st === 'what', stDetail: LG.st === 'detail', stWhere: LG.st === 'where', stPhoto: false, stDone: LG.st === 'done', notDoneStep: LG.st !== 'done',
- stepTxt: 'Step ' + (si + 1) + ' of ' + flow.length, stepBars: flow.map((_, j) => ({ cls: j <= si ? 'on' : '' })), hasBack: si > 0 && LG.st !== 'done', back, next, nextLabel: LG.st === 'where' ? (LG.busy ? 'Saving…' : 'Save note') : 'Next',
+ stepTxt: 'Step ' + (si + 1) + ' of ' + flow.length, stepBars: flow.map((_, j) => ({ cls: j <= si ? 'on' : '' })), hasBack: si > 0 && LG.st !== 'done', back, next, canQuick: LG.st === 'detail', quick: () => save(), nextLabel: LG.st === 'where' ? (LG.busy ? 'Saving…' : 'Save note') : 'Next',
  close, keep: () => up({ conf: false }), discard: () => set({ lg: Object.assign({}, EMPTY_LOG) }),
  openLog: () => set({ lg: Object.assign({}, EMPTY_LOG, { open: true }) }),
  openLeaf: ckYesTap, ckAsk: CK === 'ask', ckNo: CK === 'no', ckUnsure: CK === 'unsure', ckYes: CK === 'yes', ckSayNo: ckNoTap, ckSayUnsure: ckUnsureTap, ckMsg: S.ckMsg,

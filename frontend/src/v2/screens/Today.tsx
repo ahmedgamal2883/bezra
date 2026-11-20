@@ -31,7 +31,7 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
   });
   return (
     <>
-      <div className="v2 root">
+      <div className="v2 root td">
         <div className="shell">
           <header className="top">
             <Link href={__r("V18-Today") + ""} className="brand" aria-label="Bezra, Today">
@@ -1631,6 +1631,11 @@ export default function TodayScreen(props: Record<string, unknown> = {}) {
                         </>
                       ) : null}
                       <span />
+                      {__v?.canQuick ? (
+                        <button type="button" className="btn soft press" onClick={__v?.quick} style={{"height":"50px"} as any}>
+                          {"Save now"}
+                        </button>
+                      ) : null}
                       <button type="button" className="btn press" onClick={__v?.next} style={{"minWidth":"140px","height":"50px"} as any}>
                         {__s(__v?.nextLabel)}
                       </button>

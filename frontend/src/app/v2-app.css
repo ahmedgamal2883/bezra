@@ -37,3 +37,8 @@ body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important;
 .v2 .stpill.late{background:#FBE0DA;color:#9A2F1C}
 .v2 .stpill.ok{background:#DCEFD9;color:#1F5E2E}
 .v2 .qchip{height:36px;padding:0 14px;border-radius:999px;background:#fff;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:var(--ink)}
+
+/* Today: each section reads as its own block (was one long run of hairlines) */
+.v2.td section.col[aria-labelledby]{border-top:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-top:14px}
+.v2.td section.col[aria-labelledby] > h2:first-child,.v2.td section.col[aria-labelledby] > div:first-child h2{padding-inline-start:10px;border-inline-start:3px solid var(--green)}
+@media (max-width:760px){.v2.td section.col[aria-labelledby]{padding:14px 14px;border-radius:14px}}

@@ -389,6 +389,7 @@ def build(c: Ctx, now_hour: int | None = None) -> dict:
             t["covered_by"] = t["done_date"]
     _season_extras(c, out, add)
     _journal_followups(c, log, add)
+    _custom_plan(c, add)
     from .priority import rank
     prio = c.f.get("priority")
     out.sort(key=lambda t: (t["date"], 0 if t["priority"] == "high" else 1, rank(t["category"], prio)))
@@ -433,6 +434,20 @@ def _nice(iso: str) -> str:
 
 
 WIND_KMH = 40  # a strong breeze (Beaufort 6): enough to flatten wheat on soaked soil
+
+
+def _custom_plan(c: Ctx, add) -> None:
+    """Steps of a plan the farmer made with Bezra in the chat (for a crop Bezra has no model for). Dated from sowing;
+    labelled as the chat plan so the farmer checks them with the engineer. A bad record never breaks the task list."""
+    cp = c.f.get("custom_plan") or {}
+    for i, st in enumerate(cp.get("steps") or []):
+        try:
+            d = c.sow + timedelta(days=int(st["day"]))
+            add(f"cp-{i}-{st['day']}", st.get("category") or "inspection", st["title"], st.get("why") or "",
+                d, d + timedelta(days=2), source=f"Bezra's chat plan for {cp.get('crop') or 'your crop'} (check with your engineer)",
+                provenance="estimated", extra={"chat_plan": True})
+        except (KeyError, TypeError, ValueError):
+            continue
 
 
 def _season_extras(c: Ctx, out: list[dict], add) -> None:
