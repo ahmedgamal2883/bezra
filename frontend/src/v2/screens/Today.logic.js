@@ -98,7 +98,7 @@ const save = async () => {
   : t === 'leaf' ? { kind: 'observe', date: when(), note: 'Leaves: ' + optName, tags: tags.concat(['leaf']) }
   : { kind: 'note', date: when(), note: LG.note || 'Note', tags };
  up({ busy: true, err: '' });
- try { await D.act.saveLog(body); set({ lg: Object.assign({}, S.lg, { st: 'done', err: '', saved: true, busy: false, last: { kind: body.kind, date: body.date } }) }); }
+ const prevTurn = D.nextTurn || null; try { await D.act.saveLog(body); set({ lg: Object.assign({}, S.lg, { st: 'done', err: '', saved: true, busy: false, last: { kind: body.kind, date: body.date }, prevTurn }) }); }
  catch (e) { set({ lg: Object.assign({}, S.lg, { busy: false, err: 'Could not save. ' + (e && e.message && !/^\d+$/.test(e.message) ? e.message : 'Check your connection and try again.') }) }); }
 };
 const next = () => {
@@ -121,7 +121,7 @@ const mini = SQN.map((n) => { const on = LG.all || LG.wh.includes(n); return { l
 const whens = [['today', 'Today'], ['yesterday', 'Yesterday']].map(([id, l]) => ({ label: l, cls: 'opt' + (LG.when === id ? ' on' : ''), pressed: String(LG.when === id), pick: () => up({ when: id }) }));
 const R = (() => {
  const t = LG.ty, o = optName;
- if (t === 'water') return ['Got it. Your watering is in the journal and the water plan now starts from it.', '', '', ''];
+ if (t === 'water') { const a = LG.prevTurn, b = D.nextTurn; return ['Got it. Your watering is in the journal and the water plan now starts from it.', a && b && a !== b ? 'Next watering' : '', a && b && a !== b ? a : '', a && b && a !== b ? 'About ' + b : '']; }
  if (t === 'feed') return ['Saved: ' + (LG.dk ? 'amount not known' : LG.amt + ' kg ' + o.toLowerCase() + ' per feddan') + (where ? ' on the ' + where : '') + '.' + (sug && !LG.dk ? (tooMuch ? ' That is more than double the usual amount. Check it with your engineer.' : (LG.amt > sug[1] ? ' A little above the usual range.' : ' That is inside the usual range.')) : ''), '', '', ''];
  if (t === 'spray') return ['Saved. Your engineer can see what you sprayed and when.', '', '', ''];
  if (t === 'pest') return [o === 'Aphids' ? 'Aphids are common now and rarely serious at this stage. Look at the same squares again in a few days.' : 'Saved. A close photo helps your engineer tell what it is.', '', '', ''];

@@ -225,7 +225,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib} className="grow" title={b.l + ": " + b.v} style={__css(b.sty)} />)}
                       </div>
                       <div className="row sp meta">
-                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib}>{b.l}</span>)}
+                        {((__v?.hotAxis) || ((__v?.hot) || []).map((b: any) => b.l)).map((l: any, ib: number) => <span key={ib}>{l}</span>)}
                       </div>
                     </div>
                     <div className="col" style={{"gap":"12px"} as any}>
@@ -242,6 +242,18 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {__s(__v?.sownLine)}
                       </span>
                     </div>
+                  </section>) : null}
+                  {__v?.past10?.length ? (
+                  <section className="col" style={{"gap":"16px"} as any} aria-labelledby="p10-h">
+                    <span id="p10-h" className="meta" style={{"fontWeight":"600","letterSpacing":".04em"} as any}>{"WHAT HURT WHEAT HERE BEFORE · LAST 10 SEASONS"}</span>
+                    {__v.past10.map((r: any, i: number) => (
+                      <div key={i} className="col" style={{"gap":"6px"} as any}>
+                        <div className="row sp"><span style={{"fontSize":"17px"} as any}>{r.label}</span><b style={{"fontSize":"17px"} as any}>{r.count}</b></div>
+                        <div style={{"height":"12px","borderRadius":"999px","background":"#E6E5DF","overflow":"hidden"} as any}><span style={__css(r.sty)} /></div>
+                        <span className="meta" style={{"fontSize":"13px"} as any}>{r.rule}</span>
+                      </div>
+                    ))}
+                    <span className="meta" style={{"fontSize":"12px"} as any}>{__v.past10Src}</span>
                   </section>) : null}
                 </div>
               </>
@@ -414,7 +426,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                         {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib} className="grow" title={b.l + ": " + b.v} style={__css(b.sty)} />)}
                       </div>
                       <div className="row sp meta">
-                        {((__v?.hot) || []).map((b: any, ib: number) => <span key={ib}>{b.l}</span>)}
+                        {((__v?.hotAxis) || ((__v?.hot) || []).map((b: any) => b.l)).map((l: any, ib: number) => <span key={ib}>{l}</span>)}
                       </div>
                       <span className="pq sat">
                         {__s(__v?.hotSrc)}
