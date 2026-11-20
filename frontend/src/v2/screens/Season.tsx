@@ -243,7 +243,7 @@ export default function SeasonScreen(props: Record<string, unknown> = {}) {
                       <p className="txt" style={{"fontSize":"16px"} as any}>
                         {__v?.twin ? "Fields near " + __v.twin.name + " already have springs like yours will. What helps there: " + __v.twin.practice : ""}
                       </p>
-                      <span className="doneline" style={{"alignSelf":"flex-start"} as any}>
+                      <span className="doneline" style={{"alignSelf":"flex-start","padding":"0 16px","height":"40px"} as any}>
                         <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                           <path d="m5 12.5 4.5 4.5L19 7.5" />
                         </svg>
