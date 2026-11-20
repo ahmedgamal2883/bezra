@@ -71,3 +71,9 @@ body:has(.v2) .tour-sheet, body:has(.v2) .tour-coach { display: none !important;
 /* Today: a way back to the whole-field Overview, in Simple and Details */
 .v2 .ovback{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:19px;background:#fff;box-shadow:0 1px 2px rgba(20,26,22,.06);font-size:14px;font-weight:600;color:var(--green)}
 .v2 .ovback:hover{background:#F1F0EC}
+
+/* the server note on phones: a slim strip above the tab bar (it covered half the page at the top) */
+@media (max-width:760px){
+  .srvnote{top:auto!important;bottom:calc(84px + env(safe-area-inset-bottom))!important;width:calc(100vw - 24px);max-width:calc(100vw - 24px)!important;font-size:13px!important;padding:8px 12px!important;line-height:1.35}
+  .srvnote>span:first-child{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+}

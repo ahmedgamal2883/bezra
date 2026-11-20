@@ -76,7 +76,7 @@ export default function ServerNote() {
   }, []);
   if (!note || hidden) return null;
   return (
-    <div role="status" aria-live="polite" style={{ position: 'fixed', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 70,
+    <div role="status" aria-live="polite" className="srvnote" style={{ position: 'fixed', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 70,
       maxWidth: 'calc(100vw - 32px)', background: '#1F2A22', color: '#fff', borderRadius: '14px', padding: '10px 14px', fontSize: '14px',
       boxShadow: '0 6px 20px rgba(0,0,0,.18)', display: 'flex', gap: '12px', alignItems: 'center',
       fontFamily: "'Hanken Grotesk', 'IBM Plex Sans Arabic', system-ui, sans-serif" }}>

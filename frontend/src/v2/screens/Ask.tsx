@@ -11,6 +11,7 @@ import { useWho } from '@/v2/data/who';
 import Logic from './Ask.logic';
 import { useAskData } from '@/v2/data/ask';
 import { Mascot } from '@/components/chrome';
+import DraftCard from '@/v2/DraftCard';
 
 export default function AskScreen(props: Record<string, unknown> = {}) {
   const __r = useV2Href();
@@ -122,8 +123,10 @@ export default function AskScreen(props: Record<string, unknown> = {}) {
                     <Mascot size={40} />
                     <div className="col" style={{"gap":"8px","minWidth":"0"} as any}>
                       <div className="msg bz" style={{"whiteSpace":"pre-wrap"} as any}>{m.text}</div>
-                      {(m.cards || []).map((c: any, ic: number) => c.type === 'engineer' ? (
-                        <div className="acts" key={ic}><Link href={__r("V18-Data") + "#ask"} className="btn sm press">{c.title || "Ask your engineer"}</Link></div>
+                      {(m.cards || []).map((c: any, ic: number) => c.type === 'plan_draft' || c.type === 'rotation_draft' ? (
+                        <DraftCard key={ic} c={c} />
+                      ) : c.type === 'engineer' ? (
+                        <div className="acts" key={ic}><Link href={__r("V18-Data") + "#ask"} className="btn sm press">{!c.title || /ask your engineer/i.test(c.title) ? "Ask your engineer" : c.title}</Link></div>
                       ) : (
                         <div className="msg bz" key={ic} style={{"display":"flex","flexDirection":"column","gap":"6px"} as any}>
                           {c.title ? <b style={{"fontWeight":"600"} as any}>{c.title}</b> : null}

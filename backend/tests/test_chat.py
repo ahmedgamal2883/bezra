@@ -39,3 +39,17 @@ def test_tools_return_real_data():
     r = bezra.run_tool(c, "run_sim", {"sow_date": "2026-11-15", "variety": "sakha95", "watering": "every", "year": "normal"})
     assert 0 < r["yield_pct"] <= 100 and len(r["months"]) == 7
     assert "Today" in bezra.run_tool(c, "get_calendar", {})["best_window"]
+
+
+def test_every_tool_schema_has_no_empty_enum_value():
+    """Gemini refuses a tool whose enum holds an empty string (it broke every chat message on 20 Nov 2026)."""
+    def walk(x):
+        if isinstance(x, dict):
+            assert "" not in (x.get("enum") or []), x
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+    for t in bezra.TOOLS:
+        walk(t["input_schema"])

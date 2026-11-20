@@ -156,7 +156,10 @@ def build(c: Ctx) -> dict:
     apply_m3 = None
     try:
         from . import plan as _plan
-        pt = next((t for t in _plan.build(c)["tasks"] if t["type"] == "water" and t["planned_date"] == nt.isoformat()), None)
+        ptasks = [t for t in _plan.build(c)["tasks"] if t["type"] == "water"]
+        # a turn that is due and not done yet (late) is the watering the farmer is asked for today; else the next turn
+        late = [t for t in ptasks if t["status"] == "Late" and t["planned_date"] <= today.isoformat() and (t.get("amount") or {}).get("m3")]
+        pt = late[-1] if late else next((t for t in ptasks if t["planned_date"] == nt.isoformat()), None)
         apply_m3 = ((pt or {}).get("amount") or {}).get("m3")
     except Exception:
         apply_m3 = None

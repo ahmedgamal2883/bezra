@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useApi } from '@/lib/api';
 import { useField, useUser } from '@/lib/field';
+import { useLang } from '@/lib/i18n';
 import { useAskChat } from '@/components/AskLive';
 import { farmerEntries } from './journal';
 import { shortDate, dayLabel } from './today';
@@ -12,6 +13,7 @@ import { shortDate, dayLabel } from './today';
 export function useAskData() {
   const { id } = useField();
   const { user } = useUser();
+  const { lang } = useLang();
   const st = useApi<any>('/chat/status').data;
   const sm = useApi<any>(id ? `/fields/${id}/summary` : null).data;
   const tk = useApi<any>(id ? `/fields/${id}/tasks` : null).data;
@@ -25,7 +27,11 @@ export function useAskData() {
   const first = (user?.name || '').split(' ')[0];
   const h = new Date().getHours();
   const hello = `Good ${h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'}${first ? ', ' + first : ''}.`;
-  const greeting = sm ? `${hello} ${due.length ? 'Today: ' + due.slice(0, 3).map((t: any) => t.title.toLowerCase()).join(', ') + '.' : 'Nothing is due on your field today.'} Ask me anything about your field.` : `${hello} Ask me anything about your field.`;
+  const greetEn = sm ? `${hello} ${due.length ? 'Today: ' + due.slice(0, 3).map((t: any) => t.title.toLowerCase()).join(', ') + '.' : 'Nothing is due on your field today.'} Ask me anything about your field.` : `${hello} Ask me anything about your field.`;
+  // Arabic: built here in Arabic (the page translator only knows whole fixed sentences; this one has task names in it)
+  const nameAr = first && first !== 'Guest' ? ` يا ${first}` : '';
+  const greetAr = `أهلاً${nameAr}. ${sm ? (due.length ? (due.length === 1 ? 'فيه حاجة واحدة محتاجاك النهارده.' : `فيه ${due.length} حاجات محتاجينك النهارده.`) : 'مفيش حاجة مطلوبة النهارده.') + ' ' : ''}اسألني أي حاجة عن أرضك.`;
+  const greeting = lang === 'ar' ? greetAr : greetEn;
   const last = (farmerEntries(jn) || [])[0];
   const ctx = sm ? [
     ['Field', `${sm.field.name} · ${sm.field.area.value} feddan`],

@@ -442,7 +442,8 @@ def _custom_plan(c: Ctx, add) -> None:
     cp = c.f.get("custom_plan") or {}
     for i, st in enumerate(cp.get("steps") or []):
         try:
-            d = c.sow + timedelta(days=int(st["day"]))
+            start = date.fromisoformat(cp["start"]) if cp.get("start") else c.sow   # the chat crop's own planting day
+            d = start + timedelta(days=int(st["day"]))
             add(f"cp-{i}-{st['day']}", st.get("category") or "inspection", st["title"], st.get("why") or "",
                 d, d + timedelta(days=2), source=f"Bezra's chat plan for {cp.get('crop') or 'your crop'} (check with your engineer)",
                 provenance="estimated", amount=st.get("amount") or None,

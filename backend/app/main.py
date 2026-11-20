@@ -1229,6 +1229,17 @@ def _save_chat(uid: int, fid: str, question: str, answer: dict) -> None:
         pass
 
 
+@app.post("/fields/{field_id}/chat-draft/{kind}")
+def save_chat_draft(field_id: str, kind: str, remove: bool = False, user: dict = Depends(current_user)):
+    """The farmer pressed Save (or Remove) on a crop plan or rotation card in the chat. Nothing else saves them."""
+    if kind not in ("plan", "rotation"):
+        raise HTTPException(404, "Unknown draft")
+    out = bezra.confirm_draft(_ctx(field_id, user), kind, remove)
+    if out.get("error"):
+        raise HTTPException(409, "Already saved, or nothing to save")
+    return out
+
+
 @app.get("/chat/history")
 def chat_history(field_id: str, user: dict = Depends(current_user)):
     c = _ctx(field_id, user)
